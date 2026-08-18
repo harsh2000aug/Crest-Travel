@@ -1,0 +1,297 @@
+.tripSearch__wrapper {
+  width: 100%;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.tripSearch__row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 350px 250px;
+  align-items: end;
+  gap: 14px;
+}
+
+.tripSearch__destinationInput {
+    height: 60px;
+    border: 1px solid #d6d6d6;
+    border-radius: 18px;
+    padding: 0 18px;
+    font-size: 15px;
+    outline: none;
+    transition: 0.3s;
+    width: 100%;
+    background: #fff;
+
+}
+
+.react-datepicker-wrapper .react-datepicker__input-container input{
+    height: 60px;
+    border: 1px solid #d6d6d6 !important;
+    border-radius: 18px;
+    padding: 0 18px;
+    font-size: 15px;
+    outline: none;
+    transition: 0.3s;
+    width: 100%;
+    background: #fff;
+}
+
+.tripSearch__destinationInput::placeholder {
+  color: #333;
+}
+
+.tripSearch__dateLabel{
+    margin-bottom: 8px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 600;
+    display: block;
+}
+
+.tripSearch__dateContent {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.tripSearch__dateValues {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tripSearch__datePicker {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: none !important;
+  outline: none !important;
+  background: transparent;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+}
+
+.tripSearch__separator {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #444;
+}
+
+.tripSearch__button {
+    width: 100%;
+    height: 60px;
+    border: none;
+    border-radius: 18px;
+    background: #0b2443;
+    color: #d8a437;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.tripSearch__button:hover {
+  transform: translateY(-1px);
+}
+
+.tripSearch__button:active {
+  transform: translateY(0);
+}
+
+.tripSearch__fieldWrapper {
+  width: 100%;
+}
+
+.tripSearch__inputError {
+  border-color: #e53935 !important;
+  box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.08);
+}
+
+.tripSearch__errorMessage {
+  display: block;
+  margin-top: 5px;
+  margin-left: 3px;
+  font-size: 11px;
+  line-height: 14px;
+  color: #e53935;
+}
+
+.tripSearch__datePicker {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none !important;
+  outline: none !important;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+}
+
+.tripSearch__datePicker:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.tripSearch__datePicker::placeholder {
+  color: #333;
+  opacity: 1;
+}
+
+.tripSearch__fieldWrapper {
+  position: relative;
+}
+
+.tripSearch__locationDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 100%;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #e2e2e2;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+}
+
+.tripSearch__locationOption {
+  display: block;
+  width: 100%;
+  padding: 12px 15px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #eeeeee;
+  text-align: left;
+  font-size: 14px;
+  color: #222222;
+  cursor: pointer;
+}
+
+.tripSearch__locationOption:last-child {
+  border-bottom: 0;
+}
+
+.tripSearch__locationOption:hover {
+  background: #f5f7ff;
+}
+
+.tripSearch__dropdownMessage {
+  padding: 14px 15px;
+  color: #777777;
+  font-size: 14px;
+}
+
+.tripSearch__fieldWrapper {
+  position: relative;
+}
+
+.tripSearch__locationDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 100%;
+  max-height: 320px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #e4e4e4;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+}
+
+.tripSearch__locationOption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  background: #ffffff;
+  border: 0;
+  border-bottom: 1px solid #eeeeee;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tripSearch__locationOption:last-child {
+  border-bottom: 0;
+}
+
+.tripSearch__locationOption:hover {
+  background: #f6f7fb;
+}
+
+.tripSearch__locationImage {
+  width: 60px;
+  height: 50px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 7px;
+}
+
+.tripSearch__locationDetails {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.tripSearch__locationName {
+  overflow: hidden;
+  color: #222222;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tripSearch__destinationName {
+  color: #666666;
+  font-size: 12px;
+}
+
+.tripSearch__locationType {
+  color: #2364d2;
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.tripSearch__dropdownMessage {
+  padding: 15px;
+  color: #777777;
+  font-size: 14px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .tripSearch__row {
+    grid-template-columns: minmax(0, 1fr) 240px 160px;
+  }
+
+  .tripSearch__button {
+    width: 160px;
+  }
+}
+
+@media (max-width: 700px) {
+  .tripSearch__row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .tripSearch__destination,
+  .tripSearch__dateBox {
+    height: 44px;
+  }
+
+  .tripSearch__button {
+    width: 100%;
+    height: 44px;
+  }
+}
