@@ -256,6 +256,7 @@ export const allApi = {
       ...defaults.methods.POST,
       ...defaults.versions.v1,
       uri: "/alphacar/pay-now",
+      useCarHeaders: true,
     },
   },
   activityLocations: {

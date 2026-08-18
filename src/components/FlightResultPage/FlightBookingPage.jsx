@@ -6,7 +6,11 @@ import "./FlightBookingPage.css";
 
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
-import { flightOrder, flightPayment, flightPrices } from "../../store/Services/AllApi";
+import {
+  flightOrder,
+  flightPayment,
+  flightPrices,
+} from "../../store/Services/AllApi";
 import Loader from "../../reuseable-components/Loader/Loader";
 
 /* =========================================================
@@ -81,7 +85,6 @@ const getPassengerAgeText = (type) => {
   return "";
 };
 
-
 const getToday = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -95,7 +98,6 @@ const getDateYearsAgo = (years) => {
 
   return date;
 };
-
 
 const validatePassengerDOB = (value, passengerType) => {
   if (!value) {
@@ -331,9 +333,7 @@ function PassengerForm({ passenger, index, register, errors }) {
           <div className="fb-passenger-number">{index + 1}</div>
 
           <div>
-            <div className="fb-passenger-title">
-              {typeLabel}
-            </div>
+            <div className="fb-passenger-title">{typeLabel}</div>
 
             <div className="fb-passenger-subtitle">{ageText}</div>
           </div>
@@ -707,8 +707,9 @@ function ItineraryCard({ flight, searchData }) {
           {outboundSegments.length > 0 ? (
             outboundSegments.map((segment, index) => (
               <React.Fragment
-                key={`outbound-${segment.flightCode || "flight"}-${segment.flightNumber || index
-                  }-${index}`}
+                key={`outbound-${segment.flightCode || "flight"}-${
+                  segment.flightNumber || index
+                }-${index}`}
               >
                 <FlightSegment segment={segment} />
 
@@ -781,8 +782,9 @@ function ItineraryCard({ flight, searchData }) {
           <div className="fb-segments-wrapper">
             {returnSegments.map((segment, index) => (
               <React.Fragment
-                key={`return-${segment.flightCode || "flight"}-${segment.flightNumber || index
-                  }-${index}`}
+                key={`return-${segment.flightCode || "flight"}-${
+                  segment.flightNumber || index
+                }-${index}`}
               >
                 <FlightSegment segment={segment} />
 
@@ -815,8 +817,9 @@ function ItineraryCard({ flight, searchData }) {
               <strong>
                 {returnSegments.length - 1 === 0
                   ? "Non-stop"
-                  : `${returnSegments.length - 1} stop${returnSegments.length - 1 > 1 ? "s" : ""
-                  }`}
+                  : `${returnSegments.length - 1} stop${
+                      returnSegments.length - 1 > 1 ? "s" : ""
+                    }`}
               </strong>
             </span>
           </div>
@@ -1545,9 +1548,7 @@ function BillingAddress({ register, errors }) {
           </select>
 
           {errors?.billing?.country && (
-            <small className="fb-error">
-              {errors.billing.country.message}
-            </small>
+            <small className="fb-error">{errors.billing.country.message}</small>
           )}
         </div>
 
@@ -1651,7 +1652,7 @@ export default function FlightBookingPage() {
   const navigate = useNavigate();
   const [revalidateData, setRevalidateData] = useState([]);
   const [bookingData, setBookingData] = useState(null);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -1730,7 +1731,7 @@ export default function FlightBookingPage() {
   ======================================================= */
 
   const getPriceTaxes = async (fareCode) => {
-    setLoading(true)
+    setLoading(true);
     try {
       if (!fareCode) {
         return;
@@ -1748,11 +1749,10 @@ export default function FlightBookingPage() {
       setRevalidateData(res.result);
     } catch (error) {
       console.log("error in getting tax", error);
-    }finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
-  
 
   useEffect(() => {
     try {
@@ -1958,13 +1958,12 @@ export default function FlightBookingPage() {
     };
   }, [passengers]);
 
-
   const encodeBase64 = (value) => {
     return btoa(String(value ?? ""));
   };
 
   const handlePayment = async (orderId, formData, paymentRemaining) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const cardData = formData?.card || {};
       const billingData = formData?.billing || {};
@@ -1991,7 +1990,6 @@ export default function FlightBookingPage() {
       const expiry = cardData?.expiry || "";
       const [expiryMonth = "", expiryYear = ""] = expiry.split("/");
 
-
       const paymentPayload = {
         sessionId:
           localStorage.getItem("sessionId") ||
@@ -2003,8 +2001,7 @@ export default function FlightBookingPage() {
           success:
             "https://it.alphatravelclub.link/flight/IT-75271198623/paymentSuccessful",
 
-          fail:
-            "https://it.alphatravelclub.link/flight/IT-75271198623/bookingFailed",
+          fail: "https://it.alphatravelclub.link/flight/IT-75271198623/bookingFailed",
 
           mode: "CARD",
 
@@ -2025,29 +2022,11 @@ export default function FlightBookingPage() {
 
             country: billingData?.country || "IN",
 
-            postalcode: 
-              billingData?.postalcode || ""
-            ,
-
-            email: 
-              billingData?.email ||
-              contactData?.email ||
-              ""
-            ,
-
-            phone: 
-              billingData?.phone ||
-              contactData?.phone ||
-              ""
-            ,
-
-            city: 
-              billingData?.city || ""
-            ,
-
-            state: 
-              billingData?.state || ""
-            ,
+            postalcode: billingData?.postalcode || "",
+            email: billingData?.email || contactData?.email || "",
+            phone: billingData?.phone || contactData?.phone || "",
+            city: billingData?.city || "",
+            state: billingData?.state || "",
           },
 
           retryNumber: 0,
@@ -2066,12 +2045,11 @@ export default function FlightBookingPage() {
       } else {
         console.error("Payment URL not found in response:", res);
       }
-
     } catch (error) {
       console.error("Error in payment API:", error);
       throw error;
-    }finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -2140,7 +2118,7 @@ export default function FlightBookingPage() {
     const airline =
       selectedFlight?.airlineName ||
       selectedFlight?.airline ||
-      selectedFlight?.airlineCode
+      selectedFlight?.airlineCode;
 
     /*
      * =========================================================
@@ -2169,9 +2147,9 @@ export default function FlightBookingPage() {
 
     const basePrice = Number(
       selectedFlight?.baseFare ??
-      selectedFlight?.base_price ??
-      selectedFlight?.basePrice ??
-      174.54,
+        selectedFlight?.base_price ??
+        selectedFlight?.basePrice ??
+        174.54,
     );
 
     const taxes = revalidateData.pricing.taxes;
@@ -2191,8 +2169,7 @@ export default function FlightBookingPage() {
      * =========================================================
      */
 
-    const baggagePolicy =
-      revalidateData.rules.baggage[0].cabinBaggage
+    const baggagePolicy = revalidateData.rules.baggage[0].cabinBaggage;
     /*
      * =========================================================
      * GUESTS
@@ -2205,12 +2182,8 @@ export default function FlightBookingPage() {
       lastname: passenger?.lastName,
       birthdate: passenger?.dateOfBirth,
       gender: passenger?.gender,
-      phone:
-        contactData?.phone ||
-        billingData?.phone,
-      email:
-        contactData?.email ||
-        billingData?.email,
+      phone: contactData?.phone || billingData?.phone,
+      email: contactData?.email || billingData?.email,
       type:
         passenger?.type === "child"
           ? "Child"
@@ -2224,50 +2197,52 @@ export default function FlightBookingPage() {
     const flightSegments = outboundSegments.length
       ? outboundSegments
       : [
-        {
-          airline: airline,
-          departurelocation: searchData?.originName || "New York",
-          arrivallocation: searchData?.destinationName || "Boston",
+          {
+            airline: airline,
+            departurelocation: searchData?.originName || "New York",
+            arrivallocation: searchData?.destinationName || "Boston",
 
-          departairport: "John F Kennedy Intl",
-          arrivalairport: "Boston Logan Intl",
+            departairport: "John F Kennedy Intl",
+            arrivalairport: "Boston Logan Intl",
 
-          departure: searchData?.origin || "JFK",
-          arrival: searchData?.destination || "BOS",
+            departure: searchData?.origin || "JFK",
+            arrival: searchData?.destination || "BOS",
 
-          departureTime:
-            firstSegment?.departureTime || `${startDate}T00:00:00`,
+            departureTime:
+              firstSegment?.departureTime || `${startDate}T00:00:00`,
 
-          arrivalTime: firstSegment?.arrivalTime || `${endDate}T00:00:00`,
+            arrivalTime: firstSegment?.arrivalTime || `${endDate}T00:00:00`,
 
-          flightCode:
-            firstSegment?.flightCode || selectedFlight?.airlineCode || "DL",
+            flightCode:
+              firstSegment?.flightCode || selectedFlight?.airlineCode || "DL",
 
-          flightNumber:
-            firstSegment?.flightNumber || selectedFlight?.flightNo || "5765",
+            flightNumber:
+              firstSegment?.flightNumber || selectedFlight?.flightNo || "5765",
 
-          cabin:
-            selectedFlight?.cabinClass || searchData?.cabinClass || "Economy",
+            cabin:
+              selectedFlight?.cabinClass || searchData?.cabinClass || "Economy",
 
-          fareFamily: firstSegment?.fareFamily || "",
+            fareFamily: firstSegment?.fareFamily || "",
 
-          pnrNumber: firstSegment?.pnrNumber || "",
+            pnrNumber: firstSegment?.pnrNumber || "",
 
-          fareBasisCodes: firstSegment?.fareBasisCodes || [],
+            fareBasisCodes: firstSegment?.fareBasisCodes || [],
 
-          remainingSeats: Number(firstSegment?.remainingSeats || 1),
+            remainingSeats: Number(firstSegment?.remainingSeats || 1),
 
-          stops: Number(firstSegment?.stops || 0),
+            stops: Number(firstSegment?.stops || 0),
 
-          triptime: Number(firstSegment?.triptime || 0),
+            triptime: Number(firstSegment?.triptime || 0),
 
-          legindicator: Number(firstSegment?.legindicator || 0),
+            legindicator: Number(firstSegment?.legindicator || 0),
 
-          cabinBaggage: firstSegment?.cabinBaggage || revalidateData?.rules?.baggage[0]?.cabinBaggage,
+            cabinBaggage:
+              firstSegment?.cabinBaggage ||
+              revalidateData?.rules?.baggage[0]?.cabinBaggage,
 
-          checkInBaggage: firstSegment?.checkInBaggage || baggagePolicy,
-        },
-      ];
+            checkInBaggage: firstSegment?.checkInBaggage || baggagePolicy,
+          },
+        ];
 
     /*
      * =========================================================
@@ -2361,7 +2336,9 @@ export default function FlightBookingPage() {
               stops: Number(segment?.stops || 0),
               triptime: Number(segment?.triptime || 0),
               legindicator: Number(segment?.legindicator || 0),
-              cabinBaggage: segment?.cabinBaggage || revalidateData?.rules?.baggage[0]?.cabinBaggage,
+              cabinBaggage:
+                segment?.cabinBaggage ||
+                revalidateData?.rules?.baggage[0]?.cabinBaggage,
               checkInBaggage: segment?.checkInBaggage || baggagePolicy,
             })),
           },
@@ -2389,7 +2366,7 @@ export default function FlightBookingPage() {
      * API CALL
      * =========================================================
      */
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await flightOrder({
         body: flightOrderPayload,
@@ -2402,14 +2379,10 @@ export default function FlightBookingPage() {
         return;
       }
 
-      const orderId =
-        response?.data?.addorder?.result?.itemid;
+      const orderId = response?.data?.addorder?.result?.itemid;
 
       if (!orderId) {
-        console.error(
-          "Order ID not found in flight order response:",
-          response
-        );
+        console.error("Order ID not found in flight order response:", response);
         return;
       }
 
@@ -2419,17 +2392,16 @@ export default function FlightBookingPage() {
       await handlePayment(
         orderId,
         formData,
-        revalidateData?.pricing?.showOurprice
+        revalidateData?.pricing?.showOurprice,
       );
 
       // navigate("/flight-payment");
     } catch (error) {
       console.error("Error in flight order API:", error);
-    }finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
-
 
   /* =======================================================
    NO BOOKING DATA
@@ -2438,7 +2410,7 @@ export default function FlightBookingPage() {
   if (!bookingData) {
     return (
       <>
-        {loading && <Loader/>}
+        {loading && <Loader />}
         <HeaderInner />
 
         <main className="fb-page">
@@ -2478,10 +2450,9 @@ export default function FlightBookingPage() {
    PAGE RETURN
 ======================================================= */
 
-
   return (
     <>
-      {loading && <Loader/>}
+      {loading && <Loader />}
       <HeaderInner />
 
       <main className="fb-page">
@@ -2696,27 +2667,11 @@ export default function FlightBookingPage() {
             </div>
 
             {/* =================================================
-              04 - PAYMENT DETAILS
+              04 - BILLING ADDRESS
           ================================================= */}
 
             <div className="fb-section-heading fb-heading-space">
               <div className="fb-heading-number">04</div>
-
-              <div>
-                <h2>Payment details</h2>
-
-                <p>Enter your card information for payment.</p>
-              </div>
-            </div>
-
-            <CardDetails register={register} errors={errors} />
-
-            {/* =================================================
-              05 - BILLING ADDRESS
-          ================================================= */}
-
-            <div className="fb-section-heading fb-heading-space">
-              <div className="fb-heading-number">05</div>
 
               <div>
                 <h2>Billing address</h2>
@@ -2726,6 +2681,22 @@ export default function FlightBookingPage() {
             </div>
 
             <BillingAddress register={register} errors={errors} />
+
+            {/* =================================================
+              05 - PAYMENT DETAILS
+          ================================================= */}
+
+            <div className="fb-section-heading fb-heading-space">
+              <div className="fb-heading-number">05</div>
+
+              <div>
+                <h2>Payment details</h2>
+
+                <p>Enter your card information for payment.</p>
+              </div>
+            </div>
+
+            <CardDetails register={register} errors={errors} />
 
             {/* =================================================
               SECURITY CARD

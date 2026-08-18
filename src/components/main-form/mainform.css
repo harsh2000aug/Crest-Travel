@@ -525,12 +525,7 @@
 }
 
 .multicity-flight-row {
-  width: 100%;
-  padding: 20px;
-  margin-bottom: 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  background: #fff;
+  margin-bottom: 20px;
 }
 
 .multicity-flight-header {
@@ -563,16 +558,18 @@
 }
 
 .multicity-flight-fields input {
-  height: 52px;
-  padding: 0 15px;
-  border: 1px solid #d9dde5;
-  border-radius: 8px;
+  height: 60px;
+  border: 1px solid #dbe2ea;
+  border-radius: 18px;
+  padding: 0 18px;
+  font-size: 16px;
   outline: none;
-  font-size: 14px;
+  transition: 0.3s;
+  background: white;
 }
 
 .multicity-flight-fields input:focus {
-  border-color: #1d4ed8;
+  border-color: #0b2443;
 }
 
 .multicity-remove-btn {
@@ -587,10 +584,10 @@
 .multicity-add-btn {
   margin: 4px 0 22px;
   padding: 11px 18px;
-  border: 1px dashed #2563eb;
+  border: 1px dashed #0b2443;
   border-radius: 8px;
   background: #eff6ff;
-  color: #2563eb;
+  color: #0b2443;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -608,14 +605,16 @@
 }
 
 .multicity-search-btn {
-  height: 52px;
+  width: 100%;
+  height: 60px;
   border: none;
-  border-radius: 8px;
-  background: #2563eb;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
+  border-radius: 18px;
   cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  color: #d8a437;
+  background: #0b2443;
+  transition: 0.3s;
 }
 
 .multicity-search-btn:hover {

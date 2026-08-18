@@ -93,12 +93,23 @@ const callAxios = async (
       ...defHeaders,
     };
   }
+  const carHeaders = uriEndPoint?.useCarHeaders
+    ? {
+        correlationid: "TEST-123456",
+        currency: "USD",
+        device: "WEB",
+        language: "EN",
+        "show-currency": "USD",
+        timezone: "Asia/Calcutta",
+      }
+    : {};
   return Axios({
     method: uriEndPoint.method,
     url: makeUrl({ ...uriEndPoint, pathParams, query }, apiHostUrl),
     headers: {
       ...headers,
       ...uriEndPoint.headerProps,
+      ...carHeaders,
     },
     data: body || undefined,
     withCredentials: withCredentials || false, // Add withCredentials here
@@ -214,6 +225,7 @@ export interface UriEndPoint {
   headerProps?: HeaderPropsOrPathParamsOrQueryOrBody;
   apiKey?: string;
   withCredentials?: any;
+  useCarHeaders?: boolean;
 }
 interface HeaderPropsOrPathParamsOrQueryOrBody {}
 

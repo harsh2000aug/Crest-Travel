@@ -30,29 +30,21 @@ const FlightForm = () => {
     infants: 0,
   });
 
+  const createMultiCityFlight = () => ({
+    departure: "",
+    destination: "",
+    departureDate: null,
+    fromAirport: null,
+    toAirport: null,
+    fromDropdown: [],
+    toDropdown: [],
+    showFrom: false,
+    showTo: false,
+  });
+
   const [multiCityFlights, setMultiCityFlights] = useState([
-    {
-      departure: "",
-      destination: "",
-      departureDate: null,
-      fromAirport: null,
-      toAirport: null,
-      fromDropdown: [],
-      toDropdown: [],
-      showFrom: false,
-      showTo: false,
-    },
-    {
-      departure: "",
-      destination: "",
-      departureDate: null,
-      fromAirport: null,
-      toAirport: null,
-      fromDropdown: [],
-      toDropdown: [],
-      showFrom: false,
-      showTo: false,
-    },
+    createMultiCityFlight(),
+    createMultiCityFlight(),
   ]);
 
   const navigate = useNavigate();
@@ -62,6 +54,8 @@ const FlightForm = () => {
     handleSubmit,
     control,
     watch,
+    setValue,
+    clearErrors,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -70,6 +64,22 @@ const FlightForm = () => {
       departureDate: null,
       returnDate: null,
       cabinClass: "Economy",
+      multiCityFlights: [
+        {
+          departure: "",
+          destination: "",
+          departureDate: null,
+          fromAirport: null,
+          toAirport: null,
+        },
+        {
+          departure: "",
+          destination: "",
+          departureDate: null,
+          fromAirport: null,
+          toAirport: null,
+        },
+      ],
     },
   });
 
@@ -101,30 +111,7 @@ const FlightForm = () => {
     }
 
     if (type === "multicity") {
-      setMultiCityFlights([
-        {
-          departure: "",
-          destination: "",
-          departureDate: null,
-          fromAirport: null,
-          toAirport: null,
-          fromDropdown: [],
-          toDropdown: [],
-          showFrom: false,
-          showTo: false,
-        },
-        {
-          departure: "",
-          destination: "",
-          departureDate: null,
-          fromAirport: null,
-          toAirport: null,
-          fromDropdown: [],
-          toDropdown: [],
-          showFrom: false,
-          showTo: false,
-        },
-      ]);
+      setMultiCityFlights([createMultiCityFlight(), createMultiCityFlight()]);
     }
   };
 
@@ -203,22 +190,22 @@ const FlightForm = () => {
   const handleMultiCityDropdown = async (index, type, value) => {
     if (!value.trim()) {
       setMultiCityFlights((prev) =>
-        prev.map((flight, i) =>
-          i === index
-            ? {
-                ...flight,
-                ...(type === "from"
-                  ? {
-                      fromDropdown: [],
-                      showFrom: false,
-                    }
-                  : {
-                      toDropdown: [],
-                      showTo: false,
-                    }),
-              }
-            : flight,
-        ),
+        prev.map((flight, i) => {
+          if (i !== index) return flight;
+
+          return {
+            ...flight,
+            ...(type === "from"
+              ? {
+                  fromDropdown: [],
+                  showFrom: false,
+                }
+              : {
+                  toDropdown: [],
+                  showTo: false,
+                }),
+          };
+        }),
       );
 
       return;
@@ -235,22 +222,22 @@ const FlightForm = () => {
       const result = res?.data?.locations?.result || [];
 
       setMultiCityFlights((prev) =>
-        prev.map((flight, i) =>
-          i === index
-            ? {
-                ...flight,
-                ...(type === "from"
-                  ? {
-                      fromDropdown: result,
-                      showFrom: true,
-                    }
-                  : {
-                      toDropdown: result,
-                      showTo: true,
-                    }),
-              }
-            : flight,
-        ),
+        prev.map((flight, i) => {
+          if (i !== index) return flight;
+
+          return {
+            ...flight,
+            ...(type === "from"
+              ? {
+                  fromDropdown: result,
+                  showFrom: true,
+                }
+              : {
+                  toDropdown: result,
+                  showTo: true,
+                }),
+          };
+        }),
       );
     } catch (error) {
       console.log(error);
@@ -348,6 +335,34 @@ const FlightForm = () => {
         };
       }),
     );
+
+    if (type === "from") {
+      setValue(`multiCityFlights.${index}.departure`, airport.fullname, {
+        shouldValidate: true,
+      });
+
+      setValue(`multiCityFlights.${index}.fromAirport`, airport, {
+        shouldValidate: true,
+      });
+
+      clearErrors([
+        `multiCityFlights.${index}.departure`,
+        `multiCityFlights.${index}.fromAirport`,
+      ]);
+    } else {
+      setValue(`multiCityFlights.${index}.destination`, airport.fullname, {
+        shouldValidate: true,
+      });
+
+      setValue(`multiCityFlights.${index}.toAirport`, airport, {
+        shouldValidate: true,
+      });
+
+      clearErrors([
+        `multiCityFlights.${index}.destination`,
+        `multiCityFlights.${index}.toAirport`,
+      ]);
+    }
   };
 
   const handleMultiCityDateChange = (index, date) => {
@@ -366,20 +381,7 @@ const FlightForm = () => {
   const addMultiCityFlight = () => {
     if (multiCityFlights.length >= 6) return;
 
-    setMultiCityFlights((prev) => [
-      ...prev,
-      {
-        departure: "",
-        destination: "",
-        departureDate: null,
-        fromAirport: null,
-        toAirport: null,
-        fromDropdown: [],
-        toDropdown: [],
-        showFrom: false,
-        showTo: false,
-      },
-    ]);
+    setMultiCityFlights((prev) => [...prev, createMultiCityFlight()]);
   };
 
   const removeMultiCityFlight = (index) => {
@@ -389,20 +391,6 @@ const FlightForm = () => {
   };
 
   const handleMultiCitySearch = (data) => {
-    const invalidFlight = multiCityFlights.some(
-      (flight) =>
-        !flight.departure ||
-        !flight.destination ||
-        !flight.fromAirport ||
-        !flight.toAirport ||
-        !flight.departureDate,
-    );
-
-    if (invalidFlight) {
-      alert("Please complete all Multi City flights");
-      return;
-    }
-
     const segments = multiCityFlights.map((flight) => ({
       origin: getAirportCode(flight.fromAirport?.fullname),
       originName: flight.departure,
@@ -411,14 +399,44 @@ const FlightForm = () => {
       departureDate: formatDate(flight.departureDate),
     }));
 
-    const params = new URLSearchParams({
+    const firstSegment = segments[0];
+
+    const multiCityData = {
       tripType: "multicity",
-      segments: JSON.stringify(segments),
-      adults: String(travelers.adults),
-      children: String(travelers.children),
-      infants: String(travelers.infants),
+      segments,
+      adults: travelers.adults,
+      children: travelers.children,
+      infants: travelers.infants,
       cabinClass: data.cabinClass,
-    });
+    };
+
+    sessionStorage.setItem("multiCityFlights", JSON.stringify(multiCityData));
+
+    const params = new URLSearchParams();
+
+    params.set("tripType", "multicity");
+
+    params.set("origin", firstSegment.origin);
+
+    params.set("originName", firstSegment.originName);
+
+    params.set("destination", firstSegment.destination);
+
+    params.set("destinationName", firstSegment.destinationName);
+
+    params.set("departureDate", firstSegment.departureDate);
+
+    params.set("adults", String(travelers.adults));
+
+    params.set("children", String(travelers.children));
+
+    params.set("infants", String(travelers.infants));
+
+    params.set("cabinClass", data.cabinClass);
+
+    params.set("segments", JSON.stringify(segments));
+
+    params.set("multiCityFlights", JSON.stringify(multiCityData));
 
     navigate(`/flight-result?${params.toString()}`);
   };
@@ -430,6 +448,7 @@ const FlightForm = () => {
     }
 
     const originCode = getAirportCode(fromAirport?.fullname);
+
     const destinationCode = getAirportCode(toAirport?.fullname);
 
     const params = new URLSearchParams({
@@ -510,19 +529,36 @@ const FlightForm = () => {
                       <label>Flying From</label>
 
                       <input
+                        {...register(`multiCityFlights.${index}.departure`, {
+                          required: "Origin is required",
+                          validate: () =>
+                            flight.fromAirport
+                              ? true
+                              : "Please select an origin airport",
+                        })}
                         type="text"
-                        value={flight.departure}
                         placeholder="Delhi (DEL)"
+                        value={flight.departure}
                         onChange={(e) => {
                           updateMultiCityFlight(
                             index,
                             "departure",
                             e.target.value,
                           );
-
                           updateMultiCityFlight(index, "fromAirport", null);
-
                           updateMultiCityFlight(index, "showFrom", true);
+
+                          setValue(
+                            `multiCityFlights.${index}.departure`,
+                            e.target.value,
+                            { shouldValidate: true },
+                          );
+
+                          setValue(
+                            `multiCityFlights.${index}.fromAirport`,
+                            null,
+                            { shouldValidate: true },
+                          );
                         }}
                         onFocus={() => {
                           if (flight.fromDropdown.length > 0) {
@@ -530,6 +566,12 @@ const FlightForm = () => {
                           }
                         }}
                       />
+
+                      {errors.multiCityFlights?.[index]?.departure && (
+                        <span className="error">
+                          {errors.multiCityFlights[index].departure.message}
+                        </span>
+                      )}
 
                       {flight.showFrom && flight.fromDropdown?.length > 0 && (
                         <div className="dropdownFlight">
@@ -560,19 +602,36 @@ const FlightForm = () => {
                       <label>Flying To</label>
 
                       <input
+                        {...register(`multiCityFlights.${index}.destination`, {
+                          required: "Destination is required",
+                          validate: () =>
+                            flight.toAirport
+                              ? true
+                              : "Please select a destination airport",
+                        })}
                         type="text"
-                        value={flight.destination}
                         placeholder="Dubai (DXB)"
+                        value={flight.destination}
                         onChange={(e) => {
                           updateMultiCityFlight(
                             index,
                             "destination",
                             e.target.value,
                           );
-
                           updateMultiCityFlight(index, "toAirport", null);
-
                           updateMultiCityFlight(index, "showTo", true);
+
+                          setValue(
+                            `multiCityFlights.${index}.destination`,
+                            e.target.value,
+                            { shouldValidate: true },
+                          );
+
+                          setValue(
+                            `multiCityFlights.${index}.toAirport`,
+                            null,
+                            { shouldValidate: true },
+                          );
                         }}
                         onFocus={() => {
                           if (flight.toDropdown.length > 0) {
@@ -580,6 +639,12 @@ const FlightForm = () => {
                           }
                         }}
                       />
+
+                      {errors.multiCityFlights?.[index]?.destination && (
+                        <span className="error">
+                          {errors.multiCityFlights[index].destination.message}
+                        </span>
+                      )}
 
                       {flight.showTo && flight.toDropdown?.length > 0 && (
                         <div className="dropdownFlight">
@@ -609,20 +674,49 @@ const FlightForm = () => {
                     <div className="input-group">
                       <label>Departure Date</label>
 
-                      <DatePicker
-                        selected={flight.departureDate}
-                        onChange={(date) =>
-                          handleMultiCityDateChange(index, date)
-                        }
-                        minDate={
-                          index === 0
-                            ? new Date()
-                            : multiCityFlights[index - 1].departureDate ||
-                              new Date()
-                        }
-                        dateFormat="dd/MM/yyyy"
-                        placeholderText="Departure Date"
+                      <Controller
+                        name={`multiCityFlights.${index}.departureDate`}
+                        control={control}
+                        rules={{
+                          required: "Departure date is required",
+                          validate: (date) => {
+                            if (!date) return "Departure date is required";
+
+                            if (
+                              index > 0 &&
+                              multiCityFlights[index - 1].departureDate &&
+                              date < multiCityFlights[index - 1].departureDate
+                            ) {
+                              return "Date must be after previous flight";
+                            }
+
+                            return true;
+                          },
+                        }}
+                        render={({ field }) => (
+                          <DatePicker
+                            selected={field.value}
+                            onChange={(date) => {
+                              field.onChange(date);
+                              handleMultiCityDateChange(index, date);
+                            }}
+                            minDate={
+                              index === 0
+                                ? new Date()
+                                : multiCityFlights[index - 1].departureDate ||
+                                  new Date()
+                            }
+                            dateFormat="dd/MM/yyyy"
+                            placeholderText="Departure Date"
+                          />
+                        )}
                       />
+
+                      {errors.multiCityFlights?.[index]?.departureDate && (
+                        <span className="error">
+                          {errors.multiCityFlights[index].departureDate.message}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -745,7 +839,11 @@ const FlightForm = () => {
 
                   <select {...register("cabinClass")}>
                     <option value="Economy">Economy</option>
+
+                    <option value="Premium">Premium Economy</option>
+
                     <option value="Business">Business</option>
+
                     <option value="First">First Class</option>
                   </select>
                 </div>
@@ -1054,7 +1152,11 @@ const FlightForm = () => {
 
                   <select {...register("cabinClass")}>
                     <option value="Economy">Economy</option>
+
+                    <option value="Premium">Premium Economy</option>
+
                     <option value="Business">Business</option>
+
                     <option value="First">First Class</option>
                   </select>
                 </div>

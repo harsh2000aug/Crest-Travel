@@ -348,6 +348,8 @@ const CarBook = () => {
 
   const handleCarPayment = async (orderId, data, paymentRemaining) => {
     try {
+      setLoading(true);
+
       const [expiryMonth, expiryYear] = (data?.expiryDate || "").split("/");
 
       const encodeBase64 = (value) => {
@@ -385,9 +387,21 @@ const CarBook = () => {
         body: paymentPayload,
       });
 
-      return paymentResponse;
+      console.log("FINAL PAYMENT RESPONSE", paymentResponse);
+
+      const paymentResult = paymentResponse?.data?.paynow?.result;
+
+      const paymentUrl = paymentResult?.url;
+
+      if (paymentResult?.succeed && paymentUrl) {
+        window.location.href = paymentUrl;
+        return;
+      }
+
+      throw new Error(paymentResult?.message || "Payment URL was not received");
     } catch (error) {
       console.log("PAYMENT ERROR", error);
+      setLoading(false);
       throw error;
     }
   };
