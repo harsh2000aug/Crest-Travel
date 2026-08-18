@@ -1,0 +1,598 @@
+.itc-membership-page {
+  background: #f4f7fb;
+  min-height: 100vh;
+}
+
+.itc-container {
+  width: 92%;
+  max-width: 1400px;
+  margin: auto;
+}
+
+.itc-page-header {
+  text-align: center;
+  margin: 50px 0;
+}
+
+.itc-page-header h1 {
+  font-size: 42px;
+  color: #0d1b2a;
+  margin-bottom: 15px;
+}
+
+.itc-page-header p {
+  max-width: 700px;
+  margin: auto;
+  color: #667085;
+  line-height: 1.7;
+}
+
+.itc-membership-wrapper {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 35px;
+  align-items: start;
+}
+
+.itc-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 30px;
+  margin-bottom: 25px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+}
+
+.itc-card h3 {
+  margin-bottom: 25px;
+  color: #0d1b2a;
+  font-size: 22px;
+}
+
+.itc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.itc-input-group {
+  margin-bottom: 18px;
+}
+
+.itc-input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #344054;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.itc-input-group input,
+.itc-input-group select {
+  width: 100%;
+  height: 55px;
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+  padding: 0 18px;
+  font-size: 15px;
+  transition: 0.3s;
+  outline: none;
+}
+
+.itc-input-group input:focus,
+.itc-input-group select:focus {
+  border-color: #061d39;
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.12);
+}
+
+.itc-coupon-row {
+  display: flex;
+  gap: 15px;
+}
+
+.itc-coupon-row input {
+  flex: 1;
+  height: 55px;
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+  padding: 0 15px;
+}
+
+.itc-coupon-row button {
+  border: none;
+  padding: 0 30px;
+  background: #14253d;
+  color: #fff;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.itc-card-icons {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.itc-card-icons span {
+  background: #eef4ff;
+  padding: 10px 15px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.itc-summary-card {
+  background: #14253d;
+  color: white;
+  padding: 35px;
+  border-radius: 28px;
+  position: sticky;
+  top: 30px;
+  overflow: hidden;
+}
+
+.itc-plan-badge {
+  display: inline-block;
+  background: #f59e0b;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.itc-summary-card h2 {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+.itc-price {
+  margin-bottom: 25px;
+}
+
+.itc-price span {
+  font-size: 52px;
+  font-weight: 700;
+}
+
+.itc-summary-card ul {
+  list-style: none;
+  margin-bottom: 30px;
+}
+
+.itc-summary-card ul li {
+  margin-bottom: 14px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.itc-join-btn {
+  width: 100%;
+  height: 58px;
+  border: none;
+  border-radius: 16px;
+  background: #dca648;
+  color: #000;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.itc-join-btn:hover {
+  transform: translateY(-2px);
+}
+
+.itc-secure {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #e4e7ec;
+  margin: 25px 0;
+}
+
+#membershipForm p {
+  display: block;
+  color: red;
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+.itc-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.itc-terms {
+  margin-bottom: 15px;
+}
+
+.itc-terms:last-child {
+  margin-bottom: 0;
+}
+
+.itc-checkbox input {
+  margin-top: 3px;
+}
+
+.itc-checkbox a {
+  color: #061d39;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.itc-checkbox a:hover {
+  text-decoration: underline;
+}
+
+.itc-error {
+  color: #dc3545;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.itc-join-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.itc-summary-terms {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.itc-summary-terms .itc-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.itc-summary-terms input[type="checkbox"] {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.itc-summary-terms .itc-error {
+  color: #dc2626;
+  font-size: 13px;
+  margin: 4px 0 12px 26px;
+}
+
+.phone-input-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.country-code {
+  width: 230px !important;
+  cursor: pointer;
+}
+
+.phone-input-wrapper input {
+  flex: 1;
+}
+
+@media (max-width: 992px) {
+  .itc-membership-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .itc-summary-card {
+    position: relative;
+    top: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .itc-page-header h1 {
+    font-size: 32px;
+  }
+
+  .itc-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .itc-card {
+    padding: 20px;
+  }
+
+  .itc-summary-card {
+    padding: 25px;
+  }
+
+  .itc-price span {
+    font-size: 42px;
+  }
+
+  .itc-coupon-row {
+    flex-direction: column;
+  }
+
+  .itc-coupon-row button {
+    height: 55px;
+  }
+
+  .country-code {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .itc-page-header h1 {
+    font-size: 28px;
+  }
+
+  .itc-summary-card h2 {
+    font-size: 26px;
+  }
+
+  .itc-price span {
+    font-size: 36px;
+  }
+}
+
+.payment-success-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  animation: fadeIn 0.35s;
+}
+
+.payment-success-popup {
+  width: 430px;
+  background: #fff;
+  border-radius: 20px;
+  text-align: center;
+  padding: 45px 35px;
+  animation: popupScale 0.45s;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+}
+
+.payment-success-check {
+  width: 90px;
+  height: 90px;
+  background: #18c964;
+  color: white;
+  border-radius: 50%;
+  margin: auto;
+  font-size: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bounce 0.6s;
+}
+
+.payment-success-popup h2 {
+  margin-top: 25px;
+  font-size: 30px;
+  color: #222;
+}
+
+.payment-success-popup p {
+  margin-top: 10px;
+  color: #666;
+}
+
+.payment-success-message {
+  font-size: 17px;
+}
+
+.payment-success-redirect {
+  margin-top: 30px;
+  font-weight: 600;
+  color: #444;
+}
+
+.payment-countdown {
+  margin: 18px auto;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: #1f7ae0;
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.payment-loader {
+  width: 100%;
+  height: 8px;
+  background: #ececec;
+  border-radius: 50px;
+  overflow: hidden;
+  margin-top: 25px;
+}
+
+.payment-loader-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #0ea5e9, #22c55e);
+  animation: loaderShrink 5s linear forwards;
+}
+
+@keyframes loaderShrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+@keyframes popupScale {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0% {
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Failure Popup Overlay */
+.payment-failure-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Popup Box */
+.payment-failure-popup {
+  width: 420px;
+  max-width: 90%;
+  background: #fff;
+  border-radius: 18px;
+  padding: 35px 30px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  animation: popupScale 0.35s ease;
+}
+
+/* Failure Icon */
+.payment-failure-icon {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff4d4f, #d90429);
+  color: #fff;
+  font-size: 42px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 30px rgba(255, 77, 79, 0.35);
+  animation: shake 0.5s ease;
+}
+
+/* Heading */
+.payment-failure-popup h2 {
+  margin: 0;
+  color: #222;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* Message */
+.payment-failure-popup p {
+  margin: 15px 0 25px;
+  color: #666;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* Button */
+.payment-failure-popup button {
+  padding: 14px 38px;
+  background: linear-gradient(135deg, #ff4d4f, #d90429);
+  color: #fff;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: 0.3s;
+  margin-top: 15px;
+}
+
+.payment-failure-popup button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(255, 77, 79, 0.35);
+}
+
+@keyframes popupScale {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.itc-membership-wrapper input[type="text"]:read-only,
+.itc-membership-wrapper input[type="email"]:read-only,
+.itc-membership-wrapper select:disabled {
+  background: #f5f5f5;
+  color: #000;
+  cursor: not-allowed;
+  opacity: 1;
+}

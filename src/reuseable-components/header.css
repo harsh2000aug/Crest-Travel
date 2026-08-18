@@ -1,0 +1,1027 @@
+header {
+  padding: 20px 0;
+  /* box-shadow: 0 0 10px #cdcdcd; */
+}
+
+.logo {
+  width: 70px;
+}
+
+.logo img {
+  width: 100%;
+  display: block;
+}
+
+/* footer */
+.footer {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  padding: 15px 0;
+}
+
+.copyright {
+  text-align: center;
+}
+
+.copyright p {
+  font-size: 16px;
+  color: #fff;
+}
+
+.member-login {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.member-login p {
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.header-btns button {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  outline: none;
+  border: 1px solid #dca648;
+  background: #dca648;
+  color: #000;
+  padding: 15px 30px;
+  border-radius: 24px;
+  margin-right: 15px;
+}
+
+.header-btns button.member-log {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  outline: none;
+  background: transparent;
+  border: 1px solid #fff;
+  color: #fff;
+  padding: 15px 30px;
+  border-radius: 24px;
+  margin-right: 15px;
+}
+
+.header-btns button:last-child {
+  margin-right: 0;
+}
+
+.member-menu ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.member-menu ul li {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 15px;
+  cursor: pointer;
+  transition: 0.5s;
+}
+
+.member-menu ul li a {
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #fff;
+}
+
+.member-menu ul li:hover a {
+  color: #dca648;
+}
+
+/* .inner-page li a{
+  color: #000 !important;
+} */
+
+/* .inner-page .my-coins svg {
+  color: #000 !important;
+}
+
+.inner-page .my-coins p {
+  color: #000 !important;
+} */
+
+.mobile-menu-icon {
+  color: #fff;
+}
+
+.dark-header {
+  background: linear-gradient(-2deg, #c79a3a, #0b234f);
+}
+
+.dark-header .member-menu ul li a,
+.dark-header .member-menu ul li p,
+.dark-header .member-menu ul li svg {
+  color: #fff;
+}
+
+.dark-header .mobile-menu-icon {
+  color: #fff;
+}
+
+.dark-header .coins-dropdown,
+.dark-header .profile-dropdown {
+  background: #fff;
+}
+
+.dark-header .coins-dropdown *,
+.dark-header .profile-dropdown * {
+  color: initial;
+}
+
+.dark-header .logo img {
+  height: 70px;
+  width: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 767px) {
+  header {
+    padding: 10px 0;
+  }
+  .logo {
+    width: 45px;
+  }
+  .member-login button {
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+  .member-login {
+    gap: 8px;
+  }
+  .member-login p {
+    font-size: 14px;
+  }
+  .inner-page li a {
+    color: #fff !important;
+  }
+  .inner-page .my-coins p {
+    color: #fff !important;
+  }
+
+  .header-btns button {
+    font-size: 13px;
+    padding: 5px 10px;
+    margin-right: 10px;
+  }
+
+  .header-btns button.member-log {
+    font-size: 13px;
+    padding: 5px 10px;
+    margin-right: 10px;
+  }
+}
+
+/* menu css */
+.member-login {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  position: relative;
+}
+
+.join-btn {
+  background: #ff6b35;
+  color: #fff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.mobile-menu-icon {
+  display: none;
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.my-coins {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.my-coins svg {
+  font-size: 20px;
+  margin-bottom: 5px;
+  color: #fff;
+}
+
+.my-coins p {
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #fff;
+}
+
+.coins-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.coins-dropdown {
+  position: absolute;
+  top: 64px;
+  right: 68px;
+  width: 280px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  z-index: 999;
+  animation: fadeIn 0.25s ease;
+}
+
+.coin-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 8px;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.coin-item:last-child {
+  border-bottom: none;
+}
+
+.coin-icon {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a5a00;
+  font-weight: 700;
+  font-size: 16px;
+  margin-right: 12px;
+}
+
+.coin-icon.room,
+.coin-icon.trip {
+  background: #e8c177;
+}
+
+.coin-info {
+  flex: 1;
+}
+
+.coin-info h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: #444;
+}
+
+.coin-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+
+.coins-dropdown::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: 25px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  transform: rotate(45deg);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .coins-dropdown {
+    width: 250px;
+    right: -10px;
+  }
+
+  .coin-info h4 {
+    font-size: 14px;
+  }
+
+  .coin-value {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .coins-dropdown {
+    width: 220px;
+    top: 400px;
+    right: 50px;
+    padding: 10px;
+  }
+
+  .coin-item {
+    padding: 10px 5px;
+  }
+
+  .coin-icon {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    font-size: 14px;
+  }
+}
+/* profile dropdown */
+.profile-wrapper {
+  position: relative;
+}
+
+.profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.profile-trigger p {
+  margin: 0;
+}
+
+.profile-trigger svg {
+  font-size: 22px;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: 55px;
+  right: 14px;
+  width: 300px;
+  background: #fff;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  animation: profileFade 0.25s ease;
+}
+
+/* Gold Header */
+
+.profile-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px;
+  background: linear-gradient(180deg, #e8c177, #c79642);
+  color: #111;
+}
+
+.profile-avatar {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 50%;
+  background: #b68228;
+  color: #111;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-info h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.profile-info p {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+
+.stars-bg {
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  font-size: 60px;
+  color: rgba(164, 105, 8, 0.6);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.menu-item:hover {
+  background: #f8f8f8;
+}
+
+.menu-item svg {
+  font-size: 22px;
+  color: #333;
+}
+
+.menu-item span {
+  font-size: 15px;
+  color: #333;
+}
+
+@keyframes profileFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-dropdown {
+    width: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-dropdown {
+    width: 100%;
+    right: 0px;
+    top: 471px;
+  }
+
+  .profile-top {
+    padding: 16px;
+  }
+
+  .profile-info h4 {
+    font-size: 16px;
+  }
+
+  .menu-item {
+    padding: 14px 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-icon {
+    display: block;
+  }
+
+  .member-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 280px;
+    height: 100vh;
+    background: #fff;
+    box-shadow: -5px 0 20px rgba(0, 0, 0, 0.15);
+    transition: 0.4s ease;
+    padding-top: 80px;
+    z-index: 1000;
+  }
+
+  .member-menu.active {
+    right: 0;
+    background: #061d39;
+  }
+
+  .member-menu ul {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: center;
+  }
+
+  .member-menu ul li {
+    width: 100%;
+    border-bottom: 1px solid #ececec;
+    padding: 10px;
+    margin: 10px 0;
+  }
+
+  .join-btn {
+    margin-left: auto;
+    padding: 10px 18px;
+  }
+}
+/* footer css */
+.termsandprivacy {
+  margin-bottom: 20px;
+}
+
+.termsandprivacy ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.termsandprivacy ul li {
+  margin: 0 15px;
+}
+
+.termsandprivacy ul li a {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.luxFooter {
+  background: #061d39;
+  padding: 50px 0px;
+  position: relative;
+}
+
+.luxFooter::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at left bottom,
+    rgba(212, 166, 74, 0.08),
+    transparent 45%
+  );
+  pointer-events: none;
+}
+
+.luxFooter__container {
+  display: flex;
+  justify-content: space-between;
+  gap: 70px;
+  position: relative;
+  z-index: 2;
+}
+
+.luxFooter__left {
+  flex: 1.5;
+}
+
+.luxFooter__left a {
+  margin-right: 15px;
+}
+
+.luxFooter__left a svg {
+  color: #fff;
+  font-size: 18px;
+}
+
+.luxFooter__logo {
+  width: 200px;
+  margin-bottom: 20px;
+}
+
+.luxFooter__text {
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.8;
+  max-width: 360px;
+  margin-bottom: 18px;
+}
+
+.luxFooter__copyright {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 14px;
+  margin-top: 18px;
+}
+
+.luxFooter__social {
+  display: flex;
+  gap: 12px;
+}
+
+.luxFooter__social a {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.luxFooter__social a:hover {
+  background: #d4a64a;
+  color: #061d39;
+}
+
+.luxFooter__column {
+  flex: 1;
+}
+
+.luxFooter__column h4 {
+  color: #d4a64a;
+  font-size: 14px;
+  letter-spacing: 2px;
+  margin-bottom: 25px;
+}
+
+.luxFooter__column a {
+  display: block;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 18px;
+  transition: 0.3s;
+}
+
+.luxFooter__column a:hover {
+  color: #d4a64a;
+  padding-left: 6px;
+}
+
+.luxFooter__column:first-of-type {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  padding-left: 45px;
+}
+
+@media (max-width: 992px) {
+  .luxFooter__container {
+    flex-wrap: wrap;
+    gap: 40px;
+  }
+
+  .luxFooter__left {
+    width: 100%;
+  }
+
+  .luxFooter__column:first-of-type {
+    border-left: none;
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .luxFooter {
+    padding: 50px 20px;
+  }
+
+  .luxFooter__container {
+    flex-direction: column;
+    gap: 35px;
+    text-align: center;
+  }
+
+  .luxFooter__text {
+    margin: auto;
+    margin-bottom: 18px;
+  }
+
+  .luxFooter__social {
+    justify-content: center;
+  }
+
+  .luxFooter__column:first-of-type {
+    border: none;
+    padding: 0;
+  }
+}
+
+/* login page css */
+.travel-login-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 11;
+}
+
+.travel-login-modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+  animation: loginPopup 0.4s ease;
+}
+
+@keyframes loginPopup {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.travel-login-close-btn {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: #f1f5f9;
+  cursor: pointer;
+  font-size: 18px;
+  transition: 0.3s;
+}
+
+.travel-login-close-btn:hover {
+  transform: rotate(90deg);
+}
+
+.travel-login-logo-area {
+  text-align: center;
+}
+
+.travel-login-logo-area img {
+  width: 120px;
+  margin-bottom: 15px;
+}
+
+.travel-login-logo-area h2 {
+  font-size: 38px;
+  color: #0f172a;
+  margin-bottom: 10px;
+}
+
+.travel-login-logo-area p {
+  color: #64748b;
+  line-height: 1.8;
+  margin-bottom: 35px;
+}
+
+.travel-login-input-group {
+  margin-bottom: 18px;
+}
+
+.travel-login-input-group input,
+.travel-login-input-group select {
+  width: 100%;
+  height: 58px;
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  padding: 0 18px;
+  font-size: 16px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.travel-login-input-group input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+}
+
+.travel-login-password-wrapper {
+  position: relative;
+}
+
+.travel-login-password-toggle {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.travel-login-submit-btn {
+  width: 100%;
+  height: 58px;
+  border: none;
+  border-radius: 14px;
+  margin-top: 10px;
+  background: #14253d;
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.travel-login-submit-btn:hover {
+  transform: translateY(-3px);
+}
+
+.travel-login-forgot-link {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  color: #0ea5e9;
+  text-decoration: none;
+}
+
+.travel-login-divider {
+  text-align: center;
+  margin: 30px 0;
+  position: relative;
+}
+
+.travel-login-divider::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: #e2e8f0;
+  left: 0;
+  top: 50%;
+}
+
+.travel-login-divider span {
+  background: white;
+  padding: 0 15px;
+  position: relative;
+  color: #64748b;
+}
+
+.travel-login-google-btn {
+  width: 100%;
+  height: 56px;
+  border-radius: 14px;
+  border: 1px solid #dbeafe;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.travel-login-error {
+  display: block;
+  color: #e53935;
+  font-size: 13px;
+  margin-top: 6px;
+  margin-left: 4px;
+}
+
+.travel-datepicker {
+  width: 100%;
+  height: 50px;
+  padding: 0 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+}
+
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+@media (max-width: 576px) {
+  .travel-login-modal {
+    padding: 30px 20px;
+  }
+
+  .travel-login-logo-area h2 {
+    font-size: 30px;
+  }
+
+  .travel-login-logo-area img {
+    width: 90px;
+  }
+}
+
+.signup-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.signup-modal {
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.signup-modal input,
+.signup-modal select {
+  width: 100%;
+}
+
+/* ============================= */
+/* CHANGE PASSWORD MODAL */
+/* ============================= */
+
+.change-password-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 20px;
+}
+
+.change-password-modal {
+  width: 100%;
+  max-width: 430px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.change-password-modal h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  color: #111;
+}
+
+.change-password-subtitle {
+  margin: 0 0 25px;
+  color: #777;
+  font-size: 14px;
+}
+
+.change-password-close {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  color: #555;
+}
+
+.password-field {
+  margin-bottom: 18px;
+}
+
+.password-field label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.password-field input {
+  width: 100%;
+  height: 45px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0 13px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.password-field input:focus {
+  border-color: #00154f;
+}
+
+.change-password-btn {
+  width: 100%;
+  height: 45px;
+  border: none;
+  border-radius: 6px;
+  background: #00154f;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.change-password-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.password-error {
+  color: #d93025;
+  font-size: 13px;
+  margin: 0 0 15px;
+}
+
+.password-success {
+  color: #188038;
+  font-size: 13px;
+  margin: 0 0 15px;
+}
