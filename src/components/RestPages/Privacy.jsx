@@ -3,6 +3,7 @@ import Footer from "../../reuseable-components/Footer";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Header from "../../reuseable-components/Header";
 import { useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 const Privacy = () => {
   const location = useLocation();
@@ -17,6 +18,42 @@ const Privacy = () => {
   const isLoggedIn = !!localStorage.getItem("accessToken");
   return (
     <>
+      <Helmet>
+        {/* SEO Meta Tags */}
+        <title>Privacy Policy | Crest Travel Club</title>
+
+        <meta
+          name="description"
+          content="Learn how Crest Travel Club collects, uses, and protects your personal information as a member or website visitor."
+        />
+
+        {/* Canonical URL */}
+        <link
+          rel="canonical"
+          href="https://www.cresttravelclub.com/privacy-policy"
+        />
+
+        {/* Open Graph */}
+        <meta
+          property="og:title"
+          content="Privacy Policy | Crest Travel Club"
+        />
+
+        <meta
+          property="og:description"
+          content="Learn how Crest Travel Club collects, uses, and protects your personal information as a member or website visitor."
+        />
+
+        <meta
+          property="og:url"
+          content="https://www.cresttravelclub.com/privacy-policy"
+        />
+
+        <meta property="og:type" content="website" />
+
+        <meta property="og:site_name" content="Crest Travel Club" />
+      </Helmet>
+
       <div className="tp-page">
         {isLoggedIn ? <HeaderInner /> : <Header />}
         <section className="tp-hero">

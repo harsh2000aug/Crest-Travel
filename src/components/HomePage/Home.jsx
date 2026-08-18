@@ -39,6 +39,62 @@ const Home = () => {
 
   return (
     <>
+      <Helmet>
+        {/* Meta Title */}
+        <title>Crest Travel Club | Save on Hotels, Flights & More</title>
+
+        {/* Meta Description */}
+        <meta
+          name="description"
+          content="Join Crest Travel Club and unlock exclusive savings on hotels, resorts, cruises, car rentals, flights, and more with a flexible travel membership."
+        />
+
+        {/* Canonical */}
+        <link rel="canonical" href="https://www.cresttravelclub.com/" />
+
+        {/* Open Graph */}
+        <meta
+          property="og:title"
+          content="Crest Travel Club | Save on Hotels, Flights & More"
+        />
+
+        <meta
+          property="og:description"
+          content="Join Crest Travel Club and unlock exclusive savings on hotels, resorts, cruises, car rentals, flights, and more with a flexible travel membership."
+        />
+
+        <meta property="og:url" content="https://www.cresttravelclub.com/" />
+
+        <meta property="og:type" content="website" />
+
+        <meta property="og:site_name" content="Crest Travel Club" />
+
+        {/* Open Graph Image */}
+        <meta
+          property="og:image"
+          content="https://www.cresttravelclub.com/og-image.jpg"
+        />
+
+        <meta property="og:image:alt" content="Crest Travel Club" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+
+        <meta
+          name="twitter:title"
+          content="Crest Travel Club | Save on Hotels, Flights & More"
+        />
+
+        <meta
+          name="twitter:description"
+          content="Join Crest Travel Club and unlock exclusive savings on hotels, resorts, cruises, car rentals, flights, and more with a flexible travel membership."
+        />
+
+        <meta
+          name="twitter:image"
+          content="https://www.cresttravelclub.com/og-image.jpg"
+        />
+      </Helmet>
       {/* <HeaderInner /> */}
       <MainForm />
       <section className="vacation-section">

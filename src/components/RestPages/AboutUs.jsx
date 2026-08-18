@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import "./RestPages.css";
+import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import Header from "../../reuseable-components/Header";
 import Footer from "../../reuseable-components/Footer";
@@ -18,11 +19,25 @@ const AboutUs = () => {
 
   return (
     <>
+      <Helmet>
+        {/* Meta Title */}
+        <title>About Us | Crest Travel Club's Mission & Story</title>
+
+        {/* Meta Description */}
+        <meta
+          name="description"
+          content="Learn about Crest Travel Club — a membership-based travel club helping members save on hotels, resorts, cruises, car rentals, and flights."
+        />
+
+        {/* Canonical URL */}
+        <link rel="canonical" href="https://www.cresttravelclub.com/about-us" />
+      </Helmet>
+
       <section className="about-page">
         {isLoggedIn ? <HeaderInner /> : <Header />}
         <div className="hero-about">
           <div className="overlay">
-            <span class="tm-badge">ABOUT US</span>
+            <span className="tm-badge">ABOUT US</span>
             <h1>About Crest Travel Club</h1>
           </div>
         </div>

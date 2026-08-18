@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   FaHotel,
   FaGem,
@@ -27,6 +27,54 @@ import Header from "../../reuseable-components/Header";
 import Footer from "../../reuseable-components/Footer";
 const IncludingPage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Scroll to top
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+
+    // SEO Meta Title
+    document.title = "What's Included | Crest Travel Club Membership Perks";
+
+    // SEO Meta Description
+    const metaDescription =
+      "See everything included with Crest Travel Club membership — hotel & flight discounts, airport lounge access, flight insurance, BagAssure & more.";
+
+    let description = document.querySelector('meta[name="description"]');
+
+    if (!description) {
+      description = document.createElement("meta");
+      description.setAttribute("name", "description");
+      document.head.appendChild(description);
+    }
+
+    description.setAttribute("content", metaDescription);
+
+    // Canonical URL
+    const canonicalUrl = "https://www.cresttravelclub.com/whats-included";
+
+    let canonical = document.querySelector('link[rel="canonical"]');
+
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
+
+    canonical.setAttribute("href", canonicalUrl);
+
+    // Cleanup when leaving the page
+    return () => {
+      const canonical = document.querySelector('link[rel="canonical"]');
+
+      if (canonical) {
+        canonical.remove();
+      }
+    };
+  }, []);
   return (
     <>
       <div className="tm-membership-page">
@@ -267,13 +315,13 @@ const IncludingPage = () => {
       <section className="mp-section tb-gap">
         <div className="container">
           <div className="mp-heading">
-            <span class="crest-member-tag">MEMBERSHIP</span>
+            <span className="crest-member-tag">MEMBERSHIP</span>
             <h2>
               Choose The Perfect <span>Membership</span>
             </h2>
-            <div class="travelBenefits__divider">
+            <div className="travelBenefits__divider">
               <span></span>
-              <div class="travelBenefits__diamond"></div>
+              <div className="travelBenefits__diamond"></div>
               <span></span>
             </div>
           </div>

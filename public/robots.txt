@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://cresttravelclub.com/sitemap.xml
+Sitemap: https://www.cresttravelclub.com/sitemap.xml

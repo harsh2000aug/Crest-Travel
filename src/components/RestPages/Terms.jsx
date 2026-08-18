@@ -3,6 +3,7 @@ import Footer from "../../reuseable-components/Footer";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import { useLocation } from "react-router-dom";
 import Header from "../../reuseable-components/Header";
+import { Helmet } from "react-helmet-async";
 
 const Terms = () => {
   const location = useLocation();
@@ -19,6 +20,20 @@ const Terms = () => {
 
   return (
     <>
+      <Helmet>
+        <title>Terms and Conditions | Crest Travel Club</title>
+
+        <meta
+          name="description"
+          content="Read the terms and conditions for Crest Travel Club membership, including usage policies, member responsibilities, and service terms."
+        />
+
+        <link
+          rel="canonical"
+          href="https://www.cresttravelclub.com/terms-and-conditions"
+        />
+      </Helmet>
+
       <div className="tp-page">
         {isLoggedIn ? <HeaderInner /> : <Header />}
         <section className="tp-hero">

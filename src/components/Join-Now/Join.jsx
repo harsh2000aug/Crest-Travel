@@ -58,10 +58,50 @@ const Join = () => {
   };
 
   useEffect(() => {
+    // Scroll to top
     window.scrollTo({
       top: 0,
       left: 0,
+      behavior: "smooth",
     });
+
+    // SEO Meta Data
+    document.title = "Join Crest Travel Club | Membership Plans & Pricing";
+
+    const metaDescription =
+      "Compare Crest Travel Club membership packages — Signature, Elite, and Prestige. Choose your plan and start saving on hotels, flights, cruises & more.";
+
+    let description = document.querySelector('meta[name="description"]');
+
+    if (!description) {
+      description = document.createElement("meta");
+      description.setAttribute("name", "description");
+      document.head.appendChild(description);
+    }
+
+    description.setAttribute("content", metaDescription);
+
+    // Canonical URL
+    const canonicalUrl = "https://www.cresttravelclub.com/join-now";
+
+    let canonical = document.querySelector('link[rel="canonical"]');
+
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
+
+    canonical.setAttribute("href", canonicalUrl);
+
+    // Cleanup when leaving the page
+    return () => {
+      const canonical = document.querySelector('link[rel="canonical"]');
+
+      if (canonical) {
+        canonical.remove();
+      }
+    };
   }, []);
 
   const isLoggedIn = !!localStorage.getItem("accessToken");
@@ -302,13 +342,13 @@ const Join = () => {
         <section className="mp-section tb-gap">
           <div className="container">
             <div className="mp-heading">
-              <span class="crest-member-tag">MEMBERSHIP</span>
+              <span className="crest-member-tag">MEMBERSHIP</span>
               <h2>
                 Choose The Perfect <span>Membership</span>
               </h2>
-              <div class="travelBenefits__divider">
+              <div className="travelBenefits__divider">
                 <span></span>
-                <div class="travelBenefits__diamond"></div>
+                <div className="travelBenefits__diamond"></div>
                 <span></span>
               </div>
             </div>

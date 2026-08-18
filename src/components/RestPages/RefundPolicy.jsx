@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Header from "../../reuseable-components/Header";
 import Footer from "../../reuseable-components/Footer";
+import { Helmet } from "react-helmet-async";
 
 const RefundPolicy = () => {
   const location = useLocation();
@@ -16,6 +17,53 @@ const RefundPolicy = () => {
   const isLoggedIn = !!localStorage.getItem("accessToken");
   return (
     <div>
+      <Helmet>
+        {/* Meta Title */}
+        <title>Refund & Cancellation Policy | Crest Travel Club</title>
+
+        {/* Meta Description */}
+        <meta
+          name="description"
+          content="Learn how refunds and membership cancellations work at Crest Travel Club, including timelines, eligibility, and how to cancel your plan."
+        />
+
+        {/* Canonical URL */}
+        <link
+          rel="canonical"
+          href="https://www.cresttravelclub.com/refund-and-cancellation-policies"
+        />
+
+        {/* Open Graph */}
+        <meta
+          property="og:title"
+          content="Refund & Cancellation Policy | Crest Travel Club"
+        />
+
+        <meta
+          property="og:description"
+          content="Learn how refunds and membership cancellations work at Crest Travel Club, including timelines, eligibility, and how to cancel your plan."
+        />
+
+        <meta
+          property="og:url"
+          content="https://www.cresttravelclub.com/refund-and-cancellation-policies"
+        />
+
+        <meta property="og:type" content="website" />
+
+        {/* Twitter Card */}
+        <meta
+          name="twitter:title"
+          content="Refund & Cancellation Policy | Crest Travel Club"
+        />
+
+        <meta
+          name="twitter:description"
+          content="Learn how refunds and membership cancellations work at Crest Travel Club, including timelines, eligibility, and how to cancel your plan."
+        />
+
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
       <div className="tp-page">
         {isLoggedIn ? <HeaderInner /> : <Header />}
         <section className="tp-hero">
@@ -606,7 +654,7 @@ const RefundPolicy = () => {
           <div className="tp-highlight">
             Email: contact@cresttravelclub.com
             <br />
-            Website: https://cresttravelclub.com
+            Website: https://www.cresttravelclub.com
           </div>
         </div>
       </section>

@@ -205,7 +205,7 @@ const BeforeHome = ({ personDetails }) => {
             </span>
 
             <h2 className="crest-member-title">
-              Save <span>Up to 30-40%</span> On Every Journey
+              Save <span>Up to 40-50%</span> On Every Journey
             </h2>
 
             <p className="crest-member-description">
@@ -218,7 +218,7 @@ const BeforeHome = ({ personDetails }) => {
             <div className="crest-member-benefits">
               <div className="crest-member-item">
                 <span>✓</span>
-                <p>Up to 30-40% Member Discount</p>
+                <p>Up to 40-50% Member Discount</p>
               </div>
 
               <div className="crest-member-item">
