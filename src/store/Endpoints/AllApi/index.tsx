@@ -309,4 +309,27 @@ export const allApi = {
       uri: "/alphaactivity/availability",
     },
   },
+
+  // vacations api
+  searchVacations: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphavr/search-locations",
+    },
+  },
+  vacationFinalList: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphavr/map-list",
+    },
+  },
+  vacationResortList: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphavr/resort-list",
+    },
+  },
 };

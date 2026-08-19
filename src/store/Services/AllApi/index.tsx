@@ -214,5 +214,20 @@ export const activityCalendar = ({ body }: any) =>
 export const activityCalendarAvail = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.activityCalendarAvail.v1,
+  });
+// vacation services
+export const searchVacationLocation = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.searchVacations.v1,
+    body,
+  });
+export const searchVacationResult = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.vacationFinalList.v1,
+    body,
+  });
+export const searchVacationResorts = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.vacationResortList.v1,
     body,
   });

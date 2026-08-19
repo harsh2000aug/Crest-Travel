@@ -30,6 +30,7 @@ import CarResults from "./components/main-form/CarRental/CarResults";
 import CarBook from "./components/main-form/CarRental/CarBook";
 import ActivityArea from "./components/main-form/Activity/ActivityArea";
 import ActivityDetails from "./components/main-form/Activity/ActivityDetails";
+import VacationList from "./components/main-form/Vacations/VacationList";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -112,6 +113,7 @@ function App() {
           <Route path="/car-book" element={<CarBook />} />
           <Route path="/activities" element={<ActivityArea />} />
           <Route path="/activity-details" element={<ActivityDetails />} />
+          <Route path="/vacation-list" element={<VacationList />} />
         </Route>
 
         <Route

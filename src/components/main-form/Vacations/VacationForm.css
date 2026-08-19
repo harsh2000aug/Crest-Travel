@@ -1,0 +1,468 @@
+.vacationForm {
+  width: 100%;
+  font-family: Arial, sans-serif;
+  color: #161616;
+  box-sizing: border-box;
+}
+
+.vacationForm * {
+  box-sizing: border-box;
+}
+
+.vacationForm__description {
+  margin: 0 0 20px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.vacationForm__search {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.65fr) minmax(230px, 1fr) auto;
+  gap: 14px;
+}
+
+.vacationForm__inputGroup {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 13px;
+  border: 1px solid #222;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.vacationForm__inputGroup svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  fill: #111;
+}
+
+.vacationForm__inputGroup input {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 15px;
+  color: #222;
+}
+
+.vacationForm__inputGroup input::placeholder {
+  color: #454545;
+  opacity: 1;
+}
+
+.vacationForm__submit {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 8px;
+  background: #0b2443;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.vacationForm__submit:hover {
+  background: #0b2443;
+}
+
+.vacationForm__submit svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.vacationForm__recommendations {
+  margin-top: 20px;
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 15px 16px;
+  border-radius: 14px;
+  background: #f4f4f4;
+}
+
+.vacationForm__price {
+  margin-right: 10px;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.vacationForm__destinations {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.vacationForm__destinations::-webkit-scrollbar {
+  display: none;
+}
+
+.vacationForm__destinationCard {
+  min-width: 162px;
+  height: 50px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 1px solid #ddd;
+  border-radius: 9px;
+  background: #fff;
+  color: #111;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.vacationForm__destinationCard img {
+  width: 30px;
+  height: 30px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.vacationForm__destinationCard > span:nth-child(2) {
+  overflow: hidden;
+  font-weight: 600;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vacationForm__arrow {
+  color: #0b2443;
+  font-size: 27px;
+  font-weight: 300;
+  text-align: center;
+}
+
+.vacationForm__seeAll {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #ededed;
+  color: #222;
+  font-size: 15px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vacationForm__seeAll span {
+  color: #666;
+  letter-spacing: 2px;
+}
+
+@media (max-width: 900px) {
+  .vacationForm__search {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .vacationForm__submit {
+    grid-column: 1 / -1;
+  }
+
+  .vacationForm__recommendations {
+    flex-wrap: wrap;
+  }
+
+  .vacationForm__destinations {
+    order: 3;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .vacationForm__description {
+    font-size: 14px;
+  }
+
+  .vacationForm__search {
+    grid-template-columns: 1fr;
+  }
+
+  .vacationForm__submit {
+    grid-column: auto;
+  }
+
+  .vacationForm__recommendations {
+    padding: 14px 12px;
+  }
+
+  .vacationForm__price {
+    font-size: 14px;
+  }
+
+  .vacationForm__destinationCard {
+    min-width: 155px;
+  }
+}
+
+.vacationForm__destinationWrapper {
+  position: relative;
+  min-width: 0;
+}
+
+.vacationForm__destinationWrapper .vacationForm__inputGroup {
+  width: 100%;
+}
+
+.vacationForm__loader {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 2px solid #d8d8d8;
+  border-top-color: #0b2443;
+  border-radius: 50%;
+  animation: vacationFormSpin 0.7s linear infinite;
+}
+
+.vacationForm__dropdown {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  z-index: 100;
+  width: 100%;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid #dedede;
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13);
+}
+
+.vacationForm__suggestion {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #171717;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vacationForm__suggestion:hover {
+  background: #f2f8fa;
+}
+
+.vacationForm__suggestionIcon {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #e8f7fb;
+  color: #0b2443;
+}
+
+.vacationForm__suggestionIcon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.vacationForm__suggestionContent {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.vacationForm__suggestionContent strong {
+  overflow: hidden;
+  font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vacationForm__suggestionContent > span {
+  overflow: hidden;
+  color: #737373;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vacationForm__noResult {
+  padding: 14px 12px;
+  color: #777;
+  font-size: 14px;
+  text-align: center;
+}
+
+@keyframes vacationFormSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.vacationForm__monthWrapper {
+  position: relative;
+  min-width: 0;
+}
+
+.vacationForm__monthInput {
+  width: 100%;
+  cursor: pointer;
+}
+
+.vacationForm__monthInput input {
+  cursor: pointer;
+}
+
+.vacationForm__monthDropdown {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  z-index: 101;
+  width: min(420px, calc(100vw - 32px));
+  padding: 20px;
+  border: 1px solid #dedede;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13);
+}
+
+.vacationForm__monthHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 20px;
+  font-size: 15px;
+}
+
+.vacationForm__monthNavigation {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vacationForm__monthNavigation button {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #222;
+  cursor: pointer;
+}
+
+.vacationForm__monthNavigation button:hover:not(:disabled) {
+  background: #f1f1f1;
+}
+
+.vacationForm__monthNavigation button:disabled {
+  color: #c4c4c4;
+  cursor: not-allowed;
+}
+
+.vacationForm__monthNavigation svg {
+  width: 15px;
+  height: 15px;
+}
+
+.vacationForm__monthList {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(65px, 1fr));
+  gap: 8px;
+}
+
+.vacationForm__monthCard {
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border: 1px solid #979797;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #171717;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.vacationForm__monthCard:hover {
+  border-color: #40afcd;
+  background: #f1fbfd;
+  transform: translateY(-2px);
+}
+
+.vacationForm__monthCard > svg {
+  width: 19px;
+  height: 19px;
+  margin-bottom: 3px;
+}
+
+.vacationForm__monthCard--selected {
+  border: 2px solid #40afcd;
+  background: #eaf9fc;
+  color: #1687a6;
+}
+
+@media (max-width: 600px) {
+  .vacationForm__monthDropdown {
+    right: 0;
+    left: auto;
+    padding: 16px 12px;
+  }
+
+  .vacationForm__monthList {
+    gap: 6px;
+  }
+
+  .vacationForm__monthCard {
+    min-height: 90px;
+    font-size: 13px;
+  }
+}
+.vacationForm__search {
+  align-items: start;
+}
+
+.vacationForm__inputGroup--error {
+  border-color: #dc3545;
+}
+
+.vacationForm__errorMessage {
+  display: block;
+  margin-top: 5px;
+  color: #dc3545;
+  font-size: 12px;
+}
