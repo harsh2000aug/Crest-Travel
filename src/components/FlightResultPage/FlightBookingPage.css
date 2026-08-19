@@ -10,11 +10,6 @@
   font-family: inherit;
 }
 
-.fb-container {
-  width: min(1380px, calc(100% - 40px));
-  margin: 0 auto;
-}
-
 /* =========================================================
    HERO
 ========================================================= */
@@ -1311,10 +1306,6 @@
 ========================================================= */
 
 @media (max-width: 700px) {
-  .fb-container {
-    width: min(100% - 24px, 1380px);
-  }
-
   .fb-booking-hero {
     padding: 20px 0 30px;
   }
@@ -1461,10 +1452,6 @@
 ========================================================= */
 
 @media (max-width: 480px) {
-  .fb-container {
-    width: calc(100% - 20px);
-  }
-
   .fb-hero-content h1 {
     font-size: 28px;
   }

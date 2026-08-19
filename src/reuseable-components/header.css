@@ -178,6 +178,12 @@ header {
     padding: 5px 10px;
     margin-right: 10px;
   }
+  .dark-header .member-menu ul li svg {
+    color: #fff;
+  }
+  .dark-header .mobile-menu-icon {
+    color: #000;
+  }
 }
 
 /* menu css */

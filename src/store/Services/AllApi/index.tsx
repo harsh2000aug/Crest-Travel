@@ -186,3 +186,33 @@ export const activityLocations = ({ body }: any) =>
     uriEndPoint: allApi.activityLocations.v1,
     body,
   });
+export const activityAll = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityAll.v1,
+    body,
+  });
+export const activityFilters = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityFilters.v1,
+    body,
+  });
+export const activityDetail = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityDetail.v1,
+    body,
+  });
+export const activityReviews = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityReviews.v1,
+    body,
+  });
+export const activityCalendar = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityCalendar.v1,
+    body,
+  });
+export const activityCalendarAvail = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityCalendarAvail.v1,
+    body,
+  });

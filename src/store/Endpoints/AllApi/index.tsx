@@ -266,4 +266,47 @@ export const allApi = {
       uri: "/alphaactivity/locations",
     },
   },
+  activityAll: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/search",
+    },
+  },
+  activityFilters: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/filters",
+    },
+  },
+  activityDetail: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/details",
+    },
+  },
+  activityReviews: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/reviews",
+    },
+  },
+  activityCalendar: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/calendar",
+      activitiesCalendar: true,
+    },
+  },
+  activityCalendarAvail: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/availability",
+    },
+  },
 };

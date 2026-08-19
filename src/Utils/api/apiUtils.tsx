@@ -93,6 +93,11 @@ const callAxios = async (
       ...defHeaders,
     };
   }
+  const activityHeader = uriEndPoint?.activitiesCalendar
+    ? {
+        type: "MEMBER",
+      }
+    : {};
   const carHeaders = uriEndPoint?.useCarHeaders
     ? {
         correlationid: "TEST-123456",
@@ -110,6 +115,7 @@ const callAxios = async (
       ...headers,
       ...uriEndPoint.headerProps,
       ...carHeaders,
+      ...activityHeader,
     },
     data: body || undefined,
     withCredentials: withCredentials || false, // Add withCredentials here
@@ -226,6 +232,7 @@ export interface UriEndPoint {
   apiKey?: string;
   withCredentials?: any;
   useCarHeaders?: boolean;
+  activitiesCalendar?: boolean;
 }
 interface HeaderPropsOrPathParamsOrQueryOrBody {}
 

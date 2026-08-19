@@ -15,6 +15,7 @@ const ActivityForm = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [loadingLocations, setLoadingLocations] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState("");
+  const [selectedDestinationId, setSelectedDestinationId] = useState("");
 
   const debounceTimer = useRef(null);
   const requestId = useRef(0);
@@ -27,6 +28,7 @@ const ActivityForm = () => {
   } = useForm({
     defaultValues: {
       destination: "",
+      destinationId: "",
       dateRange: [today, today],
     },
   });
@@ -51,7 +53,10 @@ const ActivityForm = () => {
 
   const handleDestinationChange = (value, onChange) => {
     onChange(value);
+
     setSelectedDestination("");
+    setSelectedDestinationId("");
+    setValue("destinationId", "");
 
     clearTimeout(debounceTimer.current);
 
@@ -80,7 +85,9 @@ const ActivityForm = () => {
           return;
         }
 
-        const locationList = res?.data?.locations?.result ?? [];
+        const locationList = res?.data?.locations?.result;
+
+        console.log("locationList", locationList);
 
         setLocations(Array.isArray(locationList) ? locationList : []);
       } catch (error) {
@@ -100,10 +107,17 @@ const ActivityForm = () => {
     requestId.current += 1;
 
     const locationName = getLocationName(location);
+    const destinationId = location?.destinationId || "";
 
     setSelectedDestination(locationName);
+    setSelectedDestinationId(destinationId);
 
     setValue("destination", locationName, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+
+    setValue("destinationId", destinationId, {
       shouldValidate: true,
       shouldDirty: true,
     });
@@ -117,11 +131,12 @@ const ActivityForm = () => {
     const [fromDate, toDate] = data.dateRange;
 
     const destination = encodeURIComponent(data.destination.trim());
+    const destinationId = data.destinationId;
     const formattedFromDate = formatDate(fromDate);
     const formattedToDate = formatDate(toDate);
 
     navigate(
-      `/activities?destination=${destination}&fromDate=${formattedFromDate}&toDate=${formattedToDate}`,
+      `/activities?destination=${destination}&destinationId=${destinationId}&fromDate=${formattedFromDate}&toDate=${formattedToDate}`,
     );
   };
 

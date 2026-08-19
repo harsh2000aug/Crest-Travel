@@ -2461,7 +2461,7 @@ export default function FlightBookingPage() {
       ================================================= */}
 
         <section className="fb-booking-hero">
-          <div className="fb-container">
+          <div className="container">
             {/* BREADCRUMB */}
 
             <div className="fb-breadcrumb">
@@ -2541,7 +2541,7 @@ export default function FlightBookingPage() {
           MAIN CONTAINER
       ================================================= */}
 
-        <div className="fb-container fb-main-layout">
+        <div className="container fb-main-layout">
           {/* =================================================
             LEFT COLUMN
         ================================================= */}
