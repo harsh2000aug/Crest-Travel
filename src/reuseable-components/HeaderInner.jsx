@@ -36,6 +36,7 @@ const HeaderInner = () => {
     "/flight-booking",
     "/car-result",
     "/car-book",
+    "/activities",
   ];
 
   const showDarkHeader = darkHeaderRoutes.includes(location.pathname);
@@ -125,6 +126,11 @@ const HeaderInner = () => {
                 <ul
                   className={location.pathname === "/home" ? "" : "inner-page"}
                 >
+                  <li>
+                    <Link to="/home" onClick={() => setMenuOpen(false)}>
+                      Home
+                    </Link>
+                  </li>
                   <li>
                     <Link to="/benefits" onClick={() => setMenuOpen(false)}>
                       Benefits

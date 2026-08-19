@@ -2770,15 +2770,17 @@ export default function FlightResultPage() {
                 {Number(infants) > 0 && `, ${infants} Infant`}
               </div>
 
-              <div className="meta-pill">
-                💼
-                <select {...register("cabinClass")}>
-                  <option>Economy</option>
-                  <option>Premium</option>
-                  <option>Business</option>
-                  <option>First Class</option>
-                </select>
-              </div>
+              {!isMultiCity && (
+                <div className="meta-pill">
+                  💼
+                  <select {...register("cabinClass")}>
+                    <option value="Economy">Economy</option>
+                    <option value="Premium">Premium</option>
+                    <option value="Business">Business</option>
+                    <option value="First Class">First Class</option>
+                  </select>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -28,6 +28,7 @@ import { tokenAtom } from "./atoms/userAtom";
 import FlightBookingPage from "./components/FlightResultPage/FlightBookingPage";
 import CarResults from "./components/main-form/CarRental/CarResults";
 import CarBook from "./components/main-form/CarRental/CarBook";
+import ActivityArea from "./components/main-form/Activity/ActivityArea";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -108,6 +109,7 @@ function App() {
           <Route path="/flight-booking" element={<FlightBookingPage />} />
           <Route path="/car-result" element={<CarResults />} />
           <Route path="/car-book" element={<CarBook />} />
+          <Route path="/activities" element={<ActivityArea />} />
         </Route>
 
         <Route
