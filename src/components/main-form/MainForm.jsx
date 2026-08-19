@@ -15,6 +15,7 @@ import HotelForm from "./HotelForm/HotelForm";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import CarForm from "./CarRental/CarForm";
 import ActivityForm from "./Activity/ActivityForm";
+import VacationForm from "./Vacations/VacationForm";
 const MainForm = () => {
   const categories = [
     {
@@ -37,17 +38,18 @@ const MainForm = () => {
       label: "Activities",
       icon: LuMap,
     },
-
     {
       id: 5,
-      label: "Tours",
-      icon: LuCompass,
-    },
-    {
-      id: 6,
       label: "Vacations",
       icon: LuHouse,
     },
+
+    {
+      id: 6,
+      label: "Tours",
+      icon: LuCompass,
+    },
+
     {
       id: 7,
       label: "Cruises",
@@ -72,6 +74,8 @@ const MainForm = () => {
 
       case 4:
         return <ActivityForm />;
+      case 5:
+        return <VacationForm />;
 
       default:
         return (

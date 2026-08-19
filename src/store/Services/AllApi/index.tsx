@@ -186,3 +186,20 @@ export const activityLocations = ({ body }: any) =>
     uriEndPoint: allApi.activityLocations.v1,
     body,
   });
+
+// vacation services
+export const searchVacationLocation = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.searchVacations.v1,
+    body,
+  });
+export const searchVacationResult = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.vacationFinalList.v1,
+    body,
+  });
+export const searchVacationResorts = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.vacationResortList.v1,
+    body,
+  });
