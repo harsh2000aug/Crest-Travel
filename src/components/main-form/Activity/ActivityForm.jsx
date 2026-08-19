@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import { useForm, Controller } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 import "react-datepicker/dist/react-datepicker.css";
 import "./Activity.css";
@@ -8,6 +9,7 @@ import { activityLocations } from "../../../store/Services/AllApi";
 
 const ActivityForm = () => {
   const today = new Date();
+  const navigate = useNavigate();
 
   const [locations, setLocations] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -35,6 +37,16 @@ const ActivityForm = () => {
     }
 
     return location?.name || "";
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "";
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
   };
 
   const handleDestinationChange = (value, onChange) => {
@@ -93,6 +105,7 @@ const ActivityForm = () => {
 
     setValue("destination", locationName, {
       shouldValidate: true,
+      shouldDirty: true,
     });
 
     setLocations([]);
@@ -103,11 +116,13 @@ const ActivityForm = () => {
   const onSubmit = (data) => {
     const [fromDate, toDate] = data.dateRange;
 
-    console.log({
-      destination: data.destination,
-      fromDate,
-      toDate,
-    });
+    const destination = encodeURIComponent(data.destination.trim());
+    const formattedFromDate = formatDate(fromDate);
+    const formattedToDate = formatDate(toDate);
+
+    navigate(
+      `/activities?destination=${destination}&fromDate=${formattedFromDate}&toDate=${formattedToDate}`,
+    );
   };
 
   return (

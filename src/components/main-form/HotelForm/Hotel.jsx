@@ -18,13 +18,14 @@ import {
   payNow,
   revalidate,
 } from "../../../store/Services/AllApi";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { useAtomValue } from "jotai";
 import {
   AdultCountToStore,
   ChildCountToStore,
   TotalRooms,
 } from "../../../atoms/userAtom";
+
 const Hotel = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -62,10 +63,6 @@ const Hotel = () => {
 
   const heroImageMain = searchParams.get("heroUrl");
 
-  // ---------------------------------------------------------
-  // COMPLETE SELECTED ROOMS
-  // ---------------------------------------------------------
-
   let rooms = [];
 
   try {
@@ -85,15 +82,7 @@ const Hotel = () => {
     rooms = [];
   }
 
-  // ---------------------------------------------------------
-  // SELECTED ROOM
-  // ---------------------------------------------------------
-
   const selectedRoom = rooms?.[0] || {};
-
-  // ---------------------------------------------------------
-  // PERSON DETAILS
-  // ---------------------------------------------------------
 
   const adults = Number(searchParams.get("adults")) || 0;
   const children = Number(searchParams.get("children")) || 0;
@@ -106,10 +95,6 @@ const Hotel = () => {
     childAges = [];
   }
 
-  // ---------------------------------------------------------
-  // SELECTED ROOM PRICE DETAILS
-  // ---------------------------------------------------------
-
   const selectedPublishedRate =
     Number(selectedRoom?.publishedRate ?? publishedRate) || 0;
 
@@ -119,16 +104,17 @@ const Hotel = () => {
 
   const selectedFees = Number(selectedRoom?.fees ?? fees) || 0;
 
-  // Price excluding tax
   const selectedPriceBeforeTax = Math.max(0, selectedOurPrice - selectedTaxes);
 
   const savings = Math.max(0, selectedPublishedRate - selectedOurPrice);
+
   const [hotelLoader, setHotelLoader] = useState(false);
   const [bookingData, setBookingData] = useState({});
   const [hotelImages, setHotelImages] = useState({});
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [showFailurePopup, setShowFailurePopup] = useState(false);
+
   const [leadGuest, setLeadGuest] = useState({
     title: "Mr",
     firstName: "",
@@ -138,11 +124,13 @@ const Hotel = () => {
     countryCode: "+91",
     phone: "",
   });
+
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -153,7 +141,17 @@ const Hotel = () => {
       email: "",
       countryCode: "+91",
       phone: "",
+      travellers: [],
     },
+  });
+
+  const {
+    fields: travellerFields,
+    append: appendTraveller,
+    remove: removeTraveller,
+  } = useFieldArray({
+    control,
+    name: "travellers",
   });
 
   const selectedCountry = watch("country");
@@ -211,6 +209,8 @@ const Hotel = () => {
         JSON.stringify(paymentPayload, null, 2),
       );
 
+      console.log("TRAVELLERS:", data.travellers || []);
+
       const paymentRes = await payNow({
         body: paymentPayload,
       });
@@ -249,9 +249,11 @@ const Hotel = () => {
 
   const handleExpiryChange = (e) => {
     let value = e.target.value.replace(/\D/g, "");
+
     if (value.length > 2) {
       value = value.substring(0, 2) + "/" + value.substring(2, 4);
     }
+
     setValue("expiryDate", value);
   };
 
@@ -261,21 +263,27 @@ const Hotel = () => {
       left: 0,
     });
   }, []);
+
   const roomCountToStore = useAtomValue(TotalRooms);
 
   const totalNumberofRooms =
     localStorage.getItem("roomCountToStore") || roomCountToStore;
+
   const adultFinalCount = useAtomValue(AdultCountToStore);
   const childFinalCount = useAtomValue(ChildCountToStore);
+
   const totalAdults =
     localStorage.getItem("adultCountToStore") || adultFinalCount;
+
   const totalChildren =
     localStorage.getItem("childCountToStore") || childFinalCount;
 
   return (
     <>
       {hotelLoader && <HotelLoader />}
+
       <HeaderInner />
+
       {showSuccessPopup && (
         <div className="payment-success-overlay">
           <div className="payment-success-popup">
@@ -291,6 +299,7 @@ const Hotel = () => {
           </div>
         </div>
       )}
+
       {showFailurePopup && (
         <div className="payment-failure-overlay">
           <div className="payment-failure-popup">
@@ -302,16 +311,19 @@ const Hotel = () => {
           </div>
         </div>
       )}
+
       <section className="hotel-booking-page">
         <div className="container">
           <div className="hotel-booking-wrapper">
             <div className="hotel-booking-left">
               <h2 className="booking-page-title">Enter Traveller Details</h2>
+
               <div className="traveller-form-wrapper">
                 <div className="traveller-card">
-                  <div className="traveller-card-header">
+                  <div className="traveller-card-header lead-guest-header-custom">
                     <h3>Lead Guest</h3>
                   </div>
+
                   <form>
                     <div className="traveller-form-grid">
                       <div className="form-group small-field">
@@ -333,8 +345,10 @@ const Hotel = () => {
                           <option>Miss</option>
                         </select>
                       </div>
+
                       <div className="form-group">
                         <label>First Name *</label>
+
                         <input
                           type="text"
                           className="booking-input"
@@ -350,6 +364,7 @@ const Hotel = () => {
                           </p>
                         )}
                       </div>
+
                       <div className="form-group">
                         <label>Last Name *</label>
 
@@ -368,6 +383,7 @@ const Hotel = () => {
                           </p>
                         )}
                       </div>
+
                       <div className="form-group small-field">
                         <label>Age</label>
 
@@ -390,7 +406,119 @@ const Hotel = () => {
                       </div>
                     </div>
                   </form>
+
+                  <button
+                    type="button"
+                    className="add-traveller-btn-custom"
+                    onClick={() =>
+                      appendTraveller({
+                        title: "Mr",
+                        firstName: "",
+                        lastName: "",
+                        age: "",
+                      })
+                    }
+                  >
+                    + Add Traveller
+                  </button>
                 </div>
+
+                {travellerFields.map((traveller, index) => (
+                  <div
+                    className="traveller-card added-traveller-card-custom"
+                    key={traveller.id}
+                  >
+                    <div className="traveller-card-header added-traveller-header-custom">
+                      <h3>Traveller {index + 1}</h3>
+
+                      <button
+                        type="button"
+                        className="remove-traveller-btn-custom"
+                        onClick={() => removeTraveller(index)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    <div className="traveller-form-grid">
+                      <div className="form-group small-field">
+                        <label>Title</label>
+
+                        <select
+                          className="booking-input"
+                          {...register(`travellers.${index}.title`)}
+                        >
+                          <option value="Mr">Mr</option>
+                          <option value="Mrs">Mrs</option>
+                          <option value="Ms">Ms</option>
+                          <option value="Miss">Miss</option>
+                        </select>
+                      </div>
+
+                      <div className="form-group">
+                        <label>First Name *</label>
+
+                        <input
+                          type="text"
+                          className="booking-input"
+                          placeholder="First Name"
+                          {...register(`travellers.${index}.firstName`, {
+                            required: "First name is required",
+                          })}
+                        />
+
+                        {errors.travellers?.[index]?.firstName && (
+                          <p className="booking-error">
+                            {errors.travellers[index].firstName.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="form-group">
+                        <label>Last Name *</label>
+
+                        <input
+                          type="text"
+                          className="booking-input"
+                          placeholder="Last Name"
+                          {...register(`travellers.${index}.lastName`, {
+                            required: "Last name is required",
+                          })}
+                        />
+
+                        {errors.travellers?.[index]?.lastName && (
+                          <p className="booking-error">
+                            {errors.travellers[index].lastName.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="form-group small-field">
+                        <label>Age</label>
+
+                        <input
+                          type="number"
+                          className="booking-input"
+                          placeholder="Age"
+                          {...register(`travellers.${index}.age`, {
+                            required: "Age is required",
+                            min: {
+                              value: 1,
+                              message: "Invalid age",
+                            },
+                          })}
+                        />
+
+                        {errors.travellers?.[index]?.age && (
+                          <p className="booking-error">
+                            {errors.travellers[index].age.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
                 <div className="traveller-card">
                   <h3 className="booking-contact-title">
                     Booking details will be sent to
@@ -457,8 +585,10 @@ const Hotel = () => {
                     </div>
                   </div>
                 </div>
+
                 <div className="traveller-card">
                   <h3 className="booking-contact-title">Billing Address</h3>
+
                   <div className="form-group full-width">
                     <label>Address Line 1 *</label>
 
@@ -475,6 +605,7 @@ const Hotel = () => {
                       <p className="booking-error">{errors.address1.message}</p>
                     )}
                   </div>
+
                   <div className="form-group full-width">
                     <label>Address Line 2 (Optional)</label>
 
@@ -485,9 +616,11 @@ const Hotel = () => {
                       {...register("address2")}
                     />
                   </div>
+
                   <div className="billing-grid">
                     <div className="form-group">
                       <label>Country *</label>
+
                       <select
                         className="booking-input"
                         {...register("country", {
@@ -509,8 +642,10 @@ const Hotel = () => {
                         </p>
                       )}
                     </div>
+
                     <div className="form-group">
                       <label>State *</label>
+
                       <select
                         className="booking-input"
                         {...register("state", {
@@ -535,6 +670,7 @@ const Hotel = () => {
                       )}
                     </div>
                   </div>
+
                   <div className="billing-grid">
                     <div className="form-group">
                       <label>City *</label>
@@ -573,11 +709,14 @@ const Hotel = () => {
                     </div>
                   </div>
                 </div>
+
                 <div className="traveller-card">
                   <h3 className="booking-contact-title">Card Details</h3>
+
                   <div className="billing-grid">
                     <div className="form-group">
                       <label>Card Number *</label>
+
                       <input
                         type="text"
                         className="booking-input"
@@ -591,6 +730,7 @@ const Hotel = () => {
                           },
                         })}
                       />
+
                       {errors.cardNumber && (
                         <p className="booking-error">
                           {errors.cardNumber.message}
@@ -617,9 +757,11 @@ const Hotel = () => {
                       )}
                     </div>
                   </div>
+
                   <div className="billing-grid">
                     <div className="form-group">
                       <label>Valid To (MM/YY) *</label>
+
                       <input
                         type="text"
                         className="booking-input"
@@ -634,6 +776,7 @@ const Hotel = () => {
                         })}
                         onChange={handleExpiryChange}
                       />
+
                       {errors.expiryDate && (
                         <p className="booking-error">
                           {errors.expiryDate.message}
@@ -661,12 +804,14 @@ const Hotel = () => {
                           },
                         })}
                       />
+
                       {errors.cvv && (
                         <p className="booking-error">{errors.cvv.message}</p>
                       )}
                     </div>
                   </div>
                 </div>
+
                 <button
                   className="payment-btn"
                   onClick={handleSubmit(onSubmit)}
@@ -762,15 +907,6 @@ const Hotel = () => {
                   </div>
                 )}
 
-                {/* {savings > 0 && (
-                  <div className="price-row">
-                    <span>Savings</span>
-                    <span className="saving-price">
-                      - ${savings.toFixed(2)}
-                    </span>
-                  </div>
-                )} */}
-
                 <hr />
 
                 <div className="total-price">
@@ -782,6 +918,7 @@ const Hotel = () => {
           </div>
         </div>
       </section>
+
       <Footer />
     </>
   );

@@ -338,11 +338,13 @@ const FlightForm = () => {
 
     if (type === "from") {
       setValue(`multiCityFlights.${index}.departure`, airport.fullname, {
-        shouldValidate: true,
+        shouldDirty: true,
+        shouldValidate: false,
       });
 
       setValue(`multiCityFlights.${index}.fromAirport`, airport, {
-        shouldValidate: true,
+        shouldDirty: true,
+        shouldValidate: false,
       });
 
       clearErrors([
@@ -351,11 +353,13 @@ const FlightForm = () => {
       ]);
     } else {
       setValue(`multiCityFlights.${index}.destination`, airport.fullname, {
-        shouldValidate: true,
+        shouldDirty: true,
+        shouldValidate: false,
       });
 
       setValue(`multiCityFlights.${index}.toAirport`, airport, {
-        shouldValidate: true,
+        shouldDirty: true,
+        shouldValidate: false,
       });
 
       clearErrors([
@@ -537,28 +541,37 @@ const FlightForm = () => {
                               : "Please select an origin airport",
                         })}
                         type="text"
-                        placeholder="Delhi (DEL)"
+                        placeholder="London (LHR)"
                         value={flight.departure}
                         onChange={(e) => {
-                          updateMultiCityFlight(
-                            index,
-                            "departure",
-                            e.target.value,
-                          );
+                          const value = e.target.value;
+
+                          updateMultiCityFlight(index, "departure", value);
                           updateMultiCityFlight(index, "fromAirport", null);
                           updateMultiCityFlight(index, "showFrom", true);
 
                           setValue(
                             `multiCityFlights.${index}.departure`,
-                            e.target.value,
-                            { shouldValidate: true },
+                            value,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: false,
+                            },
                           );
 
                           setValue(
                             `multiCityFlights.${index}.fromAirport`,
                             null,
-                            { shouldValidate: true },
+                            {
+                              shouldDirty: true,
+                              shouldValidate: false,
+                            },
                           );
+
+                          clearErrors([
+                            `multiCityFlights.${index}.departure`,
+                            `multiCityFlights.${index}.fromAirport`,
+                          ]);
                         }}
                         onFocus={() => {
                           if (flight.fromDropdown.length > 0) {
@@ -610,28 +623,37 @@ const FlightForm = () => {
                               : "Please select a destination airport",
                         })}
                         type="text"
-                        placeholder="Dubai (DXB)"
+                        placeholder="Boston (BOS)"
                         value={flight.destination}
                         onChange={(e) => {
-                          updateMultiCityFlight(
-                            index,
-                            "destination",
-                            e.target.value,
-                          );
+                          const value = e.target.value;
+
+                          updateMultiCityFlight(index, "destination", value);
                           updateMultiCityFlight(index, "toAirport", null);
                           updateMultiCityFlight(index, "showTo", true);
 
                           setValue(
                             `multiCityFlights.${index}.destination`,
-                            e.target.value,
-                            { shouldValidate: true },
+                            value,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: false,
+                            },
                           );
 
                           setValue(
                             `multiCityFlights.${index}.toAirport`,
                             null,
-                            { shouldValidate: true },
+                            {
+                              shouldDirty: true,
+                              shouldValidate: false,
+                            },
                           );
+
+                          clearErrors([
+                            `multiCityFlights.${index}.destination`,
+                            `multiCityFlights.${index}.toAirport`,
+                          ]);
                         }}
                         onFocus={() => {
                           if (flight.toDropdown.length > 0) {

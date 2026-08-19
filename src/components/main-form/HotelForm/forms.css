@@ -2009,6 +2009,7 @@
   display: grid;
   grid-template-columns: 120px 1fr 1fr 120px;
   gap: 18px;
+  margin-bottom: 20px;
 }
 
 .form-group {
@@ -2818,6 +2819,76 @@ select.booking-input {
   }
 
   .hotel-sort-select {
+    width: 100%;
+  }
+}
+
+.add-traveller-btn-custom {
+  border: none;
+  outline: none;
+  color: #061d39;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: block;
+  margin-top: 15px;
+}
+
+.add-traveller-btn-custom:hover {
+  transform: translateY(-1px);
+}
+
+.added-traveller-card-custom {
+  animation: travellerDropDownCustom 0.3s ease;
+}
+
+.added-traveller-header-custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.remove-traveller-btn-custom {
+  border: none;
+  outline: none;
+  background: #cd1421;
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-traveller-btn-custom:hover {
+  background: #b02a37;
+}
+
+@keyframes travellerDropDownCustom {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 576px) {
+  .lead-guest-header-custom,
+  .added-traveller-header-custom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .add-traveller-btn-custom,
+  .remove-traveller-btn-custom {
     width: 100%;
   }
 }
