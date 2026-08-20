@@ -173,13 +173,16 @@ const BeforeHome = ({ personDetails }) => {
           <p className="tripHero__tag">Activate VIP Travel Access</p>
 
           <h1>
-            Feel The Luxury In Each <span>Crest Club Membership</span>
+            Feel The Luxury In Each <span>Crest Travel Club Membership</span>
           </h1>
 
           <p className="tripHero__description">
-            Join the VIP vacation circle to travel around the world. Start your
-            membership today and plan your travel. From a 5-star booking to fine
-            dining, unlock premium benefits
+            Crest Travel Club is a travel membership club offering exclusive
+            discounts on 5-star hotels, resorts, cruises, car rentals, and
+            flights. As one of the best travel club memberships available. This
+            Club makes it easy to unlock premium travel benefits, fine dining
+            perks, and unbeatable travel club deals — all through a single
+            membership.
           </p>
 
           <div className="tripHero__buttons">
@@ -1019,7 +1022,7 @@ const BeforeHome = ({ personDetails }) => {
 
                 <div className="eliteTestimonials__user">
                   <img
-                    src="https://randomuser.me/api/portraits/men/32.jpg"
+                    src="https://static.vecteezy.com/system/resources/thumbnails/069/180/702/small/confident-man-portrait-home-interior-plants-blurred-background-profile-picture-free-photo.jpg"
                     alt=""
                   />
 

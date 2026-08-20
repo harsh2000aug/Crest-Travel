@@ -93,6 +93,11 @@ const callAxios = async (
       ...defHeaders,
     };
   }
+  const vacationHeader = uriEndPoint?.vacationResortFinal
+    ? {
+        correlationid: localStorage.getItem("CorelationIdOfVacation"),
+      }
+    : {};
   const activityHeader = uriEndPoint?.activitiesCalendar
     ? {
         type: "MEMBER",
@@ -116,6 +121,7 @@ const callAxios = async (
       ...uriEndPoint.headerProps,
       ...carHeaders,
       ...activityHeader,
+      ...vacationHeader,
     },
     data: body || undefined,
     withCredentials: withCredentials || false, // Add withCredentials here
@@ -233,6 +239,7 @@ export interface UriEndPoint {
   withCredentials?: any;
   useCarHeaders?: boolean;
   activitiesCalendar?: boolean;
+  vacationResortFinal?: boolean;
 }
 interface HeaderPropsOrPathParamsOrQueryOrBody {}
 

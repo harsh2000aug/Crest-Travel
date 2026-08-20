@@ -88,7 +88,7 @@
 }
 
 .vacationList__card--selected {
-  border-color: #42b4d1;
+  border-color: #0b2443;
   box-shadow: 0 0 0 2px rgba(66, 180, 209, 0.16);
 }
 
@@ -332,4 +332,387 @@
   color: #777777;
   font-size: 13px;
   font-weight: 400;
+}
+.vacationList__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 22px 5px 10px;
+}
+
+.vacationList__pageNumbers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vacationList__paginationButton,
+.vacationList__pageButton {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #d4d4d4;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #333333;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.vacationList__pageButton {
+  width: 36px;
+  padding: 0;
+}
+
+.vacationList__paginationButton:hover:not(:disabled),
+.vacationList__pageButton:hover:not(:disabled) {
+  border-color: #0b2443;
+  color: #0b2443;
+}
+
+.vacationList__pageButton--active {
+  border-color: #0b2443;
+  background: #0b2443;
+  color: #ffffff;
+}
+
+.vacationList__paginationButton:disabled,
+.vacationList__pageButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (max-width: 550px) {
+  .vacationList__pagination {
+    gap: 6px;
+  }
+
+  .vacationList__paginationButton {
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .vacationList__pageNumbers {
+    gap: 4px;
+  }
+
+  .vacationList__pageButton {
+    width: 32px;
+    height: 32px;
+  }
+}
+.vacationFilters {
+  position: relative;
+  z-index: 1500;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 7px 12px;
+  background: #0b2443;
+}
+
+.vacationFilters__stayTypes {
+  min-width: 420px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid #999999;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.vacationFilters__stayButton {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 2px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #333333;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.vacationFilters__stayButton--active {
+  border-color: #0b2443;
+  color: #111111;
+  font-weight: 600;
+}
+
+.vacationFilters__controls {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+.vacationFilters__dropdownWrapper {
+  position: relative;
+}
+
+.vacationFilters__filterButton {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid #d3d3d3;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #333333;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vacationFilters__filterButton > svg:last-child {
+  font-size: 11px;
+  transition: transform 0.2s ease;
+}
+
+.vacationFilters__filterButton--active {
+  border-color: #0b2443;
+}
+
+.vacationFilters__filterButton--active
+  > svg:last-child {
+  transform: rotate(180deg);
+}
+
+.vacationFilters__menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 2000;
+  width: 285px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 16px 13px 18px;
+  border: 2px solid #0b2443;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.vacationFilters__dropdownWrapper--price
+  .vacationFilters__menu {
+  right: 0;
+  left: auto;
+}
+
+.vacationFilters__menu--price {
+  width: 395px;
+}
+
+.vacationFilters__menu--scroll {
+  max-height: 355px;
+}
+
+.vacationFilters__menuHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+
+.vacationFilters__menuHeader strong {
+  font-size: 16px;
+}
+
+.vacationFilters__menuHeader button {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #35b4d2;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.vacationFilters__options {
+  display: flex;
+  flex-direction: column;
+}
+
+.vacationFilters__option {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 6px;
+  color: #383838;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.vacationFilters__option:hover {
+  background: #f3fbfd;
+}
+
+.vacationFilters__option input,
+.vacationFilters__only499 input {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  accent-color: #0b2443;
+  cursor: pointer;
+}
+
+.vacationFilters__priceLabel {
+  flex: 1;
+}
+
+.vacationFilters__option small {
+  margin-left: auto;
+  color: #444444;
+  font-size: 12px;
+}
+
+.vacationFilters__only499 {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid #d3d3d3;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #333333;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vacationFilters__resultCount {
+  color: #ffffff;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.vacationFilters__noOptions {
+  margin: 10px 5px;
+  color: #777777;
+  font-size: 13px;
+}
+
+@media (max-width: 1150px) {
+  .vacationFilters {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .vacationFilters__stayTypes {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .vacationFilters__controls {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+}
+
+@media (max-width: 600px) {
+  .vacationFilters {
+    padding: 8px;
+  }
+
+  .vacationFilters__stayTypes {
+    grid-template-columns: 1fr;
+  }
+
+  .vacationFilters__controls {
+    align-items: stretch;
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .vacationFilters__filterButton,
+  .vacationFilters__only499 {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .vacationFilters__menu,
+  .vacationFilters__menu--price {
+    position: static;
+    width: 100%;
+    margin-top: 7px;
+  }
+
+  .vacationFilters__resultCount {
+    text-align: center;
+  }
+}
+.vacationList__mapSelection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.vacationList__mapSelectionCount {
+  color: #555;
+  font-size: 14px;
+}
+
+.vacationList__showPageResults {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #0b2443;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.vacationList__showPageResults:hover {
+  text-decoration: underline;
+}
+
+.vacationList__showPageResults svg {
+  font-size: 11px;
+}
+.vacationList__mapSpotLoader {
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: #555;
+}
+
+.vacationList__mapSpotSpinner {
+  width: 42px;
+  height: 42px;
+  border: 4px solid #dceff4;
+  border-top-color: #0b2443;
+  border-radius: 50%;
+  animation: vacationMapSpotSpin 0.8s linear infinite;
+}
+
+.vacationList__mapSpotLoader p {
+  margin: 0;
+  font-size: 14px;
+}
+
+@keyframes vacationMapSpotSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -1,0 +1,407 @@
+.vacationModify {
+  position: relative;
+  z-index: 2500;
+  width: 100%;
+  min-height: 68px;
+  padding: 10px 4%;
+  background: #0b2443;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+.vacationModify * {
+  box-sizing: border-box;
+}
+
+.vacationModify--summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+}
+
+.vacationModify__summaryContent {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.vacationModify__found {
+  font-size: 14px;
+}
+
+.vacationModify__summaryItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.vacationModify__summaryItem svg {
+  color: #111111;
+}
+
+.vacationModify__changeButton {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.vacationModify__form {
+  display: grid;
+  grid-template-columns: auto minmax(250px, 300px) minmax(250px, 300px) auto 1fr auto;
+  align-items: start;
+  gap: 14px;
+}
+
+.vacationModify__formTitle {
+  align-self: center;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.vacationModify__field {
+  position: relative;
+  min-width: 0;
+}
+
+.vacationModify__fieldLabel {
+  position: absolute;
+  top: -7px;
+  left: 12px;
+  z-index: 2;
+  padding: 0 5px;
+  background: #f7ecd9;
+  color: #333333;
+  font-size: 11px;
+}
+
+.vacationModify__inputGroup {
+  width: 100%;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 11px;
+  border: 1px solid #fff;
+  border-radius: 10px;
+  background: transparent;
+}
+
+.vacationModify__inputGroup--error {
+  border-color: #d83b3b;
+}
+
+.vacationModify__inputGroup > svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+.vacationModify__inputGroup input {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+}
+
+.vacationModify__dateInput,
+.vacationModify__dateInput input {
+  cursor: pointer;
+}
+
+.vacationModify__clearButton {
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #222222;
+  cursor: pointer;
+}
+
+.vacationModify__clearButton svg {
+  width: 12px;
+  height: 12px;
+}
+
+.vacationModify__loader {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 2px solid #cccccc;
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: vacationModifySpin 0.7s linear infinite;
+}
+
+.vacationModify__suggestions {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  z-index: 3000;
+  width: 100%;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid #dddddd;
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.vacationModify__suggestion {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #171717;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vacationModify__suggestion:hover {
+  background: #f0fafc;
+}
+
+.vacationModify__suggestionIcon {
+  width: 33px;
+  height: 33px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #e8f8fb;
+  color: #0b2443;
+}
+
+.vacationModify__suggestionText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.vacationModify__suggestionText strong {
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vacationModify__suggestionText span {
+  overflow: hidden;
+  color: #777777;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vacationModify__noResult {
+  padding: 13px;
+  color: #777777;
+  font-size: 13px;
+  text-align: center;
+}
+
+.vacationModify__monthDropdown {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  z-index: 3000;
+  width: min(420px, calc(100vw - 30px));
+  padding: 18px;
+  border: 1px solid #dddddd;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.vacationModify__monthHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 17px;
+  font-size: 14px;
+}
+
+.vacationModify__monthNavigation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vacationModify__monthNavigation button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #222222;
+  cursor: pointer;
+}
+
+.vacationModify__monthNavigation button:hover:not(:disabled) {
+  background: #f1f1f1;
+}
+
+.vacationModify__monthNavigation button:disabled {
+  color: #bbbbbb;
+  cursor: not-allowed;
+}
+
+.vacationModify__monthList {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(65px, 1fr));
+  gap: 8px;
+}
+
+.vacationModify__monthCard {
+  min-height: 95px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid #999999;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #171717;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.vacationModify__monthCard:hover {
+  border-color: #0b2443;
+  background: #effbfe;
+}
+
+.vacationModify__monthCard--selected {
+  border: 2px solid #42b6d3;
+  background: #e8f8fb;
+  color: #0b2443;
+}
+
+.vacationModify__monthCard svg {
+  margin-bottom: 3px;
+  font-size: 18px;
+}
+
+.vacationModify__error {
+  display: block;
+  margin-top: 4px;
+  color: #d83b3b;
+  font-size: 11px;
+}
+
+.vacationModify__submit {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 17px;
+  border: 0;
+  border-radius: 9px;
+  background: #0b2443;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid #fff;
+}
+
+.vacationModify__submit:hover {
+  background: #fff;
+  color: #0b2443;
+}
+
+.vacationModify__close {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+@keyframes vacationModifySpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1050px) {
+  .vacationModify__form {
+    grid-template-columns: 1fr 1fr auto;
+  }
+
+  .vacationModify__formTitle {
+    grid-column: 1 / -1;
+  }
+
+  .vacationModify__close {
+    position: absolute;
+    top: 8px;
+    right: 15px;
+  }
+}
+
+@media (max-width: 650px) {
+  .vacationModify--summary {
+    align-items: flex-start;
+  }
+
+  .vacationModify__summaryContent {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .vacationModify__form {
+    grid-template-columns: 1fr;
+  }
+
+  .vacationModify__submit {
+    width: 100%;
+  }
+
+  .vacationModify__monthDropdown {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .vacationModify__monthList {
+    gap: 5px;
+  }
+}

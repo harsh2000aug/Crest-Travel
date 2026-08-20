@@ -18,8 +18,11 @@ const Footer = () => {
         <div className="luxFooter__left">
           {/* <img src={logo} alt="Logo" className="luxFooter__logo" /> */}
           <p className="luxFooter__text">
-            Elevating global travel through exclusive membership, refined
-            technology, and unparalleled service standards.
+            Crest Travel Club is a premium travel membership offering members
+            access to travel benefits, hotel and flight options, airport lounge
+            access, Room Coins, travel services and exclusive travel
+            opportunities. Explore our membership plans and discover the
+            benefits available with Signature, Elite and Prestige.
           </p>
           <Link to="https://www.facebook.com/cresttravelclub/" target="_blank">
             <FaFacebookF />
