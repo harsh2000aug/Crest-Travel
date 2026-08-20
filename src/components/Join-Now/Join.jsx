@@ -339,6 +339,251 @@ const Join = () => {
             </div>
           </div>
         </section> */}
+
+        <section className="travelClubGuide">
+          <div className="travelClubGuide__container">
+            {/* Introduction */}
+            <div className="travelClubGuide__intro">
+              {/* <span className="travelClubGuide__eyebrow">
+                TRAVEL CLUB GUIDE
+              </span> */}
+
+              <h1 className="travelClubGuide__title">
+                Unlock Travel Potential:{" "}
+                <span>Join the Crest Travel Club Today!</span>
+              </h1>
+
+              <p>
+                When you think of joining a travel club, what comes to mind
+                first? Which plan is best to choose? Which benefits the most,
+                and how can you trust the club with your money? These are the
+                common questions that need to be addressed.
+              </p>
+
+              <p>
+                Because when you choose a travel club to join, you're not paying
+                money for a subscription but for their services as well. So,
+                choosing the right one is essential. A wrong decision can ruin
+                your entire trip or travel experience.
+              </p>
+            </div>
+
+            {/* Why Sign Up */}
+            <div className="travelClubGuide__contentBlock">
+              <div className="travelClubGuide__content">
+                <h3>Why Sign Up Is Required?</h3>
+
+                <p>
+                  Before choosing a subscription plan, review the travel club's
+                  website and check what they are offering. Then choose the plan
+                  that best fits your travel needs.
+                </p>
+
+                <p>
+                  However, a travel club like Crest Travel Club does not
+                  explicitly disclose its unlisted fares to non-members. That
+                  means you must sign up to view the discounted fare list.
+                </p>
+
+                <p>
+                  But that doesn't mean you can't check how much savings they
+                  promise and what benefits each membership plan offers. You can
+                  check the details for free, but to get them, you must sign up.
+                </p>
+              </div>
+            </div>
+
+            {/* Membership Plans */}
+            <div className="travelClubGuide__contentBlock">
+              <div className="travelClubGuide__content">
+                <h3>What Are The Membership Plans Of Crest Travel Club?</h3>
+
+                <p>
+                  As mentioned on the official Crest website, the travel club
+                  has split its membership plans into three categories:
+                  Signature, Elite, and Prestige. Each plan outlines the
+                  benefits the club offers its members.
+                </p>
+
+                <p>
+                  Here is the breakdown of the benefits each member will receive
+                  under their chosen subscription plan:
+                </p>
+
+                <div className="travelClubGuide__planGrid">
+                  <div className="travelClubGuide__planCard">
+                    <div className="travelClubGuide__planIcon">
+                      <FaMedal />
+                    </div>
+
+                    <h4>Signature</h4>
+                    <p>
+                      Designed for travelers looking for essential travel
+                      benefits with an affordable membership.
+                    </p>
+                  </div>
+
+                  <div className="travelClubGuide__planCard travelClubGuide__planCard--featured">
+                    <div className="travelClubGuide__planIcon">
+                      <FaGem />
+                    </div>
+
+                    <h4>Elite</h4>
+                    <p>
+                      A balanced membership offering additional rewards and
+                      premium travel privileges.
+                    </p>
+                  </div>
+
+                  <div className="travelClubGuide__planCard">
+                    <div className="travelClubGuide__planIcon">
+                      <FaCrown />
+                    </div>
+
+                    <h4>Prestige</h4>
+                    <p>
+                      The premium option for travelers looking for enhanced
+                      benefits and luxury travel services.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Choosing a Plan */}
+            <div className="travelClubGuide__contentBlock">
+              <div className="travelClubGuide__content">
+                <h3>Which Subscription Plan Is Good To Choose?</h3>
+
+                <p>
+                  The best plan depends entirely on your requirements and
+                  preferences. However, if you are a solo traveler, you can go
+                  with a Signature Plan. It might have limited benefits, but it
+                  suits a single traveler. The sign-up cost is lower and offers
+                  huge daily discounts.
+                </p>
+
+                <div className="travelClubGuide__highlight">
+                  <FaCheckCircle />
+
+                  <span>
+                    Choose the membership that best matches your travel
+                    frequency, budget, and preferred benefits.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Signature Plan */}
+            <div className="travelClubGuide__contentBlock travelClubGuide__contentBlock--accent">
+              <div className="travelClubGuide__content">
+                <h3>Why Is the Signature Plan Good for a Solo Traveler?</h3>
+
+                <p>
+                  Despite its limited benefits, the Signature plan is the best
+                  fit for a solo traveler. It removes the stress of mapping out
+                  the whole trip and booking alone. It offers huge daily
+                  discounts and a permit to register for a loyalty program and
+                  to upgrade it.
+                </p>
+
+                <p>
+                  Here are the reasons why the Signature Plan is good for a solo
+                  traveler:
+                </p>
+
+                <ul className="travelClubGuide__benefitList">
+                  <li>
+                    <FaCheck />
+                    <span>
+                      The joining fee is lower compared to other plans.
+                    </span>
+                  </li>
+
+                  <li>
+                    <FaCheck />
+                    <span>
+                      Offers a daily discount and flight insurance coverage up
+                      to 200K.
+                    </span>
+                  </li>
+
+                  <li>
+                    <FaCheck />
+                    <span>
+                      Allows you to create a personalized vacation plan.
+                    </span>
+                  </li>
+
+                  <li>
+                    <FaCheck />
+                    <span>
+                      Covers all travel-related expenses, including flights,
+                      hotels, cruises, and car rentals.
+                    </span>
+                  </li>
+
+                  <li>
+                    <FaCheck />
+                    <span>
+                      Provides 40 monthly reward credits to offset or book
+                      accommodations in the form of a 40-room-coin bundle.
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Trust */}
+            <div className="travelClubGuide__contentBlock">
+              <div className="travelClubGuide__content">
+                <h3>Why Trust Crest Travel Club?</h3>
+
+                <p>
+                  All policies, rules, and regulations are clearly stated on
+                  their website. The travel club also offers membership
+                  cancellation and refunds. However, you must meet certain rules
+                  and submit the request within a set timeframe.
+                </p>
+
+                <p>
+                  In addition, the club claims to offer a 40-50% member discount
+                  and helps you save up to 70% even on personalized vacation
+                  packages.
+                </p>
+
+                <div className="travelClubGuide__trustGrid">
+                  <div>
+                    <FaShieldAlt />
+                    <strong>Clear Policies</strong>
+                    <span>
+                      Membership rules and regulations are clearly stated.
+                    </span>
+                  </div>
+
+                  <div>
+                    <FaLock />
+                    <strong>Membership Protection</strong>
+                    <span>
+                      Cancellation and refund options are available subject to
+                      applicable rules.
+                    </span>
+                  </div>
+
+                  <div>
+                    <FaTags />
+                    <strong>Member Savings</strong>
+                    <span>
+                      Members can access advertised discounts and travel
+                      savings.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="mp-section tb-gap">
           <div className="container">
             <div className="mp-heading">
@@ -754,6 +999,21 @@ const Join = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="membership-info-section">
+          <div className="container">
+            <p className="membership-info-text">
+              Crest Travel Club has divided its membership plans into three
+              categories: Signature, Elite, and Prestige. Each membership offers
+              great travel-related services and benefits. However, to access the
+              biggest discounts, offers, and perks, purchase the higher
+              membership plan. The higher your plan is, the more perks you will
+              receive, such as unlimited airport lounge access, BagAssure, room
+              coin bundles, etc. So, don’t waste your time and immediately
+              contact Crest Travel Club customer service.
+            </p>
           </div>
         </section>
       </section>

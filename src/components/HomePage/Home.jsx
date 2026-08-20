@@ -21,6 +21,7 @@ import Footer from "../../reuseable-components/Footer";
 import "./Home.css";
 import { sessionCreate } from "../../store/Services/AllApi";
 import { Helmet } from "react-helmet-async";
+import OGImg from "../../assets/images/og-home-img.png";
 
 const Home = () => {
   useEffect(() => {
@@ -41,16 +42,13 @@ const Home = () => {
   return (
     <>
       <Helmet>
-        {/* Meta Title */}
         <title>Crest Travel Club | Save on Hotels, Flights & More</title>
 
-        {/* Meta Description */}
         <meta
           name="description"
           content="Join Crest Travel Club and unlock exclusive savings on hotels, resorts, cruises, car rentals, flights, and more with a flexible travel membership."
         />
 
-        {/* Canonical */}
         <link rel="canonical" href="https://www.cresttravelclub.com/" />
 
         {/* Open Graph */}
@@ -70,15 +68,23 @@ const Home = () => {
 
         <meta property="og:site_name" content="Crest Travel Club" />
 
-        {/* Open Graph Image */}
+        {/* OG Image */}
+        <meta property="og:image" content={OGImg} />
+
+        <meta property="og:image:secure_url" content={OGImg} />
+
+        <meta property="og:image:type" content="image/png" />
+
+        <meta property="og:image:width" content="1200" />
+
+        <meta property="og:image:height" content="630" />
+
         <meta
-          property="og:image"
-          content="https://www.cresttravelclub.com/og-image.jpg"
+          property="og:image:alt"
+          content="Crest Travel Club - Save on Hotels, Flights and More"
         />
 
-        <meta property="og:image:alt" content="Crest Travel Club" />
-
-        {/* Twitter Card */}
+        {/* Twitter / X */}
         <meta name="twitter:card" content="summary_large_image" />
 
         <meta
@@ -91,9 +97,11 @@ const Home = () => {
           content="Join Crest Travel Club and unlock exclusive savings on hotels, resorts, cruises, car rentals, flights, and more with a flexible travel membership."
         />
 
+        <meta name="twitter:image" content={OGImg} />
+
         <meta
-          name="twitter:image"
-          content="https://www.cresttravelclub.com/og-image.jpg"
+          name="twitter:image:alt"
+          content="Crest Travel Club - Save on Hotels, Flights and More"
         />
       </Helmet>
       {/* <HeaderInner /> */}

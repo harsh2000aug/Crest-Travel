@@ -82,7 +82,10 @@ const IncludingPage = () => {
         <section className="tm-hero-section">
           <div className="tm-hero-overlay">
             <span className="tm-badge">PREMIUM MEMBERSHIP</span>
-            <h1>Unlock Better Travel.</h1>
+            <h1>
+              Discover Everything Included With Your Crest Travel Club
+              Membership
+            </h1>
           </div>
         </section>
       </div>
@@ -311,6 +314,338 @@ const IncludingPage = () => {
           </div>
         </div>
       </section> */}
+
+      <section className="crestIncluded">
+        <div className="crestIncluded__container">
+          {/* Introduction */}
+          <div className="crestIncluded__intro">
+            <span className="crestIncluded__eyebrow">WHAT'S INCLUDED</span>
+
+            <h2>
+              Premium Travel Benefits,
+              <span> Built Around You</span>
+            </h2>
+
+            <p>
+              Crest Travel Club was built to make premium travel more accessible
+              through membership — combining discounted access, real travel
+              protection, and dedicated support into one plan.
+            </p>
+
+            <p>
+              Every membership includes the same core foundation; higher tiers
+              add more Room Coins and stronger baggage coverage. Here's exactly
+              what that means for you.
+            </p>
+          </div>
+
+          {/* Book Anything */}
+          <div className="crestIncluded__section">
+            <div className="crestIncluded__sectionHeader">
+              <span className="crestIncluded__icon">
+                <FaGlobe />
+              </span>
+              <div>
+                <span>01</span>
+                <h3>Book Anything</h3>
+              </div>
+            </div>
+
+            <div className="crestIncluded__grid">
+              <div className="crestIncluded__item">
+                <FaHotel />
+                <h4>Exclusive Access Properties</h4>
+                <p>
+                  Members get access to a curated selection of hotels, resorts,
+                  and vacation rentals that aren't publicly listed — visible
+                  only once you have an active membership.
+                </p>
+              </div>
+
+              <div className="crestIncluded__item">
+                <FaPlane />
+                <h4>Unlisted Fares</h4>
+                <p>
+                  Beyond public pricing, Crest Travel Club offers unlisted fares
+                  on flights and stays — rates that stay hidden from non-members
+                  and are only unlocked with an active subscription.
+                </p>
+              </div>
+
+              <div className="crestIncluded__item">
+                <FaTags />
+                <h4>Discounted Bookings Across a Global Network</h4>
+                <p>
+                  Through partnerships with hotels, luxury properties, cruise
+                  lines, and vehicle rental companies worldwide, members get
+                  consistent discounted pricing across nearly every part of a
+                  trip — not just one category.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Travel Protection */}
+          <div className="crestIncluded__section crestIncluded__section--dark">
+            <div className="crestIncluded__sectionHeader">
+              <span className="crestIncluded__icon">
+                <FaShieldAlt />
+              </span>
+              <div>
+                <span>02</span>
+                <h3>Travel Protection</h3>
+              </div>
+            </div>
+
+            <div className="crestIncluded__grid">
+              <div className="crestIncluded__item">
+                <FaShieldAlt />
+                <h4>Comprehensive Travel Insurance</h4>
+                <p>
+                  Every membership includes travel protection covering emergency
+                  medical expenses, lost or delayed baggage, and travel delays —
+                  so an unexpected disruption doesn't derail your trip
+                  financially.
+                </p>
+              </div>
+
+              <div className="crestIncluded__item">
+                <FaHeadset />
+                <h4>24/7 Medical Emergency Assistance</h4>
+                <p>
+                  Members have access to round-the-clock medical assistance
+                  while traveling, giving you a direct line to support if a
+                  medical emergency happens far from home.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Exclusive Access */}
+          <div className="crestIncluded__section">
+            <div className="crestIncluded__sectionHeader">
+              <span className="crestIncluded__icon">
+                <FaGem />
+              </span>
+              <div>
+                <span>03</span>
+                <h3>Exclusive Access</h3>
+              </div>
+            </div>
+
+            <div className="crestIncluded__grid">
+              <div className="crestIncluded__item">
+                <FaCouch />
+                <h4>Airport Lounge Access</h4>
+                <p>
+                  Elite and Prestige members get unlimited airport lounge access
+                  — a benefit not included in the Signature plan. A typical
+                  single-visit lounge pass can cost $30–50, making this
+                  especially valuable for frequent flyers.
+                </p>
+              </div>
+
+              <div className="crestIncluded__item">
+                <FaCrown />
+                <h4>Elite Property Access</h4>
+                <p>
+                  Even at the entry-level Signature tier, members unlock access
+                  to elite properties. Higher tiers unlock additional perks and
+                  deeper discounts on top of that same access.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Personalized Support */}
+          <div className="crestIncluded__section crestIncluded__section--gold">
+            <div className="crestIncluded__sectionHeader">
+              <span className="crestIncluded__icon">
+                <FaHeadset />
+              </span>
+              <div>
+                <span>04</span>
+                <h3>Personalized Support</h3>
+              </div>
+            </div>
+
+            <div className="crestIncluded__support">
+              <FaHeadset />
+              <div>
+                <h4>A Dedicated Travel Consultant</h4>
+                <p>
+                  Members can work directly with a personal travel consultant to
+                  build a personalized itinerary — from choosing hotels to
+                  planning the full shape of a trip — rather than piecing it
+                  together alone.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Testimonials */}
+          <div className="crestTestimonials">
+            <div className="crestTestimonials__heading">
+              <span>MEMBER EXPERIENCES</span>
+              <h2>What Travelers Say About Their Membership</h2>
+              <p>
+                These testimonial-style examples are placeholders and should be
+                replaced with verified member reviews before publication.
+              </p>
+            </div>
+
+            {/* Signature */}
+            <div className="crestTestimonials__plan">
+              <div className="crestTestimonials__planTitle">
+                <FaMedal />
+                <h3>Signature</h3>
+              </div>
+
+              <div className="crestTestimonials__grid">
+                <article className="crestTestimonials__card">
+                  <span className="crestTestimonials__quote">“</span>
+                  <h4>The lounge access alone has made a difference</h4>
+                  <p>
+                    I travel a few times a year and the unlimited airport lounge
+                    access has been one of my favorite parts of Signature. Being
+                    able to sit somewhere comfortable, have a quiet place to
+                    work, and avoid the chaos of the terminal makes travel days
+                    much easier.
+                  </p>
+                  <small>Lilani Lomax</small>
+                </article>
+
+                <article className="crestTestimonials__card">
+                  <span className="crestTestimonials__quote">“</span>
+                  <h4>It made planning our vacation much simpler</h4>
+                  <p>
+                    I signed up mainly because I wanted better options for
+                    hotels and flights, but I ended up using several of the
+                    other benefits too. The curated travel deals were especially
+                    useful because I didn't have to spend hours searching
+                    through different sites.
+                  </p>
+                  <small>Jacob D Rawlinsom</small>
+                </article>
+
+                <article className="crestTestimonials__card">
+                  <span className="crestTestimonials__quote">“</span>
+                  <h4>The travel assistance was a pleasant surprise</h4>
+                  <p>
+                    What I liked most about Signature wasn't just the booking
+                    options. Having access to visa and passport assistance,
+                    travel support, lounge access and other travel services in
+                    one membership made the whole process feel more organized.
+                  </p>
+                  <small>Leopoldo De Jesus Lopez Ruiz</small>
+                </article>
+              </div>
+            </div>
+
+            {/* Elite */}
+            <div className="crestTestimonials__plan crestTestimonials__plan--elite">
+              <div className="crestTestimonials__planTitle">
+                <FaGem />
+                <h3>Elite</h3>
+              </div>
+
+              <div className="crestTestimonials__grid">
+                <article className="crestTestimonials__card">
+                  <span className="crestTestimonials__quote">“</span>
+                  <h4>The extra Room Coins made Elite worthwhile for me</h4>
+                  <p>
+                    I upgraded to Elite because I travel often enough to
+                    actually use the membership. The additional Room Coins were
+                    a big reason for the upgrade, and I've also enjoyed having
+                    lounge access and the travel assistance benefits available
+                    when I need them.
+                  </p>
+                  <small>Zachary Sybouts</small>
+                </article>
+
+                <article className="crestTestimonials__card">
+                  <span className="crestTestimonials__quote">“</span>
+                  <h4>
+                    I upgraded after seeing how much I was actually using the
+                    benefits
+                  </h4>
+                  <p>
+                    I originally looked at the lower tier, but after comparing
+                    what I would use throughout the year, Elite made more sense
+                    for me. Between hotels, flights, lounge access and the
+                    additional travel services, I felt like I was getting more
+                    practical value.
+                  </p>
+                  <small>KATHLEEN G ALBRECHT</small>
+                </article>
+
+                <article className="crestTestimonials__card">
+                  <span className="crestTestimonials__quote">“</span>
+                  <h4>The convenience is what keeps me on Elite</h4>
+                  <p>
+                    For me, the biggest benefit isn't one particular perk. It's
+                    having so many travel-related services available through one
+                    membership. That convenience is what made the upgrade
+                    worthwhile.
+                  </p>
+                  <small>ADALINE CLAVELLI</small>
+                </article>
+              </div>
+            </div>
+
+            {/* Prestige */}
+            <div className="crestTestimonials__plan crestTestimonials__plan--prestige">
+              <div className="crestTestimonials__planTitle">
+                <FaCrown />
+                <h3>Prestige</h3>
+              </div>
+
+              <div className="crestTestimonials__grid">
+                <article className="crestTestimonials__card">
+                  <span className="crestTestimonials__quote">“</span>
+                  <h4>Prestige fits the way our family travels</h4>
+                  <p>
+                    We chose Prestige because we wanted something that worked
+                    for the whole family. Having family BagAssure, the larger
+                    monthly Room Coin allocation and the travel services
+                    included made more sense for us.
+                  </p>
+                  <small>MRS LILIAN BERGER LANTIGUA</small>
+                </article>
+
+                <article className="crestTestimonials__card">
+                  <span className="crestTestimonials__quote">“</span>
+                  <h4>
+                    It's the convenience of having everything in one place
+                  </h4>
+                  <p>
+                    Prestige is less about one particular feature for me and
+                    more about the overall travel experience. I like having
+                    access to hotels, flights, activities, lounges, travel
+                    assistance and the higher Room Coin allowance under one
+                    membership.
+                  </p>
+                  <small>Charles Pate JR</small>
+                </article>
+
+                <article className="crestTestimonials__card">
+                  <span className="crestTestimonials__quote">“</span>
+                  <h4>
+                    The higher tier makes sense when you actually travel a lot
+                  </h4>
+                  <p>
+                    I travel frequently enough that the additional Prestige
+                    benefits are useful rather than just nice-to-have extras.
+                    The family coverage, larger Room Coin bundle and premium
+                    travel services were the main reasons I chose Prestige.
+                  </p>
+                  <small>THYLLIS LANTZY</small>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="mp-section tb-gap">
         <div className="container">
