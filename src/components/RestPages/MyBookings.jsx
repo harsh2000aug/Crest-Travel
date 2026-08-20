@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
-import hotel1 from "../../assets/images/hotel1.jpg";
-import hotel2 from "../../assets/images/hotel2.jpg";
-import hotel3 from "../../assets/images/hotel3.jpg";
+import hotel1 from "../../assets/images/hotel1.webp";
+import hotel2 from "../../assets/images/hotel2.webp";
+import hotel3 from "../../assets/images/hotel3.webp";
 import {
   FaHotel,
   FaPlane,

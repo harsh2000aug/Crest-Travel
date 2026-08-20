@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import "./VacationForm.css";
-import Image1 from "../../../assets/images/hotel1.jpg";
-import Image2 from "../../../assets/images/hotel2.jpg";
-import Image3 from "../../../assets/images/hotel3.jpg";
+import Image1 from "../../../assets/images/hotel1.webp";
+import Image2 from "../../../assets/images/hotel2.webp";
+import Image3 from "../../../assets/images/hotel3.webp";
 import { FaArrowLeft, FaArrowRight, FaMapMarkerAlt } from "react-icons/fa";
 import { FaRegCalendarDays } from "react-icons/fa6";
 import { searchVacationLocation } from "../../../store/Services/AllApi";
