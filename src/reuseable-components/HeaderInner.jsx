@@ -39,6 +39,7 @@ const HeaderInner = () => {
     "/activities",
     "/activity-details",
     "/vacation-list",
+    "/activity-book",
   ];
 
   const showDarkHeader = darkHeaderRoutes.includes(location.pathname);

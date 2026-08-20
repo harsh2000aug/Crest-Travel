@@ -31,6 +31,7 @@ import CarBook from "./components/main-form/CarRental/CarBook";
 import ActivityArea from "./components/main-form/Activity/ActivityArea";
 import ActivityDetails from "./components/main-form/Activity/ActivityDetails";
 import VacationList from "./components/main-form/Vacations/VacationList";
+import ActivityBook from "./components/main-form/Activity/ActivityBook";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -113,6 +114,7 @@ function App() {
           <Route path="/car-book" element={<CarBook />} />
           <Route path="/activities" element={<ActivityArea />} />
           <Route path="/activity-details" element={<ActivityDetails />} />
+          <Route path="/activity-book" element={<ActivityBook />} />
           <Route path="/vacation-list" element={<VacationList />} />
         </Route>
 

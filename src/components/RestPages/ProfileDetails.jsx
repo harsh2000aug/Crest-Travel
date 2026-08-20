@@ -10,84 +10,195 @@ import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
 import {
   memberCancel,
-  memberPlans,
-  memberProfile,
+  memberTripCoins,
   newMemberDetails,
   updateDetails,
 } from "../../store/Services/AllApi";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Loader from "../../reuseable-components/Loader/Loader";
+
 const ProfileDetails = () => {
   const navigate = useNavigate();
-  const [profileData, setProfileData] = useState("");
+
+  const [profileData, setProfileData] = useState({});
   const [memberPlan, setMemberPlan] = useState([]);
-  const [planName, setPlanName] = useState("");
+  const [personDetails, setPersonDetails] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("personDetails")) || {};
+    } catch {
+      return {};
+    }
+  });
+
+  const [tripCoins, setTripCoins] = useState(0);
+  const [roomCoins, setRoomCoins] = useState(0);
+  const [lifetimeSavings, setLifetimeSavings] = useState(0);
+
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
   const [showCancelPopup, setShowCancelPopup] = useState(false);
   const [showEditProfilePopup, setShowEditProfilePopup] = useState(false);
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const getTripCoins = async (memberDetails) => {
+    try {
+      const email = memberDetails?.email || localStorage.getItem("Email");
+
+      const programid = memberDetails?.tierid;
+
+      if (!email || !programid) {
+        console.log("Trip coins API skipped:", {
+          email,
+          programid,
+        });
+        return;
+      }
+
+      console.log("Trip coins request:", {
+        email,
+        programid,
+      });
+
+      const res = await memberTripCoins({
+        body: {
+          email,
+          programid: 420306,
+        },
+      });
+
+      console.log("Trip coins response:", res);
+
+      const tripCoinsValue =
+        res?.data?.get?.result?.tripCoins ??
+        res?.data?.get?.result?.tripcoins ??
+        res?.data?.result?.tripCoins ??
+        res?.data?.result?.tripcoins ??
+        res?.data?.tripCoins ??
+        res?.data?.tripcoins ??
+        res?.tripCoins ??
+        res?.tripcoins ??
+        0;
+
+      setTripCoins(tripCoinsValue);
+    } catch (error) {
+      console.error("Trip coins error:", error);
+      setTripCoins(0);
+    }
+  };
+
+  const fetchMemberDetails = async () => {
+    try {
+      const email = localStorage.getItem("Email");
+
+      if (!email) {
+        return;
+      }
+
+      const profile = await newMemberDetails({
+        body: {
+          email,
+        },
+      });
+
+      console.log("newMemberDetails response:", profile);
+
+      const memberDetails =
+        profile?.data?.get?.result ||
+        profile?.data?.result ||
+        profile?.data ||
+        {};
+
+      if (Object.keys(memberDetails).length > 0) {
+        setProfileData(memberDetails);
+        setPersonDetails(memberDetails);
+
+        localStorage.setItem("personDetails", JSON.stringify(memberDetails));
+
+        if (memberDetails?.email) {
+          localStorage.setItem("Email", memberDetails.email);
+        }
+
+        if (memberDetails?.tierid) {
+          localStorage.setItem("programid", String(memberDetails.tierid));
+        }
+
+        await getTripCoins(memberDetails);
+      }
+    } catch (error) {
+      console.error("Error fetching member details:", error);
+    }
+  };
+
+  // const fetchPlans = async () => {
+  //   try {
+  //     const res = await memberPlans({});
+  //     const plans = res?.data || [];
+
+  //     setMemberPlan(Array.isArray(plans) ? plans : []);
+  //   } catch (error) {
+  //     console.error("Error fetching membership plans:", error);
+  //     setMemberPlan([]);
+  //   }
+  // };
+
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const initializeProfile = async () => {
       setLoading(true);
+
       try {
-        const response = await memberProfile({});
-        setProfileData(response?.data);
+        await fetchMemberDetails();
+        await fetchPlans();
       } catch (error) {
-        console.error("Error fetching profile data:", error);
+        console.error("Profile initialization error:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchProfileData();
-  }, []);
 
-  const fetchPlans = async () => {
-    try {
-      const res = await memberPlans({});
-      setMemberPlan(res?.data);
-    } catch (error) {
-      console.error("Error fetching profile data:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchPlans();
+    initializeProfile();
   }, []);
 
   const handleChoosePlan = (plan) => {
     navigate("/checkout", {
       state: {
-        membershipId: plan._id || plan.id,
-        membershipName: plan.name,
-        price: plan.price,
-        durationDays: plan.durationDays,
-        features: plan.features,
+        membershipId: plan?._id || plan?.id,
+        membershipName: plan?.name,
+        price: plan?.price,
+        durationDays: plan?.durationDays,
+        features: plan?.features,
       },
     });
   };
 
-  const handleCancelMembership = async () => {
-    try {
-      const response = await memberCancel({
-        body: {
-          reason: "",
-        },
-      });
-      if (response?.success) {
-        toast.success(response.message);
-        setShowCancelPopup(false);
-        const profile = await memberProfile({});
-        setProfileData(profile?.data);
-        fetchPlans();
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong");
-    }
-  };
+  // const handleCancelMembership = async () => {
+  //   setLoading(true);
+
+  //   try {
+  //     const response = await memberCancel({
+  //       body: {
+  //         reason: "",
+  //       },
+  //     });
+
+  //     if (response?.success) {
+  //       toast.success(response?.message || "Membership cancelled");
+  //       setShowCancelPopup(false);
+
+  //       await fetchMemberDetails();
+  //       await fetchPlans();
+  //     } else {
+  //       toast.error(response?.message || "Unable to cancel membership");
+  //     }
+  //   } catch (error) {
+  //     console.error("Cancel membership error:", error);
+  //     toast.error("Something went wrong");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleEditProfile = () => {
     setFirstName(personDetails?.firstname || "");
@@ -97,6 +208,7 @@ const ProfileDetails = () => {
 
   const handleProfileUpdate = async () => {
     setLoading(true);
+
     try {
       const response = await updateDetails({
         body: {
@@ -107,39 +219,100 @@ const ProfileDetails = () => {
         },
       });
 
-      toast.success("Profile updated successfully");
-      setShowEditProfilePopup(false);
-      const profile = await newMemberDetails({
-        body: {
-          email: localStorage.getItem("Email"),
-        },
-      });
-      setProfileData(profile?.data);
+      if (response?.success !== false) {
+        toast.success(response?.message || "Profile updated successfully");
+
+        const profile = await newMemberDetails({
+          body: {
+            email: localStorage.getItem("Email"),
+          },
+        });
+
+        console.log("Updated newMemberDetails response:", profile);
+
+        const updatedProfile =
+          profile?.data?.get?.result ||
+          profile?.data?.result ||
+          profile?.data ||
+          {};
+
+        if (Object.keys(updatedProfile).length > 0) {
+          const updatedPersonDetails = {
+            ...personDetails,
+            ...updatedProfile,
+            firstname: updatedProfile?.firstname || firstName,
+            lastname: updatedProfile?.lastname || lastName,
+          };
+
+          setProfileData(updatedPersonDetails);
+          setPersonDetails(updatedPersonDetails);
+
+          localStorage.setItem(
+            "personDetails",
+            JSON.stringify(updatedPersonDetails),
+          );
+
+          if (updatedPersonDetails?.email) {
+            localStorage.setItem("Email", updatedPersonDetails.email);
+          }
+
+          if (updatedPersonDetails?.tierid) {
+            localStorage.setItem(
+              "programid",
+              String(updatedPersonDetails.tierid),
+            );
+          }
+
+          await getTripCoins(updatedPersonDetails);
+        } else {
+          const updatedPersonDetails = {
+            ...personDetails,
+            firstname: firstName,
+            lastname: lastName,
+          };
+
+          setPersonDetails(updatedPersonDetails);
+
+          localStorage.setItem(
+            "personDetails",
+            JSON.stringify(updatedPersonDetails),
+          );
+        }
+
+        setShowEditProfilePopup(false);
+      } else {
+        toast.error(response?.message || "Unable to update profile");
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Profile update error:", error);
       toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
   };
-  const personDetails = JSON.parse(localStorage.getItem("personDetails")) || {};
+
   return (
     <>
       {loading && <Loader />}
+
       <HeaderInner />
+
       <div className="tb-gap">
         <div className="container">
           <div className="plan_details">
             <div className="his_plan">
               <div className="profile-top">
                 <div className="profile-avatar">
-                  {`${personDetails?.firstname?.[0] || ""}${personDetails?.lastname?.[0] || ""}`}
+                  {`${personDetails?.firstname?.[0] || ""}${
+                    personDetails?.lastname?.[0] || ""
+                  }`}
                 </div>
 
                 <div className="profile-info">
                   <h4>
                     Hi, {personDetails?.firstname} {personDetails?.lastname}
                   </h4>
+
                   <p>{personDetails?.status || "Active"} Member</p>
                 </div>
               </div>
@@ -147,9 +320,9 @@ const ProfileDetails = () => {
 
             <div className="side-btns">
               <div className="upgrade_member">
-                <button onClick={() => setShowUpgradePopup(true)}>
+                {/* <button onClick={() => setShowUpgradePopup(true)}>
                   Upgrade tier
-                </button>
+                </button> */}
               </div>
 
               <div className="cancel_member">
@@ -165,6 +338,7 @@ const ProfileDetails = () => {
               </div>
             </div>
           </div>
+
           <div className="stats-grid">
             <div className="stat-card savings">
               <div className="stat-icon">
@@ -173,7 +347,7 @@ const ProfileDetails = () => {
 
               <div>
                 <h4>Lifetime Savings</h4>
-                <h2>$0</h2>
+                <h2>${lifetimeSavings}</h2>
               </div>
             </div>
 
@@ -184,7 +358,7 @@ const ProfileDetails = () => {
 
               <div>
                 <h4>Room Coins</h4>
-                <h2>0.00</h2>
+                <h2>{roomCoins}</h2>
               </div>
             </div>
 
@@ -195,17 +369,20 @@ const ProfileDetails = () => {
 
               <div>
                 <h4>Trip Coins</h4>
-                <h2>0.00</h2>
+                <h2>{tripCoins}</h2>
               </div>
             </div>
           </div>
+
           <div className="dashboard-card">
             <div className="card-header">
               <h2>Profile Information</h2>
+
               <button className="member-badge" onClick={handleEditProfile}>
                 <FaEdit /> Edit profile
               </button>
             </div>
+
             <div className="profile-grid">
               <div className="info-item">
                 <label>Member ID</label>
@@ -214,6 +391,7 @@ const ProfileDetails = () => {
 
               <div className="info-item">
                 <label>Full Name</label>
+
                 <span>
                   {personDetails?.firstname} {personDetails?.lastname}
                 </span>
@@ -236,6 +414,7 @@ const ProfileDetails = () => {
 
               <div className="info-item">
                 <label>Enrollment Date</label>
+
                 <span>
                   {personDetails?.enrolledat
                     ? new Date(personDetails.enrolledat).toLocaleDateString(
@@ -246,6 +425,7 @@ const ProfileDetails = () => {
               </div>
             </div>
           </div>
+
           <div className="dashboard-card">
             <div className="card-header">
               <h2>Billing Address</h2>
@@ -254,6 +434,7 @@ const ProfileDetails = () => {
             <div className="address-box">
               <div className="address-row">
                 <label>Full Name</label>
+
                 <span>
                   {personDetails?.firstname} {personDetails?.lastname}
                 </span>
@@ -261,6 +442,7 @@ const ProfileDetails = () => {
 
               <div className="address-row">
                 <label>Address</label>
+
                 <span>United States Of America</span>
               </div>
             </div>
@@ -280,7 +462,14 @@ const ProfileDetails = () => {
 
             {profileData?.membershipType?.toLowerCase() === "prestige" ? (
               <div className="topMembershipMessage">
-                <div style={{ fontSize: "60px", marginBottom: "15px" }}>👑</div>
+                <div
+                  style={{
+                    fontSize: "60px",
+                    marginBottom: "15px",
+                  }}
+                >
+                  👑
+                </div>
 
                 <h2>You're Already at the Top!</h2>
 
@@ -306,6 +495,7 @@ const ProfileDetails = () => {
               <>
                 <div className="tm-section-heading">
                   <h2>Choose Your Membership</h2>
+
                   <p>Select the plan that best suits your travel needs.</p>
                 </div>
 
@@ -319,7 +509,7 @@ const ProfileDetails = () => {
                   }}
                 >
                   {memberPlan?.map((itm) => (
-                    <div className="tm-price-card" key={itm?._id}>
+                    <div className="tm-price-card" key={itm?._id || itm?.id}>
                       <h3>{itm?.name}</h3>
 
                       <h2>${itm?.price}</h2>
@@ -370,11 +560,12 @@ const ProfileDetails = () => {
 
               <div className="cancelMembershipNote">
                 <strong>Important:</strong>
+
                 <p>
-                  Before cancelling your membership, please read our
+                  Before cancelling your membership, please read our{" "}
                   <Link to="/refund-and-cancellation-policies" target="_blank">
-                    <span> Refund and Cancellation Policies.</span>
-                  </Link>
+                    <span>Refund and Cancellation Policies.</span>
+                  </Link>{" "}
                   Depending on your subscription, you may or may not be eligible
                   for a refund. Once your membership is cancelled, some benefits
                   may be lost immediately.
@@ -391,10 +582,7 @@ const ProfileDetails = () => {
 
                 <button
                   className="cancelMembershipDelete"
-                  onClick={() => {
-                    setShowCancelPopup(false);
-                    handleCancelMembership();
-                  }}
+                  onClick={handleCancelMembership}
                 >
                   Yes, Cancel Membership
                 </button>
@@ -415,11 +603,13 @@ const ProfileDetails = () => {
             </button>
 
             <h2>Edit Profile</h2>
+
             <p>Update your profile information.</p>
 
             <div className="editProfileForm">
               <div className="editProfileField">
                 <label>First Name</label>
+
                 <input
                   type="text"
                   value={firstName}
@@ -430,6 +620,7 @@ const ProfileDetails = () => {
 
               <div className="editProfileField">
                 <label>Last Name</label>
+
                 <input
                   type="text"
                   value={lastName}
@@ -448,6 +639,7 @@ const ProfileDetails = () => {
           </div>
         </div>
       )}
+
       <Footer />
     </>
   );
