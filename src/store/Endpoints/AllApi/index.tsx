@@ -330,6 +330,22 @@ export const allApi = {
       ...defaults.methods.POST,
       ...defaults.versions.v1,
       uri: "/alphavr/resort-list",
+      vacationResortFinal: true,
+    },
+  },
+  resortDetails: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphavr/resort-details",
+    },
+  },
+  resortAvailability: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphavr/availability",
+      vacationResortFinal: true,
     },
   },
 };

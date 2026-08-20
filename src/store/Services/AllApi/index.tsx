@@ -231,3 +231,13 @@ export const searchVacationResorts = ({ body }: any) =>
     uriEndPoint: allApi.vacationResortList.v1,
     body,
   });
+export const resortDetails = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.resortDetails.v1,
+    body,
+  });
+export const resortAvailability = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.resortAvailability.v1,
+    body,
+  });
