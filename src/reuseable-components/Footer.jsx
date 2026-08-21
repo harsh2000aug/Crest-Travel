@@ -9,6 +9,7 @@ import {
   FaYoutube,
   FaLinkedinIn,
 } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 
 const Footer = () => {
   const location = useLocation();
@@ -41,6 +42,9 @@ const Footer = () => {
             target="_blank"
           >
             <FaLinkedinIn />
+          </Link>
+          <Link to="https://x.com/cresttravelclub" target="_blank">
+            <FaXTwitter />
           </Link>
           <p className="luxFooter__copyright">
             © 2026 Crest Travel Club. All rights reserved.
