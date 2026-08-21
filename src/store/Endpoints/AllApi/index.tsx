@@ -323,7 +323,27 @@ export const allApi = {
       uri: "/alphaactivity/add-order",
     },
   },
-
+  activityOrderPlace: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/pay-now",
+    },
+  },
+  forgotPasswordChange: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphamember/forgot-password",
+    },
+  },
+  forgotPasswordReset: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphamember/reset-password",
+    },
+  },
   // vacations api
   searchVacations: {
     v1: {

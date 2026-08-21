@@ -31,9 +31,11 @@ const CarLoader = () => {
             <div className="car-loading-road-line car-loading-road-line-three"></div>
           </div>
 
-          <div className="car-loading-title">Hold On</div>
+          <div className="car-loading-title">Processing....</div>
 
-          <div className="car-loading-subtitle">We are fetching details</div>
+          <div className="car-loading-subtitle">
+            Please wait while we confirm your activity
+          </div>
         </div>
       </div>
     </div>

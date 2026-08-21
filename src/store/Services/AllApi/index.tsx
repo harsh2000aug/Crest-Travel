@@ -216,6 +216,22 @@ export const activityCalendarAvail = ({ body }: any) =>
     uriEndPoint: allApi.activityCalendarAvail.v1,
     body,
   });
+export const activityOrderPlace = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityOrderPlace.v1,
+    body,
+  });
+export const forgotPasswordChange = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.forgotPasswordChange.v1,
+    body,
+  });
+export const forgotPasswordReset = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.forgotPasswordReset.v1,
+    body,
+  });
+
 // vacation services
 export const searchVacationLocation = ({ body }: any) =>
   callApi({

@@ -919,15 +919,104 @@ const ActivityDetails = () => {
   }
 
   const handleBookNow = (item, detail, gradeKey) => {
+    const price = detail?.totalPrice?.price || {};
+
+    const selectedActivityData = {
+      startDate: selectedDate || "",
+      endDate: selectedDate || "",
+      activityCode: activityCode || "",
+      name: displayTitle || "",
+      image: galleryImages?.[0]?.photoURL || "",
+      category:
+        categories
+          ?.map((category) => category?.name)
+          .filter(Boolean)
+          .join(", ") || "",
+      description: description || "",
+      adults: Number(appliedParticipants?.adult) || 0,
+      children:
+        (Number(appliedParticipants?.child) || 0) +
+        (Number(appliedParticipants?.youth) || 0),
+      ourPrice:
+        price?.ourPrice || price?.showOurPrice || price?.convertedCoin || "",
+      payable:
+        price?.ourPrice || price?.showOurPrice || price?.convertedCoin || "",
+      publicPrice: price?.publicPrice || "",
+      cancellationPolicy: cancellationPolicy?.description || "",
+      startTime: detail?.startTime || "",
+      shortTittle: displayTitle || "",
+      guests: [],
+      orderDate: new Date().toISOString(),
+      duration: activityDuration || "",
+      star_rating: displayRating || "",
+      gradeCode: gradeKey || item?.gradeCode || "",
+    };
+
+    const adultCount = Number(appliedParticipants?.adult) || 0;
+    const childCount =
+      (Number(appliedParticipants?.child) || 0) +
+      (Number(appliedParticipants?.youth) || 0);
+    const infantCount = Number(appliedParticipants?.infant) || 0;
+
+    const guests = [];
+
+    for (let index = 0; index < adultCount; index += 1) {
+      guests.push({
+        primary: index === 0,
+        title: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        covered: false,
+        birthDate: "",
+        gender: "",
+        type: "ADULT",
+      });
+    }
+
+    for (let index = 0; index < childCount; index += 1) {
+      guests.push({
+        primary: false,
+        title: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        covered: false,
+        birthDate: "",
+        gender: "",
+        type: "CHILD",
+      });
+    }
+
+    for (let index = 0; index < infantCount; index += 1) {
+      guests.push({
+        primary: false,
+        title: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        covered: false,
+        birthDate: "",
+        gender: "",
+        type: "INFANT",
+      });
+    }
+
+    selectedActivityData.guests = guests;
+
+    sessionStorage.setItem(
+      "activityBookingData",
+      JSON.stringify(selectedActivityData),
+    );
+
     const params = new URLSearchParams({
       activityCode,
       travelDate: selectedDate,
       gradeCode: gradeKey || item?.gradeCode || "",
       startTime: detail?.startTime || "",
-      adult: String(appliedParticipants.adult || 0),
-      youth: String(appliedParticipants.youth || 0),
-      child: String(appliedParticipants.child || 0),
-      infant: String(appliedParticipants.infant || 0),
     });
 
     window.location.href = `/activity-book?${params.toString()}`;

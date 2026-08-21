@@ -43,7 +43,7 @@ const ActivityArea = () => {
   const [totalCount, setTotalCount] = useState(0);
 
   const [loading, setLoading] = useState(true);
-  const [filterLoading, setFilterLoading] = useState(true);
+  const [filterLoading, setFilterLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [filterData, setFilterData] = useState({
@@ -301,25 +301,40 @@ const ActivityArea = () => {
   }, []);
 
   useEffect(() => {
-    if (initialDestinationId && initialDestination && !filterLoading) {
-      fetchActivities({
-        destination: initialDestination,
-        destinationId: initialDestinationId,
-        fromDate: initialFromDate,
-        toDate: initialToDate,
-        rating: null,
-        price: {
-          min: filterData.price.min,
-          max: filterData.price.max,
-        },
-        duration: null,
-        categories: [],
-      });
-    } else if (!initialDestinationId || !initialDestination) {
+    if (
+      !initialDestination ||
+      !initialDestinationId ||
+      !initialFromDate ||
+      !initialToDate
+    ) {
       setLoading(false);
-      setError("Destination information is missing.");
+      return;
     }
-  }, [filterLoading]);
+
+    if (filterLoading) {
+      return;
+    }
+
+    fetchActivities({
+      destination: initialDestination,
+      destinationId: initialDestinationId,
+      fromDate: initialFromDate,
+      toDate: initialToDate,
+      rating: null,
+      price: {
+        min: filterData.price.min,
+        max: filterData.price.max,
+      },
+      duration: null,
+      categories: [],
+    });
+  }, [
+    initialDestination,
+    initialDestinationId,
+    initialFromDate,
+    initialToDate,
+    filterLoading,
+  ]);
 
   useEffect(() => {
     return () => {

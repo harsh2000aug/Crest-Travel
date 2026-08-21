@@ -1,39 +1,48 @@
 import React, { useState } from "react";
 import logo from "../assets/images/logo.webp";
 import "./header.css";
-import { CiWallet } from "react-icons/ci";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaBars, FaTimes, FaEye, FaEyeSlash } from "react-icons/fa";
-import { CiUser, CiSearch } from "react-icons/ci";
-import { IoTimeOutline } from "react-icons/io5";
-import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
 import {
+  forgotPasswordChange,
+  forgotPasswordReset,
   login,
   memberSignup,
   newMemberDetails,
 } from "../store/Services/AllApi";
 import { useSetAtom } from "jotai";
 import { tokenAtom } from "../atoms/userAtom";
+
 const Header = ({ personDetails }) => {
   const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showResetPasswordField, setShowResetPasswordField] = useState(false);
+  const [showResetConfirmPassword, setShowResetConfirmPassword] =
+    useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showCoins, setShowCoins] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+
   const location = useLocation();
+
   const darkHeaderRoutes = ["/join-now", "/checkout"];
   const showDarkHeader = darkHeaderRoutes.includes(location.pathname);
+
   const [isLoggedIn, setIsLoggedIn] = useState(
     !!localStorage.getItem("accessToken"),
   );
+
   const {
     register,
     handleSubmit,
+    reset: resetLoginForm,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -45,7 +54,6 @@ const Header = ({ personDetails }) => {
   const {
     register: registerSignup,
     handleSubmit: handleSignupSubmit,
-    control,
     formState: { errors: signupErrors, isSubmitting: signupSubmitting },
   } = useForm({
     mode: "onTouched",
@@ -59,7 +67,54 @@ const Header = ({ personDetails }) => {
       membershipType: "Free",
     },
   });
+
+  const {
+    register: registerForgotPassword,
+    handleSubmit: handleForgotPasswordSubmit,
+    reset: resetForgotPasswordForm,
+    formState: {
+      errors: forgotPasswordErrors,
+      isSubmitting: forgotPasswordSubmitting,
+    },
+  } = useForm({
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const {
+    register: registerResetPassword,
+    handleSubmit: handleResetPasswordSubmit,
+    reset: resetResetPasswordForm,
+    watch,
+    formState: {
+      errors: resetPasswordErrors,
+      isSubmitting: resetPasswordSubmitting,
+    },
+  } = useForm({
+    mode: "onTouched",
+    reValidateMode: "onChange",
+    defaultValues: {
+      otp: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const resetPasswordValue = watch("password");
+
   const setToken = useSetAtom(tokenAtom);
+
+  const clearForgotPasswordForms = () => {
+    resetLoginForm();
+    resetForgotPasswordForm();
+    resetResetPasswordForm();
+
+    setForgotPasswordEmail("");
+    setShowResetPasswordField(false);
+    setShowResetConfirmPassword(false);
+  };
+
   const handleNewMemberDetails = async (email) => {
     try {
       const res = await newMemberDetails({
@@ -67,10 +122,13 @@ const Header = ({ personDetails }) => {
           email: email,
         },
       });
+
+      return res;
     } catch (error) {
       console.error("Error fetching new member details:", error);
     }
   };
+
   const onSubmit = async (data) => {
     try {
       const res = await login({
@@ -84,24 +142,30 @@ const Header = ({ personDetails }) => {
 
       const signin = res?.data?.signin;
 
-      // API returned 200 but login failed
       if (!signin?.success) {
         toast.error(signin?.message || "Invalid email address or password");
         return;
       }
 
-      // Login successful
       setToken(data.email);
+
       handleNewMemberDetails(data.email);
+
       localStorage.setItem("accessToken", signin.token);
       localStorage.setItem("Email", data.email);
 
       setIsLoggedIn(true);
+
       toast.success("Logged in successfully");
+
+      resetLoginForm();
+
       setShowLogin(false);
+
       navigate("/home");
     } catch (error) {
       console.error("Login error:", error);
+
       toast.error("Something went wrong. Please try again.");
     }
   };
@@ -115,19 +179,100 @@ const Header = ({ personDetails }) => {
       password: data.password,
       membershipType: "Free",
     };
+
     try {
       const res = await memberSignup({
         body: payload,
       });
+
       localStorage.setItem("accessToken", res.token);
       localStorage.setItem("firstName", res.data.firstName);
       localStorage.setItem("lastName", res.data.lastName);
+
       setIsLoggedIn(true);
+
       toast.success(res.message);
+
       setShowSignup(false);
+
       navigate("/home");
     } catch (error) {
       toast.error(error.message);
+    }
+  };
+
+  const onForgotPassword = async (data) => {
+    try {
+      const response = await forgotPasswordChange({
+        body: {
+          email: data.email,
+        },
+      });
+
+      console.log("Forgot password response:", response);
+
+      const forgotPassword = response?.data?.forgotPassword;
+
+      if (!forgotPassword?.success) {
+        toast.error(
+          forgotPassword?.message ||
+            "Unable to process forgot password request",
+        );
+
+        return;
+      }
+
+      setForgotPasswordEmail(data.email);
+
+      setShowForgotPassword(false);
+
+      setShowResetPassword(true);
+
+      toast.success(
+        forgotPassword?.message || "OTP sent successfully to your email",
+      );
+    } catch (error) {
+      console.error("Forgot password error:", error);
+
+      toast.error(error?.message || "Something went wrong. Please try again.");
+    }
+  };
+
+  const onResetPassword = async (data) => {
+    try {
+      const payload = {
+        code: Number(data.otp),
+        password: data.password,
+      };
+
+      const res = await forgotPasswordReset({
+        body: payload,
+      });
+
+      console.log("Reset password payload:", payload);
+      console.log("Reset password response:", res);
+
+      const resetPassword = res?.data?.resetPassword;
+      console.log(data);
+      if (!resetPassword?.success) {
+        toast.error(resetPassword?.message || "Unable to change password");
+        return;
+      }
+
+      toast.success(resetPassword?.message || "Password reset successfully");
+
+      clearForgotPasswordForms();
+
+      setShowResetPassword(false);
+      setShowLogin(true);
+    } catch (error) {
+      console.error("Error resetting password:", error);
+
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Unable to change password",
+      );
     }
   };
 
@@ -139,7 +284,10 @@ const Header = ({ personDetails }) => {
             <button
               type="button"
               className="travel-login-close-btn"
-              onClick={() => setShowLogin(false)}
+              onClick={() => {
+                resetLoginForm();
+                setShowLogin(false);
+              }}
             >
               <FaTimes />
             </button>
@@ -178,6 +326,7 @@ const Header = ({ personDetails }) => {
                   </span>
                 )}
               </div>
+
               <div className="travel-login-input-group travel-login-password-wrapper">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -205,6 +354,7 @@ const Header = ({ personDetails }) => {
                   </span>
                 )}
               </div>
+
               <button
                 type="submit"
                 className="travel-login-submit-btn"
@@ -212,10 +362,30 @@ const Header = ({ personDetails }) => {
               >
                 {isSubmitting ? "Logging in..." : "Login Now"}
               </button>
+
+              <button
+                type="button"
+                className="travel-login-forgot-password-btn"
+                onClick={() => {
+                  resetForgotPasswordForm();
+                  resetResetPasswordForm();
+                  setForgotPasswordEmail("");
+                  setShowResetPasswordField(false);
+                  setShowResetConfirmPassword(false);
+                  setShowLogin(false);
+                  setShowForgotPassword(true);
+                }}
+              >
+                Forgot Password?
+              </button>
             </form>
 
             <p
-              style={{ textAlign: "center", marginTop: "20px", color: "#000" }}
+              style={{
+                textAlign: "center",
+                marginTop: "20px",
+                color: "#000",
+              }}
             >
               Don't have a account?{" "}
               <b
@@ -224,6 +394,7 @@ const Header = ({ personDetails }) => {
                   textDecoration: "underline",
                 }}
                 onClick={() => {
+                  resetLoginForm();
                   setShowLogin(false);
                   setShowSignup(true);
                 }}
@@ -234,6 +405,245 @@ const Header = ({ personDetails }) => {
           </div>
         </div>
       )}
+
+      {showForgotPassword && (
+        <div className="travel-login-overlay">
+          <div className="travel-login-modal signup-modal">
+            <button
+              type="button"
+              className="travel-login-close-btn"
+              onClick={() => {
+                clearForgotPasswordForms();
+                setShowForgotPassword(false);
+              }}
+            >
+              <FaTimes />
+            </button>
+
+            <div className="travel-login-logo-area">
+              <img src={logo} alt="Travel Club" />
+
+              <h2>Forgot Password</h2>
+
+              <p>Enter your registered email address to reset your password.</p>
+            </div>
+
+            <form
+              className="travel-login-form"
+              onSubmit={handleForgotPasswordSubmit(onForgotPassword)}
+            >
+              <div className="travel-login-input-group">
+                <input
+                  type="email"
+                  placeholder="Enter Email Address"
+                  {...registerForgotPassword("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value:
+                        /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/i,
+                      message: "Please enter a valid email address",
+                    },
+                  })}
+                />
+
+                {forgotPasswordErrors.email && (
+                  <span className="travel-login-error">
+                    {forgotPasswordErrors.email.message}
+                  </span>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="travel-login-submit-btn"
+                disabled={forgotPasswordSubmitting}
+              >
+                {forgotPasswordSubmitting ? "Submitting..." : "Continue"}
+              </button>
+            </form>
+
+            <p
+              style={{
+                textAlign: "center",
+                marginTop: "20px",
+                color: "#000",
+              }}
+            >
+              Remember your password?{" "}
+              <b
+                style={{
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+                onClick={() => {
+                  clearForgotPasswordForms();
+                  setShowForgotPassword(false);
+                  setShowLogin(true);
+                }}
+              >
+                Login
+              </b>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {showResetPassword && (
+        <div className="travel-login-overlay">
+          <div className="travel-login-modal signup-modal">
+            <button
+              type="button"
+              className="travel-login-close-btn"
+              onClick={() => {
+                clearForgotPasswordForms();
+                setShowResetPassword(false);
+              }}
+            >
+              <FaTimes />
+            </button>
+
+            <div className="travel-login-logo-area">
+              <img src={logo} alt="Travel Club" />
+
+              <h2>Reset Password</h2>
+
+              <p>
+                Enter the 6-digit OTP sent to{" "}
+                <strong>{forgotPasswordEmail}</strong> and create your new
+                password.
+              </p>
+            </div>
+
+            <form
+              className="travel-login-form"
+              onSubmit={handleResetPasswordSubmit(onResetPassword)}
+            >
+              <div className="travel-login-input-group">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="Enter 6 Digit OTP"
+                  {...registerResetPassword("otp", {
+                    required: "OTP is required",
+                    pattern: {
+                      value: /^\d{6}$/,
+                      message: "OTP must be exactly 6 digits",
+                    },
+                    onChange: (e) => {
+                      e.target.value = e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 6);
+                    },
+                  })}
+                />
+
+                {resetPasswordErrors.otp && (
+                  <span className="travel-login-error">
+                    {resetPasswordErrors.otp.message}
+                  </span>
+                )}
+              </div>
+
+              <div className="travel-login-input-group travel-login-password-wrapper">
+                <input
+                  type={showResetPasswordField ? "text" : "password"}
+                  placeholder="New Password"
+                  {...registerResetPassword("password", {
+                    required: "New password is required",
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters",
+                    },
+                    pattern: {
+                      value:
+                        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&*!])[A-Za-z\d@#$%^&*!]{8,}$/,
+                      message:
+                        "Password must contain uppercase, lowercase, number and special character",
+                    },
+                  })}
+                />
+
+                <button
+                  type="button"
+                  className="travel-login-password-toggle"
+                  onClick={() =>
+                    setShowResetPasswordField(!showResetPasswordField)
+                  }
+                >
+                  {showResetPasswordField ? <FaEyeSlash /> : <FaEye />}
+                </button>
+
+                {resetPasswordErrors.password && (
+                  <span className="travel-login-error">
+                    {resetPasswordErrors.password.message}
+                  </span>
+                )}
+              </div>
+
+              <div className="travel-login-input-group travel-login-password-wrapper">
+                <input
+                  type={showResetConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm New Password"
+                  {...registerResetPassword("confirmPassword", {
+                    required: "Please confirm your password",
+                    validate: (value) =>
+                      value === resetPasswordValue || "Passwords do not match",
+                  })}
+                />
+
+                <button
+                  type="button"
+                  className="travel-login-password-toggle"
+                  onClick={() =>
+                    setShowResetConfirmPassword(!showResetConfirmPassword)
+                  }
+                >
+                  {showResetConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+
+                {resetPasswordErrors.confirmPassword && (
+                  <span className="travel-login-error">
+                    {resetPasswordErrors.confirmPassword.message}
+                  </span>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="travel-login-submit-btn"
+                disabled={resetPasswordSubmitting}
+              >
+                {resetPasswordSubmitting ? "Resetting..." : "Reset Password"}
+              </button>
+            </form>
+
+            <p
+              style={{
+                textAlign: "center",
+                marginTop: "20px",
+                color: "#000",
+              }}
+            >
+              Remember your password?{" "}
+              <b
+                style={{
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+                onClick={() => {
+                  clearForgotPasswordForms();
+                  setShowResetPassword(false);
+                  setShowLogin(true);
+                }}
+              >
+                Login
+              </b>
+            </p>
+          </div>
+        </div>
+      )}
+
       {showSignup && (
         <div className="travel-login-overlay">
           <div className="travel-login-modal signup-modal">
@@ -289,6 +699,7 @@ const Header = ({ personDetails }) => {
                   )}
                 </div>
               </div>
+
               <div className="travel-login-input-group">
                 <input
                   type="email"
@@ -309,6 +720,7 @@ const Header = ({ personDetails }) => {
                   </span>
                 )}
               </div>
+
               <div className="travel-login-input-group">
                 <input
                   type="tel"
@@ -332,6 +744,7 @@ const Header = ({ personDetails }) => {
                   </span>
                 )}
               </div>
+
               <div className="travel-login-input-group travel-login-password-wrapper">
                 <input
                   type={showSignupPassword ? "text" : "password"}
@@ -395,6 +808,7 @@ const Header = ({ personDetails }) => {
           </div>
         </div>
       )}
+
       <header className={showDarkHeader ? "dark-header" : ""}>
         <div className="container">
           <div className="flex al-center space-bw">
@@ -413,9 +827,7 @@ const Header = ({ personDetails }) => {
                 className={`member-menu ${menuOpen ? "active bg-color" : ""}`}
               >
                 <ul
-                  className={`${
-                    location.pathname === "/home" ? "" : "inner-page"
-                  }`}
+                  className={location.pathname === "/home" ? "" : "inner-page"}
                 >
                   <li>
                     <Link
