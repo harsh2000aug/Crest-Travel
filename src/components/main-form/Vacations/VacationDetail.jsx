@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import DatePicker from "react-datepicker";
 import L from "leaflet";
@@ -32,6 +32,7 @@ import {
 import "leaflet/dist/leaflet.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "./VacationDetail.css";
+import VacationFinalLoader from "../../../reuseable-components/VacationFinalLoader/VacationFinalLoader";
 
 const resortMarkerIcon = L.divIcon({
   className: "vacationDetail__mapIcon",
@@ -371,6 +372,7 @@ const VacationDetail = () => {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [detailsError, setDetailsError] = useState("");
   const [availabilityError, setAvailabilityError] = useState("");
+  const navigate = useNavigate();
 
   const resortId = searchParams.get("resortId") || "";
   const checkInDate = searchParams.get("checkInDate") || "";
@@ -628,7 +630,72 @@ const VacationDetail = () => {
 
     setOpenCalendarIndex(null);
   };
+  const formatBookingDate = (date) => {
+    if (!date) {
+      return "";
+    }
 
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleBookNow = ({
+    group,
+    displayedUnit,
+    selectedStartDate,
+    selectedEndDate,
+  }) => {
+    if (!selectedStartDate || !selectedEndDate) {
+      return;
+    }
+
+    if (!displayedUnit) {
+      return;
+    }
+
+    const orderPrice = displayedUnit?.orderPrice || {};
+
+    const bookingData = {
+      startDate: formatBookingDate(selectedStartDate),
+      endDate: formatBookingDate(selectedEndDate),
+      startTime: formatTime(details?.checkinTime),
+      endTime: formatTime(details?.checkoutTime),
+
+      roomType: `${group?.title}, Max Occupancy: ${displayedUnit.maxOccupancy}`,
+
+      property: {
+        id: details?.resortId || details?.id || resortId,
+        image: images[0] || "",
+        name: details?.resortName || "",
+        addressLine1: details?.addressLine1 || "",
+        addressLine2: details?.addressLine2 || "",
+        city: details?.city || "",
+        state: details?.state || "",
+        country: details?.country || "",
+        postalCode: details?.postalCode || "",
+        latitude: Number(details?.latitude) || 0,
+        longitude: Number(details?.longitude) || 0,
+        phone: details?.phone || "",
+        email: details?.email || "",
+      },
+
+      price: {
+        currency: orderPrice?.currency || "USD",
+        rate: Number(orderPrice?.rate ?? 1),
+        ourPrice: Number(orderPrice?.ourPrice ?? 0),
+        payable: Number(orderPrice?.payable ?? orderPrice?.ourPrice ?? 0),
+      },
+
+      starRating: String(details?.rating || ""),
+    };
+
+    sessionStorage.setItem("vacationBookingData", JSON.stringify(bookingData));
+
+    navigate("/vacation-billing");
+  };
   if (!loading && detailsError && !details) {
     return (
       <div className="vacationDetailPage">
@@ -644,7 +711,7 @@ const VacationDetail = () => {
   return (
     <div className="vacationDetailPage">
       <HeaderInner />
-      {loading && <VacationLoader />}
+      {loading && <VacationFinalLoader />}
 
       {details && (
         <main className="vacationDetail">
@@ -862,27 +929,32 @@ const VacationDetail = () => {
                       <h3>{group.title}</h3>
 
                       {displayedUnit && (
-                        <div className="vacationDetail__unitFeatures">
+                        <div className="vacationDetail__unitPrice">
                           <span>
-                            <FaUsers />
-                            Up to {displayedUnit.maxOccupancy} people
+                            Total <strong>{formattedPrice}</strong>
                           </span>
 
-                          <span>
-                            <FaBed />
-                            {displayedUnit.numberOfBedrooms} bedrooms
-                          </span>
+                          <small>
+                            for {selectedNights || displayedUnit.numberOfNights}{" "}
+                            nights, including taxes and fees
+                          </small>
 
-                          <span>
-                            <FaBath />
-                            {displayedUnit.numberOfBathrooms} bathrooms
-                          </span>
-
-                          <span>
-                            <FaUtensils />
-                            {displayedUnit.kitchenType ||
-                              "Kitchen details unavailable"}
-                          </span>
+                          {selectedStartDate && selectedEndDate && (
+                            <button
+                              type="button"
+                              className="vacationDetail__confirmedBookingButton"
+                              onClick={() =>
+                                handleBookNow({
+                                  group,
+                                  displayedUnit,
+                                  selectedStartDate,
+                                  selectedEndDate,
+                                })
+                              }
+                            >
+                              Book Now
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

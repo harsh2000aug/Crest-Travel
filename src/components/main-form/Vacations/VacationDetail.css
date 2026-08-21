@@ -773,3 +773,39 @@
     height: 52px;
   }
 }
+.vacationDetail__confirmedBookingButton {
+  width: 50%;
+  margin-top: 14px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  background-color: #c79c4b;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.vacationDetail__confirmedBookingButton:hover {
+  background-color: #ad8133;
+  transform: translateY(-1px);
+}
+
+.vacationDetail__confirmedBookingButton:active {
+  transform: translateY(0);
+}
+
+.vacationDetail__confirmedBookingButton:focus-visible {
+  outline: 3px solid rgba(199, 156, 75, 0.35);
+  outline-offset: 3px;
+}
+
+@media (max-width: 768px) {
+  .vacationDetail__confirmedBookingButton {
+    padding: 11px 16px;
+    font-size: 14px;
+  }
+}

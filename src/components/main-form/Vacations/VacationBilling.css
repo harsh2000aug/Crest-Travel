@@ -1,0 +1,457 @@
+.vacationBilling {
+  min-height: 100vh;
+  padding: 50px 20px;
+  color: #182230;
+}
+
+/* .vacationBilling__container {
+  width: 100%;
+  margin: 0 auto;
+} */
+
+.vacationBilling__heading {
+  margin-bottom: 28px;
+}
+
+.vacationBilling__heading h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  color: #101828;
+}
+
+.vacationBilling__heading p {
+  margin: 0;
+  color: #667085;
+  font-size: 15px;
+}
+
+.vacationBilling__form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.vacationBilling__section {
+  padding: 30px;
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(16, 24, 40, 0.06);
+}
+
+.vacationBilling__sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding-bottom: 22px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #eaecf0;
+}
+
+.vacationBilling__sectionNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #182230;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.vacationBilling__sectionHeader h2 {
+  margin: 0 0 5px;
+  font-size: 21px;
+  color: #101828;
+}
+
+.vacationBilling__sectionHeader p {
+  margin: 0;
+  color: #667085;
+  font-size: 14px;
+}
+
+.vacationBilling__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.vacationBilling__field {
+  display: flex;
+  flex-direction: column;
+}
+
+.vacationBilling__fullWidth {
+  grid-column: 1 / -1;
+}
+
+.vacationBilling__field label {
+  margin-bottom: 8px;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.vacationBilling__optional {
+  color: #98a2b3;
+  font-weight: 400;
+}
+
+.vacationBilling__field input,
+.vacationBilling__field select {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+  outline: none;
+  background: #ffffff;
+  color: #101828;
+  font-size: 15px;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.vacationBilling__field input::placeholder {
+  color: #98a2b3;
+}
+
+.vacationBilling__field input:focus,
+.vacationBilling__field select:focus {
+  border-color: #182230;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.vacationBilling__field input.inputError,
+.vacationBilling__field select.inputError {
+  border-color: #e11d48;
+}
+
+.vacationBilling__field input.inputError:focus,
+.vacationBilling__field select.inputError:focus {
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
+}
+
+.vacationBilling__error {
+  margin-top: 6px;
+  color: #e11d48;
+  font-size: 12px;
+}
+
+.vacationBilling__cardInput {
+  position: relative;
+}
+
+.vacationBilling__cardInput input {
+  padding-right: 50px;
+}
+
+.vacationBilling__cardInput span {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  font-size: 20px;
+  pointer-events: none;
+}
+
+.vacationBilling__security {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: #667085;
+  font-size: 13px;
+}
+
+.vacationBilling__security p {
+  margin: 0;
+}
+
+.vacationBilling__submit {
+  width: 100%;
+  min-height: 52px;
+  border: none;
+  border-radius: 10px;
+  background: #182230;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.vacationBilling__submit:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.vacationBilling__submit:disabled {
+  background: #93b4f4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 650px) {
+  .vacationBilling {
+    padding: 30px 14px;
+  }
+
+  .vacationBilling__heading h1 {
+    font-size: 26px;
+  }
+
+  .vacationBilling__section {
+    padding: 22px 16px;
+    border-radius: 12px;
+  }
+
+  .vacationBilling__grid {
+    grid-template-columns: 1fr;
+    gap: 17px;
+  }
+
+  .vacationBilling__fullWidth {
+    grid-column: auto;
+  }
+
+  .vacationBilling__security {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+.vacationBilling__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 410px;
+  align-items: start;
+  gap: 30px;
+}
+
+.vacationBilling__form {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.vacationBilling__bookingSummary {
+  position: sticky;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.vacationBilling__stayCard,
+.vacationBilling__priceCard,
+.vacationBilling__chargesCard {
+  overflow: hidden;
+  border: 1px solid #d9dde3;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: 0 8px 25px rgba(16, 24, 40, 0.05);
+}
+
+.vacationBilling__stayImage,
+.vacationBilling__stayImageFallback {
+  width: 100%;
+  height: 235px;
+}
+
+.vacationBilling__stayImage {
+  display: block;
+  object-fit: cover;
+}
+
+.vacationBilling__stayImageFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9edf3;
+  color: #667085;
+  font-size: 14px;
+}
+
+.vacationBilling__stayContent {
+  padding: 20px;
+}
+
+.vacationBilling__propertyTitleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vacationBilling__propertyTitleRow h2 {
+  margin: 0;
+  color: #101828;
+  font-size: 19px;
+  line-height: 1.35;
+}
+
+.vacationBilling__starRating {
+  flex-shrink: 0;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #fff6dc;
+  color: #b07812;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.vacationBilling__roomType {
+  margin: 9px 0 10px;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.vacationBilling__stayDates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vacationBilling__stayDates strong {
+  color: #151b26;
+  font-size: 15px;
+}
+
+.vacationBilling__stayDates span {
+  color: #667085;
+  font-size: 13px;
+}
+
+.vacationBilling__stayDates small {
+  color: #8a94a3;
+  font-size: 12px;
+}
+
+.vacationBilling__propertyAddress {
+  margin: 14px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid #eaecf0;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.vacationBilling__priceCard {
+  padding: 22px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.vacationBilling__priceCard span,
+.vacationBilling__priceCard strong {
+  color: #111827;
+  font-size: 18px;
+}
+
+.vacationBilling__chargesCard {
+  padding: 24px 20px;
+}
+
+.vacationBilling__chargesCard h2 {
+  margin: 0 0 14px;
+  color: #111827;
+  font-size: 20px;
+}
+
+.vacationBilling__chargesCard p {
+  margin: 0;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+@media (max-width: 1050px) {
+  .vacationBilling__layout {
+    grid-template-columns: minmax(0, 1fr) 350px;
+    gap: 22px;
+  }
+}
+
+@media (max-width: 850px) {
+  .vacationBilling__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .vacationBilling__bookingSummary {
+    position: static;
+    grid-row: 1;
+  }
+
+  .vacationBilling__stayImage,
+  .vacationBilling__stayImageFallback {
+    height: 280px;
+  }
+}
+
+@media (max-width: 650px) {
+  .vacationBilling__stayImage,
+  .vacationBilling__stayImageFallback {
+    height: 210px;
+  }
+}
+.vacationBilling__redirectOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.vacationBilling__redirectCard {
+  width: 100%;
+  max-width: 390px;
+  padding: 36px 26px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  text-align: center;
+}
+
+.vacationBilling__redirectSpinner {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 22px;
+  display: block;
+  border: 5px solid #dbe7ff;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: vacationBillingRedirectSpin 0.8s linear infinite;
+}
+
+.vacationBilling__redirectCard h2 {
+  margin: 0 0 9px;
+  color: #101828;
+  font-size: 21px;
+}
+
+.vacationBilling__redirectCard p {
+  margin: 0;
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@keyframes vacationBillingRedirectSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
