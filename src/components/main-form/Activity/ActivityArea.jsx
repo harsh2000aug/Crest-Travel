@@ -683,56 +683,19 @@ const ActivityArea = () => {
   };
 
   const handleViewActivity = (activity) => {
+    const activityCode = activity?.activityCode;
+
+    if (!activityCode) {
+      return;
+    }
+
     const params = new URLSearchParams();
 
-    const activityImage =
-      activity?.thumbnailHiResURL || activity?.thumbnailURL || "";
-
-    params.set("activityCode", activity?.activityCode || "");
-    params.set("activityTitle", activity?.title || "");
-    params.set("destination", searchDestination || "");
-    params.set("destinationId", searchDestinationId || "");
-    params.set("fromDate", searchFromDate || "");
-    params.set("toDate", searchToDate || "");
-
-    params.set("activityImage", activityImage);
-    params.set(
-      "fromPrice",
-      activity?.pricing?.fromPrice != null
-        ? String(activity.pricing.fromPrice)
-        : "",
-    );
-    params.set(
-      "originalPrice",
-      activity?.pricing?.fromPriceBeforeDiscount != null
-        ? String(activity.pricing.fromPriceBeforeDiscount)
-        : "",
-    );
-    params.set(
-      "ourPrice",
-      activity?.ourPrice != null ? String(activity.ourPrice) : "",
-    );
-    params.set(
-      "activityCurrency",
-      activity?.pricing?.currency || currency || "USD",
-    );
-    params.set(
-      "activityRating",
-      activity?.rating != null ? String(activity.rating) : "",
-    );
-    params.set(
-      "activityReviewCount",
-      activity?.reviewCount != null ? String(activity.reviewCount) : "",
-    );
-    params.set("activityDuration", activity?.duration || "");
-    params.set(
-      "freeCancellation",
-      activity?.freeCancellation ? "true" : "false",
-    );
+    params.set("activityCode", activityCode);
+    params.set("travelDate", searchFromDate);
 
     navigate(`/activity-details?${params.toString()}`);
   };
-
   return (
     <div className="activityArea__page">
       <HeaderInner />
@@ -1120,12 +1083,10 @@ const ActivityArea = () => {
                           </p>
 
                           <div className="activityArea__ratingRow">
-                            {renderStars(activity?.rating)}
-
                             <span className="activityArea__ratingValue">
                               {activity?.rating || 0}
                             </span>
-
+                            {renderStars(activity?.rating)}
                             <span className="activityArea__reviewCount">
                               (
                               {Number(
@@ -1158,7 +1119,7 @@ const ActivityArea = () => {
                               </div>
                             </div>
 
-                            {ourPrice > 0 && (
+                            {/* {ourPrice > 0 && (
                               <div className="activityArea__ourPrice">
                                 <span>Our price</span>
 
@@ -1167,7 +1128,7 @@ const ActivityArea = () => {
                                   {ourPrice.toFixed(2)}
                                 </strong>
                               </div>
-                            )}
+                            )} */}
                           </div>
 
                           <button

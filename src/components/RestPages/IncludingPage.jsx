@@ -81,7 +81,7 @@ const IncludingPage = () => {
         <Header />
         <section className="tm-hero-section">
           <div className="tm-hero-overlay">
-            <span className="tm-badge">PREMIUM MEMBERSHIP</span>
+            <span className="tm-badge">WHAT'S INCLUDED</span>
             <h1>
               Discover Everything Included With Your Crest Travel Club
               Membership
@@ -319,23 +319,24 @@ const IncludingPage = () => {
         <div className="crestIncluded__container">
           {/* Introduction */}
           <div className="crestIncluded__intro">
-            <span className="crestIncluded__eyebrow">WHAT'S INCLUDED</span>
-
-            <h2>
+            {/* <h2>
               Premium Travel Benefits,
               <span> Built Around You</span>
-            </h2>
+            </h2> */}
 
             <p>
               Crest Travel Club was built to make premium travel more accessible
-              through membership — combining discounted access, real travel
-              protection, and dedicated support into one plan.
+              through membership combining discounted access across hotels,
+              flights, cruises, and car rentals with real travel protection and
+              dedicated support, all in one plan. No piecing together deals
+              across different sites for every trip — just one dependable source
+              of savings, ready whenever you are.
             </p>
 
             <p>
               Every membership includes the same core foundation; higher tiers
-              add more Room Coins and stronger baggage coverage. Here's exactly
-              what that means for you.
+              add more Room Coins and stronger baggage coverage. Below, you'll
+              find exactly what each benefit means and how it works.
             </p>
           </div>
 

@@ -11,20 +11,131 @@ import {
 import "./Activity.css";
 import Calendar from "react-calendar";
 
+const activityDetailCache = new Map();
+const activityReviewsCache = new Map();
+const activityCalendarCache = new Map();
+
+const getCachedRequest = (cache, key, request) => {
+  if (!cache.has(key)) {
+    const promise = request().catch((error) => {
+      cache.delete(key);
+      throw error;
+    });
+
+    cache.set(key, promise);
+  }
+
+  return cache.get(key);
+};
+
+const formatDateToApi = (date) => {
+  if (!date) return "";
+
+  const parsedDate = date instanceof Date ? date : new Date(`${date}T00:00:00`);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return typeof date === "string" ? date : "";
+  }
+
+  const year = parsedDate.getFullYear();
+  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const day = String(parsedDate.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const formatDisplayDate = (date) => {
+  if (!date) return "";
+
+  const parsedDate = date instanceof Date ? date : new Date(`${date}T00:00:00`);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return typeof date === "string" ? date : "";
+  }
+
+  return parsedDate.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const formatReviewDate = (date) => {
+  if (!date) return "";
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return date;
+  }
+
+  return parsedDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+const formatTime = (time) => {
+  if (!time) return "";
+
+  const [hours, minutes] = String(time).split(":");
+  const hour = Number(hours);
+
+  if (Number.isNaN(hour)) return time;
+
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const formattedHour = hour % 12 || 12;
+
+  return `${formattedHour}:${minutes || "00"} ${suffix}`;
+};
+
+const renderStars = (rating, size = "normal") => {
+  const numericRating = Number(rating) || 0;
+  const roundedRating = Math.round(numericRating);
+
+  return (
+    <div
+      className={`activityDetailsUi__stars activityDetailsUi__stars--${size}`}
+    >
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span
+          key={star}
+          className={
+            star <= roundedRating
+              ? "activityDetailsUi__star activityDetailsUi__star--active"
+              : "activityDetailsUi__star"
+          }
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+};
+
 const ActivityDetails = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [activityData, setActivityData] = useState(null);
   const [reviewsData, setReviewsData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [reviewsLoading, setReviewsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState("availability");
-  const [selectedTimes, setSelectedTimes] = useState({});
-  const [participantsOpen, setParticipantsOpen] = useState(false);
+  const [calendarData, setCalendarData] = useState([]);
   const [calendarAvailabilityData, setCalendarAvailabilityData] =
     useState(null);
+
+  const [loading, setLoading] = useState(true);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [calendarLoading, setCalendarLoading] = useState(true);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [availabilityError, setAvailabilityError] = useState("");
+
+  const [selectedDate, setSelectedDate] = useState("");
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [participantsOpen, setParticipantsOpen] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [selectedTimes, setSelectedTimes] = useState({});
+
   const [participants, setParticipants] = useState({
     adult: 2,
     youth: 0,
@@ -39,207 +150,131 @@ const ActivityDetails = () => {
     infant: 0,
   });
 
-  const timeOptions = [
-    "8:15 AM",
-    "9:00 AM",
-    "10:00 AM",
-    "11:30 AM",
-    "12:30 PM",
-    "2:00 PM",
-    "3:30 PM",
-    "5:00 PM",
-  ];
   const participantsRef = useRef(null);
+  const calendarRef = useRef(null);
+
   const activityCode = searchParams.get("activityCode") || "";
-  const activityTitle = searchParams.get("activityTitle") || "";
-  const destination = searchParams.get("destination") || "";
-  const destinationId = searchParams.get("destinationId") || "";
-  const fromDate = searchParams.get("fromDate") || "";
-  const toDate = searchParams.get("toDate") || "";
-  const activityImage = searchParams.get("activityImage") || "";
-  const fromPrice = Number(searchParams.get("fromPrice") || 0);
-  const originalPrice = Number(searchParams.get("originalPrice") || 0);
-  const ourPrice = Number(searchParams.get("ourPrice") || 0);
-  const activityCurrency = searchParams.get("activityCurrency") || "USD";
-  const activityRating = Number(searchParams.get("activityRating") || 0);
-  const activityReviewCount = Number(
-    searchParams.get("activityReviewCount") || 0,
-  );
-  const activityDuration = searchParams.get("activityDuration") || "";
-  const freeCancellation = searchParams.get("freeCancellation") === "true";
-  const [selectedDate, setSelectedDate] = useState(fromDate || "");
-  const [calendarData, setCalendarData] = useState([]);
-  const [calendarLoading, setCalendarLoading] = useState(false);
-  const [calendarOpen, setCalendarOpen] = useState(false);
+  const startDate = searchParams.get("travelDate") || "";
 
-  //   useEffect(() => {
-  //     const showDetailedActivity = async () => {
-  //       if (!activityCode) {
-  //         setError("Activity code is missing.");
-  //         setLoading(false);
-  //         return;
-  //       }
+  const loadAvailability = async (date, participantState) => {
+    if (!activityCode || !date) {
+      return null;
+    }
 
-  //       try {
-  //         setLoading(true);
-  //         setError("");
+    setAvailabilityLoading(true);
+    setAvailabilityError("");
 
-  //         const response = await activityDetail({
-  //           body: {
-  //             activityCode,
-  //             startDate: fromDate,
-  //           },
-  //         });
+    try {
+      const ageBands = [
+        {
+          ageBand: "SENIOR",
+          numberOfTravelers: 0,
+        },
+        {
+          ageBand: "ADULT",
+          numberOfTravelers: Number(participantState?.adult) || 0,
+        },
+        {
+          ageBand: "CHILD",
+          numberOfTravelers:
+            (Number(participantState?.youth) || 0) +
+            (Number(participantState?.child) || 0),
+        },
+      ];
 
-  //         const result = response?.data?.details?.result;
+      const requestBody = {
+        activityCode,
+        travelDate: date,
+        ageBands,
+      };
 
-  //         if (result) {
-  //           setActivityData(result);
-  //         } else {
-  //           setError("Activity details not found.");
-  //         }
-  //       } catch (err) {
-  //         console.error(err);
-  //         setError("Unable to load activity details.");
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     };
+      console.log("activityCalendarAvail REQUEST:", requestBody);
 
-  //     showDetailedActivity();
-  //   }, [activityCode, fromDate]);
+      const response = await activityCalendarAvail({
+        body: requestBody,
+      });
 
-  //   useEffect(() => {
-  //     const getReviews = async () => {
-  //       if (!activityCode) {
-  //         setReviewsLoading(false);
-  //         return;
-  //       }
+      const result = response?.data?.availability?.result || null;
 
-  //       try {
-  //         setReviewsLoading(true);
+      if (!result) {
+        setCalendarAvailabilityData(null);
+        setAvailabilityError("No availability found for the selected date.");
+        return null;
+      }
 
-  //         const response = await activityReviews({
-  //           body: {
-  //             activityCode,
-  //             count: 10,
-  //             page: 1,
-  //             ratings: [1, 2, 3, 4, 5],
-  //           },
-  //         });
+      setCalendarAvailabilityData(result);
 
-  //         const result = response?.data?.reviews?.result;
+      const firstAvailableItem = result?.bookableItems?.find((item) =>
+        item?.availabilityDetails?.some((detail) => detail?.available === true),
+      );
 
-  //         if (result) {
-  //           setReviewsData(result);
-  //         }
-  //       } catch (err) {
-  //         console.error(err);
-  //       } finally {
-  //         setReviewsLoading(false);
-  //       }
-  //     };
+      if (firstAvailableItem) {
+        const firstAvailableDetail =
+          firstAvailableItem.availabilityDetails?.find(
+            (detail) => detail?.available === true,
+          );
 
-  //     getReviews();
-  //   }, [activityCode]);
+        if (firstAvailableDetail?.startTime) {
+          setSelectedTimes((previous) => ({
+            ...previous,
+            [firstAvailableItem.gradeCode]: firstAvailableDetail.startTime,
+          }));
+        }
+      }
 
-  //   useEffect(() => {
-  //     const handleOutsideClick = (event) => {
-  //       if (
-  //         participantsRef.current &&
-  //         !participantsRef.current.contains(event.target)
-  //       ) {
-  //         setParticipantsOpen(false);
-  //       }
-  //     };
+      return result;
+    } catch (requestError) {
+      console.error("activityCalendarAvail ERROR:", requestError);
 
-  //     document.addEventListener("click", handleOutsideClick);
+      setCalendarAvailabilityData(null);
+      setAvailabilityError(
+        "Unable to load availability for the selected date.",
+      );
 
-  //     return () => {
-  //       document.removeEventListener("click", handleOutsideClick);
-  //     };
-  //   }, []);
-
-  //   useEffect(() => {
-  //     const calendarDetails = async () => {
-  //       if (!activityCode) return;
-
-  //       try {
-  //         setCalendarLoading(true);
-
-  //         const res = await activityCalendar({
-  //           body: {
-  //             activityCode,
-  //           },
-  //         });
-
-  //         const availableDates =
-  //           res?.data?.calender?.result?.availableDates || [];
-
-  //         setCalendarData(availableDates);
-
-  //         if (availableDates.length > 0) {
-  //           const firstAvailableDate = availableDates[0].date;
-
-  //           setSelectedDate((currentDate) => {
-  //             const currentExists = availableDates.some(
-  //               (item) => item.date === currentDate,
-  //             );
-
-  //             return currentExists ? currentDate : firstAvailableDate;
-  //           });
-  //         }
-  //       } catch (error) {
-  //         console.error("Activity calendar error:", error);
-  //         setCalendarData([]);
-  //       } finally {
-  //         setCalendarLoading(false);
-  //       }
-  //     };
-
-  //     calendarDetails();
-  //   }, [activityCode]);
-
-  //   useEffect(() => {
-  //     const handleCutomers = async () => {
-  //       try {
-  //         const res = await activityCalendarAvail({
-  //           body: {
-  //             activityCode,
-  //             travelDate: fromDate,
-  //           },
-  //         });
-  //       } catch (error) {
-  //         console.log(error);
-  //       }
-  //     };
-  //     handleCutomers();
-  //   }, []);
+      return null;
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!activityCode) {
       setError("Activity code is missing.");
       setLoading(false);
       setReviewsLoading(false);
+      setCalendarLoading(false);
       return;
     }
 
-    const loadActivityData = async () => {
+    let active = true;
+
+    const loadActivityPage = async () => {
       setLoading(true);
       setReviewsLoading(true);
       setCalendarLoading(true);
       setError("");
 
+      const detailKey = activityCode;
+      const reviewsKey = activityCode;
+      const calendarKey = activityCode;
+
       try {
-        const [activityResponse, reviewsResponse, calendarResponse] =
-          await Promise.all([
+        const detailPromise = getCachedRequest(
+          activityDetailCache,
+          detailKey,
+          () =>
             activityDetail({
               body: {
                 activityCode,
-                startDate: fromDate,
+                startDate,
               },
             }),
+        );
 
+        const reviewsPromise = getCachedRequest(
+          activityReviewsCache,
+          reviewsKey,
+          () =>
             activityReviews({
               body: {
                 activityCode,
@@ -248,165 +283,281 @@ const ActivityDetails = () => {
                 ratings: [1, 2, 3, 4, 5],
               },
             }),
+        );
 
+        const calendarPromise = getCachedRequest(
+          activityCalendarCache,
+          calendarKey,
+          () =>
             activityCalendar({
               body: {
                 activityCode,
               },
             }),
+        );
+
+        const [detailResult, reviewsResult, calendarResult] =
+          await Promise.allSettled([
+            detailPromise,
+            reviewsPromise,
+            calendarPromise,
           ]);
 
-        const activityResult = activityResponse?.data?.details?.result;
+        if (!active) return;
 
-        const reviewsResult = reviewsResponse?.data?.reviews?.result;
+        if (detailResult.status === "fulfilled") {
+          const response = detailResult.value;
 
-        const availableDates =
-          calendarResponse?.data?.calender?.result?.availableDates || [];
+          console.log("ACTIVITY DETAIL API DATA:", response?.data);
 
-        if (activityResult) {
-          setActivityData(activityResult);
+          const result =
+            response?.data?.details?.result ||
+            response?.data?.details ||
+            response?.data?.result ||
+            response?.data?.data?.details?.result ||
+            null;
+
+          console.log("ACTIVITY DETAIL EXTRACTED RESULT:", result);
+
+          if (result && typeof result === "object") {
+            setActivityData(result);
+          } else {
+            setActivityData(null);
+            setError("Activity details not found.");
+          }
         } else {
-          setError("Activity details not found.");
+          console.error("ACTIVITY DETAIL API FAILED:", detailResult.reason);
+
+          setActivityData(null);
+          setError("Unable to load activity details.");
         }
 
-        if (reviewsResult) {
-          setReviewsData(reviewsResult);
+        if (reviewsResult.status === "fulfilled") {
+          const response = reviewsResult.value;
+
+          const result =
+            response?.data?.reviews?.result ||
+            response?.data?.reviews ||
+            response?.data?.result ||
+            null;
+
+          setReviewsData(result);
+        } else {
+          console.error("ACTIVITY REVIEWS API FAILED:", reviewsResult.reason);
+
+          setReviewsData(null);
         }
 
-        setCalendarData(availableDates);
+        if (calendarResult.status === "fulfilled") {
+          const response = calendarResult.value;
 
-        if (availableDates.length > 0) {
-          const firstAvailableDate = availableDates[0].date;
+          console.log("ACTIVITY CALENDAR API DATA:", response?.data);
+
+          const availableDates =
+            response?.data?.calender?.result?.availableDates ||
+            response?.data?.calendar?.result?.availableDates ||
+            response?.data?.calender?.availableDates ||
+            response?.data?.calendar?.availableDates ||
+            [];
+
+          const normalizedDates = Array.isArray(availableDates)
+            ? availableDates
+                .map((item) => ({
+                  ...item,
+                  date: String(
+                    item?.date || item?.travelDate || item?.startDate || "",
+                  ).slice(0, 10),
+                }))
+                .filter((item) => item.date)
+            : [];
+
+          setCalendarData(normalizedDates);
+
+          const firstDate = normalizedDates[0]?.date || "";
 
           setSelectedDate((currentDate) => {
-            const currentExists = availableDates.some(
-              (item) => item.date === currentDate,
-            );
+            if (
+              currentDate &&
+              normalizedDates.some((item) => item.date === currentDate)
+            ) {
+              return currentDate;
+            }
 
-            return currentExists ? currentDate : firstAvailableDate;
+            return firstDate;
           });
+
+          const initialDate =
+            startDate && normalizedDates.some((item) => item.date === startDate)
+              ? startDate
+              : normalizedDates[0]?.date || "";
+
+          setSelectedDate(initialDate);
+
+          if (initialDate) {
+            await loadAvailability(initialDate, appliedParticipants);
+          }
+        } else {
+          console.error("ACTIVITY CALENDAR API FAILED:", calendarResult.reason);
+
+          setCalendarData([]);
+          setSelectedDate("");
+          setCalendarAvailabilityData(null);
+        }
+
+        if (active) {
+          setLoading(false);
+          setReviewsLoading(false);
+          setCalendarLoading(false);
         }
       } catch (error) {
-        console.error("Activity API error:", error);
-        setError("Unable to load activity data.");
-        setCalendarData([]);
-      } finally {
-        setLoading(false);
-        setReviewsLoading(false);
-        setCalendarLoading(false);
+        console.error("ACTIVITY PAGE LOAD ERROR:", error);
+
+        if (active) {
+          setError("Unable to load activity details.");
+          setLoading(false);
+          setReviewsLoading(false);
+          setCalendarLoading(false);
+        }
       }
     };
 
-    loadActivityData();
-  }, [activityCode, fromDate]);
+    loadActivityPage();
 
-  const handleUpdateSearch = async () => {
-    console.log("Update search clicked");
-    console.log("activityCode:", activityCode);
-    console.log("selectedDate:", selectedDate);
-    console.log("appliedParticipants:", appliedParticipants);
+    return () => {
+      active = false;
+    };
+  }, [activityCode]);
 
-    if (!activityCode) {
-      console.error("Activity code is missing");
-      return;
-    }
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        participantsOpen &&
+        participantsRef.current &&
+        !participantsRef.current.contains(event.target)
+      ) {
+        setParticipantsOpen(false);
+      }
 
-    if (!selectedDate) {
-      console.error("Selected date is missing");
-      return;
-    }
+      if (
+        calendarOpen &&
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target)
+      ) {
+        setCalendarOpen(false);
+      }
+    };
 
-    try {
-      setAvailabilityLoading(true);
+    document.addEventListener("mousedown", handleOutsideClick);
 
-      const ageBands = [
-        {
-          ageBand: "SENIOR",
-          numberOfTravelers: 0,
-        },
-        {
-          ageBand: "ADULT",
-          numberOfTravelers: Number(appliedParticipants.adult) || 0,
-        },
-        {
-          ageBand: "CHILD",
-          numberOfTravelers:
-            (Number(appliedParticipants.youth) || 0) +
-            (Number(appliedParticipants.child) || 0),
-        },
-      ];
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [participantsOpen, calendarOpen]);
 
-      const requestBody = {
-        activityCode,
-        travelDate: selectedDate,
-        ageBands,
-      };
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, [activityCode]);
 
-      console.log("activityCalendarAvail request:", requestBody);
+  const normalizedCalendarData = useMemo(() => {
+    return calendarData
+      .map((item) => {
+        const rawDate = item?.date || item?.travelDate || item?.startDate || "";
 
-      const response = await activityCalendarAvail({
-        body: requestBody,
-      });
+        if (!rawDate) return null;
 
-      console.log("activityCalendarAvail response:", response);
+        const dateOnly = String(rawDate).slice(0, 10);
+        const parsedDate = new Date(`${dateOnly}T00:00:00`);
 
-      const result =
-        response?.data?.calender?.result ||
-        response?.data?.calendar?.result ||
-        response?.data?.result;
-
-      setCalendarAvailabilityData(result || null);
-
-      setActiveTab("availability");
-
-      setTimeout(() => {
-        const element = document.getElementById(
-          "activityDetailsUi__availability",
-        );
-
-        if (element) {
-          const headerOffset = 90;
-          const elementPosition =
-            element.getBoundingClientRect().top + window.scrollY;
-
-          window.scrollTo({
-            top: elementPosition - headerOffset,
-            behavior: "smooth",
-          });
+        if (Number.isNaN(parsedDate.getTime())) {
+          return null;
         }
-      }, 100);
-    } catch (error) {
-      console.error("activityCalendarAvail error:", error);
 
-      setCalendarAvailabilityData(null);
-    } finally {
-      setAvailabilityLoading(false);
-    }
-  };
+        const rawPrice =
+          item?.datePrice ??
+          item?.price?.ourPrice ??
+          item?.price?.showOurPrice ??
+          item?.ourPrice ??
+          item?.showOurPrice ??
+          item?.fromPrice ??
+          item?.price ??
+          null;
+
+        const numericPrice =
+          rawPrice === null || rawPrice === undefined || rawPrice === ""
+            ? null
+            : Number(rawPrice);
+
+        return {
+          ...item,
+          date: dateOnly,
+          datePrice: Number.isFinite(numericPrice) ? numericPrice : null,
+        };
+      })
+      .filter(Boolean);
+  }, [calendarData]);
 
   const calendarDateMap = useMemo(() => {
-    return calendarData.reduce((acc, item) => {
-      acc[item.date] = item.datePrice;
-      return acc;
+    return normalizedCalendarData.reduce((accumulator, item) => {
+      accumulator[item.date] = item.datePrice;
+      return accumulator;
     }, {});
-  }, [calendarData]);
+  }, [normalizedCalendarData]);
 
-  const availableCalendarDates = useMemo(() => {
-    return new Set(calendarData.map((item) => item.date));
-  }, [calendarData]);
+  const availableCalendarDates = useMemo(
+    () => new Set(normalizedCalendarData.map((item) => item.date)),
+    [normalizedCalendarData],
+  );
 
-  const formatCalendarDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+  const calendarAvailableDateObjects = useMemo(
+    () =>
+      normalizedCalendarData.map((item) => new Date(`${item.date}T00:00:00`)),
+    [normalizedCalendarData],
+  );
 
-    return `${year}-${month}-${day}`;
+  const updateParticipant = (type, change) => {
+    setParticipants((previous) => {
+      const currentValue = Number(previous[type]) || 0;
+      const minimum = type === "adult" ? 1 : 0;
+
+      const nextValue = Math.max(minimum, Math.min(10, currentValue + change));
+
+      const nextParticipants = {
+        ...previous,
+        [type]: nextValue,
+      };
+
+      const total =
+        nextParticipants.adult +
+        nextParticipants.youth +
+        nextParticipants.child +
+        nextParticipants.infant;
+
+      if (total > 10) {
+        return previous;
+      }
+
+      return nextParticipants;
+    });
+  };
+
+  const applyParticipants = () => {
+    setAppliedParticipants({
+      adult: Number(participants.adult) || 1,
+      youth: Number(participants.youth) || 0,
+      child: Number(participants.child) || 0,
+      infant: Number(participants.infant) || 0,
+    });
+
+    setParticipantsOpen(false);
   };
 
   const handleCalendarDateChange = (date) => {
     if (!date) return;
 
-    const formattedDate = formatCalendarDate(date);
+    const formattedDate = formatDateToApi(date);
 
     if (!availableCalendarDates.has(formattedDate)) {
       return;
@@ -414,187 +565,69 @@ const ActivityDetails = () => {
 
     setSelectedDate(formattedDate);
     setCalendarOpen(false);
+    setAvailabilityError("");
   };
 
   const tileDisabled = ({ date, view }) => {
     if (view !== "month") return false;
 
-    const formattedDate = formatCalendarDate(date);
-
-    return !availableCalendarDates.has(formattedDate);
+    return !availableCalendarDates.has(formatDateToApi(date));
   };
 
   const tileContent = ({ date, view }) => {
     if (view !== "month") return null;
 
-    const formattedDate = formatCalendarDate(date);
-    const price = calendarDateMap[formattedDate];
+    const dateKey = formatDateToApi(date);
+    const price = calendarDateMap[dateKey];
 
-    if (!price) return null;
+    if (
+      price === undefined ||
+      price === null ||
+      price === "" ||
+      !Number.isFinite(Number(price))
+    ) {
+      return null;
+    }
 
     return (
       <span className="activityDetailsUi__calendarPrice">
-        ${Number(price).toFixed(2)}
+        {displayCurrency} {Number(price).toFixed(2)}
       </span>
     );
   };
 
-  const formatDate = (date) => {
-    if (!date) return "";
-
-    const parsedDate = new Date(date);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-      return date;
+  const handleUpdateSearch = async () => {
+    if (!selectedDate || !activityCode) {
+      return;
     }
 
-    return parsedDate.toLocaleDateString("en-US", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
+    const nextDate = formatDateToApi(selectedDate);
 
-  const renderStars = (rating, size = "normal") => {
-    const numericRating = Number(rating) || 0;
-    const roundedRating = Math.round(numericRating);
-
-    return (
-      <div
-        className={`activityDetailsUi__stars activityDetailsUi__stars--${size}`}
-      >
-        {[1, 2, 3, 4, 5].map((star) => (
-          <span
-            key={star}
-            className={
-              star <= roundedRating
-                ? "activityDetailsUi__star activityDetailsUi__star--active"
-                : "activityDetailsUi__star"
-            }
-          >
-            ★
-          </span>
-        ))}
-      </div>
-    );
-  };
-
-  const getRatingCount = (rating) => {
-    const item = reviewsData?.totalReviewsSummary?.reviewCountTotals?.find(
-      (entry) => Number(entry.rating) === Number(rating),
+    setSearchParams(
+      {
+        activityCode,
+        travelDate: nextDate,
+      },
+      { replace: true },
     );
 
-    return item?.count || 0;
-  };
+    const result = await loadAvailability(nextDate, appliedParticipants);
 
-  const totalReviewCount =
-    reviewsData?.totalReviewsSummary?.totalReviews || activityReviewCount || 0;
-
-  const calculatedReviewAverage = useMemo(() => {
-    const totals = reviewsData?.totalReviewsSummary?.reviewCountTotals;
-
-    if (!Array.isArray(totals) || totals.length === 0) {
-      return activityRating || 0;
+    if (!result) {
+      return;
     }
 
-    const total = totals.reduce(
-      (sum, item) => sum + Number(item.count || 0),
-      0,
-    );
+    requestAnimationFrame(() => {
+      const element = document.getElementById(
+        "activityDetailsUi__availability",
+      );
 
-    if (!total) {
-      return activityRating || 0;
-    }
-
-    const score = totals.reduce(
-      (sum, item) => sum + Number(item.rating || 0) * Number(item.count || 0),
-      0,
-    );
-
-    return score / total;
-  }, [reviewsData, activityRating]);
-
-  const getRatingPercentage = (rating) => {
-    if (!totalReviewCount) return 0;
-
-    return Math.round((getRatingCount(rating) / totalReviewCount) * 100);
-  };
-
-  const formatReviewDate = (date) => {
-    if (!date) return "";
-
-    const parsedDate = new Date(date);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-      return date;
-    }
-
-    return parsedDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const updateParticipant = (type, change) => {
-    setParticipants((prev) => {
-      const current = prev[type];
-
-      let minimum = 0;
-
-      if (type === "adult") {
-        minimum = 1;
+      if (!element) {
+        return;
       }
 
-      const nextValue = Math.max(minimum, Math.min(10, current + change));
-
-      return {
-        ...prev,
-        [type]: nextValue,
-      };
-    });
-  };
-
-  const applyParticipants = () => {
-    setAppliedParticipants(participants);
-    setParticipantsOpen(false);
-  };
-
-  const totalParticipants =
-    appliedParticipants.adult +
-    appliedParticipants.youth +
-    appliedParticipants.child +
-    appliedParticipants.infant;
-
-  const participantLabel = `${totalParticipants} ${
-    totalParticipants === 1 ? "Participant" : "Participants"
-  }`;
-
-  const getDateInputValue = (date) => {
-    if (!date) return "";
-
-    const parsedDate = new Date(date);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-      return date;
-    }
-
-    const year = parsedDate.getFullYear();
-    const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
-    const day = String(parsedDate.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-  };
-
-  const minimumDate = new Date().toISOString().split("T")[0];
-
-  const scrollToSection = (sectionId, tab) => {
-    setActiveTab(tab);
-
-    const element = document.getElementById(sectionId);
-
-    if (element) {
       const headerOffset = 90;
+
       const elementPosition =
         element.getBoundingClientRect().top + window.scrollY;
 
@@ -602,15 +635,255 @@ const ActivityDetails = () => {
         top: elementPosition - headerOffset,
         behavior: "smooth",
       });
-    }
+    });
   };
 
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-    });
-  }, []);
+  const getAvailabilityItems = useMemo(() => {
+    const items = calendarAvailabilityData?.bookableItems;
+
+    if (!Array.isArray(items)) {
+      return [];
+    }
+
+    return items;
+  }, [calendarAvailabilityData]);
+
+  const getAvailableDetails = (item) => {
+    if (!Array.isArray(item?.availabilityDetails)) {
+      return [];
+    }
+
+    return item.availabilityDetails.filter(
+      (detail) => detail?.available === true,
+    );
+  };
+
+  const getItemPrice = (item, detail) => {
+    const price =
+      detail?.totalPrice?.price ||
+      item?.availabilityDetails?.[0]?.totalPrice?.price ||
+      {};
+
+    return (
+      Number(price?.showOurPrice) ||
+      Number(price?.ourPrice) ||
+      Number(price?.convertedCoin) ||
+      Number(price?.netPrice) ||
+      0
+    );
+  };
+
+  const getItemPublicPrice = (item, detail) => {
+    const price =
+      detail?.totalPrice?.price ||
+      item?.availabilityDetails?.[0]?.totalPrice?.price ||
+      {};
+
+    return Number(price?.publicPrice) || 0;
+  };
+
+  const getItemPerPersonPrice = (item, detail) => {
+    const totalPrice = getItemPrice(item, detail);
+
+    if (!totalParticipants) {
+      return 0;
+    }
+
+    return totalPrice / totalParticipants;
+  };
+
+  const getSelectedDetail = (item) => {
+    const details = getAvailableDetails(item);
+
+    if (!details.length) {
+      return null;
+    }
+
+    const selectedTime = selectedTimes[item?.gradeCode];
+
+    if (!selectedTime) {
+      return details[0];
+    }
+
+    const matchingDetail = details.find(
+      (detail) => detail?.startTime === selectedTime,
+    );
+
+    return matchingDetail || details[0];
+  };
+
+  const getRatingCount = (rating) => {
+    const totals = reviewsData?.totalReviewsSummary?.reviewCountTotals;
+
+    if (!Array.isArray(totals)) return 0;
+
+    const item = totals.find(
+      (entry) => Number(entry.rating) === Number(rating),
+    );
+
+    return Number(item?.count) || 0;
+  };
+
+  const totalReviewCount =
+    Number(reviewsData?.totalReviewsSummary?.totalReviews) || 0;
+
+  const calculatedReviewAverage = useMemo(() => {
+    const totals = reviewsData?.totalReviewsSummary?.reviewCountTotals;
+
+    if (!Array.isArray(totals) || totals.length === 0) {
+      return Number(activityData?.reviews?.combinedAverageRating) || 0;
+    }
+
+    const total = totals.reduce(
+      (sum, item) => sum + Number(item?.count || 0),
+      0,
+    );
+
+    if (!total) {
+      return Number(activityData?.reviews?.combinedAverageRating) || 0;
+    }
+
+    const score = totals.reduce(
+      (sum, item) => sum + Number(item?.rating || 0) * Number(item?.count || 0),
+      0,
+    );
+
+    return score / total;
+  }, [reviewsData, activityData?.reviews?.combinedAverageRating]);
+
+  const getRatingPercentage = (rating) => {
+    if (!totalReviewCount) return 0;
+
+    return Math.round((getRatingCount(rating) / totalReviewCount) * 100);
+  };
+
+  const totalParticipants =
+    Number(appliedParticipants.adult) +
+    Number(appliedParticipants.youth) +
+    Number(appliedParticipants.child) +
+    Number(appliedParticipants.infant);
+
+  const participantLabel = `${totalParticipants} ${
+    totalParticipants === 1 ? "Participant" : "Participants"
+  }`;
+
+  const {
+    title,
+    description,
+    supplierName,
+    currency,
+    reviews,
+    bookingQuestions,
+    cancellationPolicy,
+    inclusions,
+    exclusions,
+    additionalInfo,
+    bookingRequirements,
+    categories,
+    subCategories,
+    destination: apiDestination,
+    ticketInfo,
+    bookingConfirmationSettings,
+  } = activityData || {};
+
+  const displayTitle = title || "Activity";
+
+  const displayDestination = apiDestination || "Activity";
+
+  const displayCurrency =
+    calendarAvailabilityData?.currency || currency || "USD";
+
+  const displayRating = calculatedReviewAverage || 0;
+
+  const availabilityPriceSummary = useMemo(() => {
+    const items = Array.isArray(calendarAvailabilityData?.bookableItems)
+      ? calendarAvailabilityData.bookableItems
+      : [];
+
+    const prices = items
+      .flatMap((item) =>
+        Array.isArray(item?.availabilityDetails)
+          ? item.availabilityDetails
+          : [],
+      )
+      .filter((detail) => detail?.available === true)
+      .map((detail) => Number(detail?.totalPrice?.price?.showOurPrice))
+      .filter((price) => Number.isFinite(price) && price > 0);
+
+    if (!prices.length) {
+      return {
+        current: 0,
+        original: 0,
+        discount: 0,
+      };
+    }
+
+    const current = Math.min(...prices);
+
+    const publicPrices = items
+      .flatMap((item) =>
+        Array.isArray(item?.availabilityDetails)
+          ? item.availabilityDetails
+          : [],
+      )
+      .filter((detail) => detail?.available === true)
+      .map((detail) => Number(detail?.totalPrice?.price?.publicPrice))
+      .filter((price) => Number.isFinite(price) && price > 0);
+
+    const original = publicPrices.length ? Math.min(...publicPrices) : 0;
+
+    return {
+      current,
+      original,
+      discount:
+        original > current && current > 0
+          ? Math.round(((original - current) / original) * 100)
+          : 0,
+    };
+  }, [calendarAvailabilityData]);
+
+  const displayPrice = availabilityPriceSummary.current;
+  const originalPrice = availabilityPriceSummary.original;
+  const discount = availabilityPriceSummary.discount;
+
+  const activityDuration =
+    activityData?.duration ||
+    activityData?.durationText ||
+    activityData?.durationDescription ||
+    "";
+
+  const freeCancellation = Boolean(
+    cancellationPolicy?.description ||
+    cancellationPolicy?.refundEligibility?.some(
+      (refund) => Number(refund?.percentageRefundable) > 0,
+    ),
+  );
+
+  const galleryImages = useMemo(() => {
+    const productPhotos = Array.isArray(activityData?.productPhotos)
+      ? activityData.productPhotos.filter((photo) => photo?.photoURL)
+      : [];
+
+    return productPhotos;
+  }, [activityData?.productPhotos]);
+
+  const activeGalleryImage = galleryImages[activeImageIndex]?.photoURL || "";
+
+  const handlePreviousImage = () => {
+    setActiveImageIndex((currentIndex) =>
+      currentIndex === 0
+        ? Math.max(galleryImages.length - 1, 0)
+        : currentIndex - 1,
+    );
+  };
+
+  const handleNextImage = () => {
+    setActiveImageIndex((currentIndex) =>
+      galleryImages.length === 0 || currentIndex === galleryImages.length - 1
+        ? 0
+        : currentIndex + 1,
+    );
+  };
 
   if (loading) {
     return (
@@ -634,7 +907,9 @@ const ActivityDetails = () => {
 
         <div className="activityDetailsUi__error">
           <div className="activityDetailsUi__errorIcon">!</div>
+
           <h2>Unable to load activity</h2>
+
           <p>{error || "Activity details are unavailable."}</p>
         </div>
 
@@ -643,45 +918,20 @@ const ActivityDetails = () => {
     );
   }
 
-  const {
-    title,
-    description,
-    supplierName,
-    currency,
-    reviews,
-    bookableItems,
-    bookingQuestions,
-    cancellationPolicy,
-    inclusions,
-    exclusions,
-    additionalInfo,
-    bookingRequirements,
-    pricingInfo,
-    categories,
-    subCategories,
-    destination: apiDestination,
-    ticketInfo,
-    bookingConfirmationSettings,
-    status,
-  } = activityData;
+  const handleBookNow = (item, detail, gradeKey) => {
+    const params = new URLSearchParams({
+      activityCode,
+      travelDate: selectedDate,
+      gradeCode: gradeKey || item?.gradeCode || "",
+      startTime: detail?.startTime || "",
+      adult: String(appliedParticipants.adult || 0),
+      youth: String(appliedParticipants.youth || 0),
+      child: String(appliedParticipants.child || 0),
+      infant: String(appliedParticipants.infant || 0),
+    });
 
-  const displayTitle = title || activityTitle;
-  const displayDestination = destination || apiDestination || "Activity";
-
-  const displayCurrency = activityCurrency || currency || "USD";
-
-  const displayRating =
-    calculatedReviewAverage ||
-    Number(reviews?.combinedAverageRating || 0) ||
-    activityRating ||
-    0;
-
-  const displayPrice = ourPrice > 0 ? ourPrice : fromPrice;
-
-  const discount =
-    originalPrice > displayPrice && displayPrice > 0
-      ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100)
-      : 0;
+    window.location.href = `/activity-book?${params.toString()}`;
+  };
 
   return (
     <div className="activityDetailsUi__page">
@@ -695,7 +945,9 @@ const ActivityDetails = () => {
             <div className="activityDetailsUi__topMeta">
               <div className="activityDetailsUi__ratingCompact">
                 <strong>{displayRating.toFixed(1)}</strong>
+
                 {renderStars(displayRating, "small")}
+
                 <span>{totalReviewCount.toLocaleString()} Reviews</span>
               </div>
 
@@ -718,11 +970,45 @@ const ActivityDetails = () => {
               )}
             </div>
           </section>
+
           <section className="activityDetailsUi__heroGrid">
             <div className="activityDetailsUi__gallery">
               <div className="activityDetailsUi__mainImage">
-                {activityImage ? (
-                  <img src={activityImage} alt={displayTitle} />
+                {activeGalleryImage ? (
+                  <>
+                    <img
+                      src={activeGalleryImage}
+                      alt={
+                        galleryImages[activeImageIndex]?.caption || displayTitle
+                      }
+                    />
+
+                    {galleryImages.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          className="activityDetailsUi__galleryArrow activityDetailsUi__galleryArrow--prev"
+                          onClick={handlePreviousImage}
+                          aria-label="Previous image"
+                        >
+                          ‹
+                        </button>
+
+                        <button
+                          type="button"
+                          className="activityDetailsUi__galleryArrow activityDetailsUi__galleryArrow--next"
+                          onClick={handleNextImage}
+                          aria-label="Next image"
+                        >
+                          ›
+                        </button>
+
+                        <div className="activityDetailsUi__galleryCounter">
+                          {activeImageIndex + 1} / {galleryImages.length}
+                        </div>
+                      </>
+                    )}
+                  </>
                 ) : (
                   <div className="activityDetailsUi__imageFallback">
                     <span>Activity</span>
@@ -735,92 +1021,239 @@ const ActivityDetails = () => {
                   </span>
                 )}
               </div>
+
+              {galleryImages.length > 1 && (
+                <div className="activityDetailsUi__thumbnailCarousel">
+                  {galleryImages.map((photo, index) => (
+                    <button
+                      type="button"
+                      key={`${photo.photoURL}-${index}`}
+                      className={`activityDetailsUi__thumbnail ${
+                        activeImageIndex === index
+                          ? "activityDetailsUi__thumbnail--active"
+                          : ""
+                      }`}
+                      onClick={() => setActiveImageIndex(index)}
+                    >
+                      <img
+                        src={photo.photoURL}
+                        alt={photo.caption || `${displayTitle} ${index + 1}`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="activityDetailsUi__contentMain">
                 <section
                   id="activityDetailsUi__availability"
                   className="activityDetailsUi__section"
                 >
                   <div className="activityDetailsUi__sectionTitle">
-                    <h2>{bookableItems?.length || 1} options available</h2>
+                    <h2>
+                      {calendarAvailabilityData
+                        ? `${getAvailabilityItems.length} options available`
+                        : `${activityData?.bookableItems?.length || 0} options available`}
+                    </h2>
                   </div>
 
-                  {bookableItems?.length > 0 ? (
-                    <div className="activityDetailsUi__availabilityList">
-                      {bookableItems.map((item, index) => (
-                        <div
-                          className="activityDetailsUi__availabilityCard"
-                          key={`${item.gradeCode}-${index}`}
-                        >
-                          <div className="activityDetailsUi__availabilityInfo">
-                            <h3>{item.title || `Option ${index + 1}`}</h3>
-
-                            {item.description && <p>{item.description}</p>}
-
-                            <div className="activityDetailsUi__timeSelect">
-                              <span className="activityDetailsUi__timeLabel">
-                                Select Time
-                              </span>
-
-                              <div className="activityDetailsUi__timeSelectInner">
-                                <span className="activityDetailsUi__timeIcon">
-                                  ◷
-                                </span>
-
-                                <span className="activityDetailsUi__timeDivider"></span>
-
-                                <select
-                                  value={
-                                    selectedTimes[item.gradeCode] || "8:15 AM"
-                                  }
-                                  onChange={(e) =>
-                                    setSelectedTimes((prev) => ({
-                                      ...prev,
-                                      [item.gradeCode]: e.target.value,
-                                    }))
-                                  }
-                                  className="activityDetailsUi__timeDropdown"
-                                >
-                                  {timeOptions.map((time) => (
-                                    <option key={time} value={time}>
-                                      {time}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="activityDetailsUi__availabilityPrice">
-                            {discount > 0 && (
-                              <span className="activityDetailsUi__optionDiscount">
-                                {discount}% OFF
-                              </span>
-                            )}
-
-                            <small>Total</small>
-
-                            <strong>
-                              {displayCurrency} {displayPrice.toFixed(2)}
-                            </strong>
-
-                            <span>
-                              2 Adults × {(displayPrice / 2).toFixed(2)}
-                            </span>
-
-                            <button
-                              type="button"
-                              className="activityDetailsUi__bookButton"
-                            >
-                              Book Now
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                  {availabilityLoading && (
+                    <div className="activityDetailsUi__availabilityLoading">
+                      <div className="activityDetailsUi__loader"></div>
+                      <span>Updating availability...</span>
                     </div>
-                  ) : (
+                  )}
+
+                  {availabilityError && (
                     <div className="activityDetailsUi__empty">
-                      Availability information is not available yet.
+                      {availabilityError}
                     </div>
+                  )}
+
+                  {!availabilityError && (
+                    <>
+                      {calendarAvailabilityData ? (
+                        getAvailabilityItems.length > 0 ? (
+                          <div className="activityDetailsUi__availabilityList">
+                            {getAvailabilityItems.map((item, index) => {
+                              const gradeKey =
+                                item?.gradeCode ||
+                                item?.productOptionCode ||
+                                String(index);
+
+                              const availableDetails =
+                                getAvailableDetails(item);
+
+                              const selectedDetail = getSelectedDetail(item);
+
+                              const itemPrice = getItemPrice(
+                                item,
+                                selectedDetail,
+                              );
+
+                              const publicPrice = getItemPublicPrice(
+                                item,
+                                selectedDetail,
+                              );
+
+                              const itemPerPersonPrice = getItemPerPersonPrice(
+                                item,
+                                selectedDetail,
+                              );
+
+                              const itemDiscount =
+                                publicPrice > itemPrice && itemPrice > 0
+                                  ? Math.round(
+                                      ((publicPrice - itemPrice) /
+                                        publicPrice) *
+                                        100,
+                                    )
+                                  : 0;
+
+                              const guideLanguages = Array.isArray(
+                                item?.languageGuides,
+                              )
+                                ? item.languageGuides
+                                    .map((guide) => guide?.language)
+                                    .filter(Boolean)
+                                : [];
+
+                              return (
+                                <div
+                                  className="activityDetailsUi__availabilityCard"
+                                  key={`${gradeKey}-${index}`}
+                                >
+                                  <div className="activityDetailsUi__availabilityInfo">
+                                    <h3>
+                                      {item?.title || `Option ${index + 1}`}
+                                    </h3>
+
+                                    {item?.description && (
+                                      <p>{item.description}</p>
+                                    )}
+
+                                    {guideLanguages.length > 0 && (
+                                      <span className="activityDetailsUi__guide">
+                                        Guide:{" "}
+                                        {guideLanguages
+                                          .map((language) =>
+                                            language.toUpperCase(),
+                                          )
+                                          .join(", ")}
+                                      </span>
+                                    )}
+
+                                    <div className="activityDetailsUi__timeSelect">
+                                      <span className="activityDetailsUi__timeLabel">
+                                        Select Time
+                                      </span>
+
+                                      <div className="activityDetailsUi__timeSelectInner">
+                                        <span className="activityDetailsUi__timeIcon">
+                                          ◷
+                                        </span>
+
+                                        <span className="activityDetailsUi__timeDivider"></span>
+
+                                        <select
+                                          value={
+                                            selectedTimes[gradeKey] ||
+                                            availableDetails[0]?.startTime ||
+                                            ""
+                                          }
+                                          onChange={(event) =>
+                                            setSelectedTimes((previous) => ({
+                                              ...previous,
+                                              [gradeKey]: event.target.value,
+                                            }))
+                                          }
+                                          className="activityDetailsUi__timeDropdown"
+                                          disabled={
+                                            availableDetails.length === 0
+                                          }
+                                        >
+                                          {availableDetails.map(
+                                            (detail, detailIndex) => (
+                                              <option
+                                                key={`${detail.startTime}-${detailIndex}`}
+                                                value={detail.startTime}
+                                              >
+                                                {formatTime(detail.startTime)}
+                                              </option>
+                                            ),
+                                          )}
+                                        </select>
+                                      </div>
+                                    </div>
+
+                                    {availableDetails.length === 0 && (
+                                      <span className="activityDetailsUi__empty">
+                                        No time slots available
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="activityDetailsUi__availabilityPrice">
+                                    {itemDiscount > 0 && (
+                                      <span className="activityDetailsUi__optionDiscount">
+                                        {itemDiscount}% OFF
+                                      </span>
+                                    )}
+
+                                    <small>Total</small>
+
+                                    <strong>
+                                      {displayCurrency} {itemPrice.toFixed(2)}
+                                    </strong>
+
+                                    <span>
+                                      {participantLabel} ×{" "}
+                                      {itemPerPersonPrice.toFixed(2)}
+                                    </span>
+
+                                    {selectedDetail && (
+                                      <span className="activityDetailsUi__availabilityStatus">
+                                        {selectedDetail.available
+                                          ? "Available"
+                                          : "Unavailable"}
+                                      </span>
+                                    )}
+
+                                    <button
+                                      type="button"
+                                      className="activityDetailsUi__bookButton"
+                                      disabled={
+                                        !selectedDetail ||
+                                        !selectedDetail.available
+                                      }
+                                      onClick={() =>
+                                        handleBookNow(
+                                          item,
+                                          selectedDetail,
+                                          item?.gradeCode,
+                                        )
+                                      }
+                                    >
+                                      Book Now
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="activityDetailsUi__empty">
+                            No availability found for{" "}
+                            {formatDisplayDate(selectedDate)}.
+                          </div>
+                        )
+                      ) : (
+                        <div className="activityDetailsUi__empty">
+                          Select a date and click Update search to load
+                          availability.
+                        </div>
+                      )}
+                    </>
                   )}
                 </section>
 
@@ -834,6 +1267,7 @@ const ActivityDetails = () => {
 
                   <div className="activityDetailsUi__overviewBody">
                     <h3>{displayTitle}</h3>
+
                     <p>{description || "No description available."}</p>
                   </div>
                 </section>
@@ -847,11 +1281,6 @@ const ActivityDetails = () => {
                   </div>
 
                   <div className="activityDetailsUi__additionalGrid">
-                    <div>
-                      <span>Location</span>
-                      <strong>{displayDestination}</strong>
-                    </div>
-
                     {activityDuration && (
                       <div>
                         <span>Duration</span>
@@ -898,6 +1327,7 @@ const ActivityDetails = () => {
                     {ticketInfo && (
                       <div>
                         <span>Ticket</span>
+
                         <strong>
                           {ticketInfo?.ticketTypeDescription ||
                             "Mobile ticket accepted"}
@@ -908,6 +1338,7 @@ const ActivityDetails = () => {
                     {bookingConfirmationSettings && (
                       <div>
                         <span>Confirmation</span>
+
                         <strong>
                           {bookingConfirmationSettings?.confirmationType ||
                             "Instant"}
@@ -922,6 +1353,7 @@ const ActivityDetails = () => {
 
                       <div>
                         <span>Minimum travelers</span>
+
                         <strong>
                           {bookingRequirements.minTravelersPerBooking}
                         </strong>
@@ -929,6 +1361,7 @@ const ActivityDetails = () => {
 
                       <div>
                         <span>Maximum travelers</span>
+
                         <strong>
                           {bookingRequirements.maxTravelersPerBooking}
                         </strong>
@@ -936,6 +1369,7 @@ const ActivityDetails = () => {
 
                       <div>
                         <span>Adult required</span>
+
                         <strong>
                           {bookingRequirements.requiresAdultForBooking
                             ? "Yes"
@@ -949,19 +1383,19 @@ const ActivityDetails = () => {
                     <div className="activityDetailsUi__questions">
                       <h3>Information required for booking</h3>
 
-                      {bookingQuestions.map((question) => (
+                      {bookingQuestions.map((question, index) => (
                         <div
-                          key={question.id}
+                          key={question?.id || `${question?.label}-${index}`}
                           className="activityDetailsUi__question"
                         >
                           <div>
-                            <strong>{question.label}</strong>
+                            <strong>{question?.label}</strong>
 
-                            {question.hint && <p>{question.hint}</p>}
+                            {question?.hint && <p>{question.hint}</p>}
                           </div>
 
                           <span>
-                            {question.required === "MANDATORY"
+                            {question?.required === "MANDATORY"
                               ? "Required"
                               : "Optional"}
                           </span>
@@ -982,13 +1416,17 @@ const ActivityDetails = () => {
                   {reviewsLoading ? (
                     <div className="activityDetailsUi__reviewLoading">
                       <div className="activityDetailsUi__loader"></div>
+
                       <span>Loading reviews...</span>
                     </div>
                   ) : (
                     <>
                       <div className="activityDetailsUi__reviewSummary">
                         <div className="activityDetailsUi__reviewScore">
-                          <strong>{displayRating.toFixed(1)}/5</strong>
+                          <strong>
+                            {displayRating.toFixed(1)}
+                            /5
+                          </strong>
 
                           {renderStars(displayRating, "summary")}
 
@@ -1023,10 +1461,11 @@ const ActivityDetails = () => {
 
                       <div className="activityDetailsUi__reviewSources">
                         {reviewsData?.totalReviewsSummary?.sources?.map(
-                          (source) => (
-                            <div key={source.provider}>
-                              <span>{source.provider}</span>
-                              <strong>{source.totalCount}</strong>
+                          (source, index) => (
+                            <div key={`${source?.provider}-${index}`}>
+                              <span>{source?.provider}</span>
+
+                              <strong>{source?.totalCount || 0}</strong>
                             </div>
                           ),
                         )}
@@ -1036,41 +1475,41 @@ const ActivityDetails = () => {
                         {reviewsData?.reviews?.length > 0 ? (
                           reviewsData.reviews.map((review, index) => (
                             <article
-                              key={`${review.reviewer_name}-${index}`}
+                              key={`${review?.reviewer_name}-${index}`}
                               className="activityDetailsUi__review"
                             >
                               <div className="activityDetailsUi__reviewTop">
                                 <div className="activityDetailsUi__reviewRatingBox">
                                   <strong>
-                                    {Number(review.rating) || 0}
+                                    {Number(review?.rating) || 0}
                                     /5
                                   </strong>
 
-                                  {renderStars(Number(review.rating), "small")}
+                                  {renderStars(Number(review?.rating), "small")}
                                 </div>
                               </div>
 
                               <div className="activityDetailsUi__reviewer">
                                 <strong>
-                                  {review.reviewer_name || "Anonymous"}
+                                  {review?.reviewer_name || "Anonymous"}
                                 </strong>
 
                                 <span>Verified Traveller</span>
 
                                 <small>
-                                  {formatReviewDate(review.date_submitted)}
+                                  {formatReviewDate(review?.date_submitted)}
                                 </small>
                               </div>
 
-                              {review.title && <h3>{review.title}</h3>}
+                              {review?.title && <h3>{review.title}</h3>}
 
-                              {review.text && <p>{review.text}</p>}
+                              {review?.text && <p>{review.text}</p>}
 
                               <div className="activityDetailsUi__reviewBottom">
-                                <span>{review.verification_source}</span>
+                                <span>{review?.verification_source}</span>
 
                                 <span>
-                                  Helpful votes: {review.helpfulVotes || 0}
+                                  Helpful votes: {review?.helpfulVotes || 0}
                                 </span>
                               </div>
                             </article>
@@ -1094,6 +1533,7 @@ const ActivityDetails = () => {
                     <div className="activityDetailsUi__cancellation">
                       <div>
                         <span>✓</span>
+
                         <strong>Free cancellation</strong>
                       </div>
 
@@ -1106,15 +1546,16 @@ const ActivityDetails = () => {
                             className="activityDetailsUi__refund"
                           >
                             <span>
-                              {refund.dayRangeMin}
-                              {refund.dayRangeMax !== null
+                              {refund?.dayRangeMin}
+                              {refund?.dayRangeMax !== null &&
+                              refund?.dayRangeMax !== undefined
                                 ? ` - ${refund.dayRangeMax}`
                                 : "+"}{" "}
                               days before activity
                             </span>
 
                             <strong>
-                              {refund.percentageRefundable}% refundable
+                              {refund?.percentageRefundable}% refundable
                             </strong>
                           </div>
                         ),
@@ -1134,8 +1575,14 @@ const ActivityDetails = () => {
                         <span>Categories</span>
 
                         <div>
-                          {categories.map((category) => (
-                            <span key={category.tagId}>{category.name}</span>
+                          {categories.map((category, index) => (
+                            <span
+                              key={
+                                category?.tagId || `${category?.name}-${index}`
+                              }
+                            >
+                              {category?.name}
+                            </span>
                           ))}
                         </div>
                       </div>
@@ -1146,8 +1593,14 @@ const ActivityDetails = () => {
                         <span>Activity type</span>
 
                         <div>
-                          {subCategories.map((category) => (
-                            <span key={category.tagId}>{category.name}</span>
+                          {subCategories.map((category, index) => (
+                            <span
+                              key={
+                                category?.tagId || `${category?.name}-${index}`
+                              }
+                            >
+                              {category?.name}
+                            </span>
                           ))}
                         </div>
                       </div>
@@ -1158,14 +1611,6 @@ const ActivityDetails = () => {
             </div>
 
             <aside className="activityDetailsUi__bookingPanel">
-              <div className="activityDetailsUi__bookingPrice">
-                <span>Total</span>
-
-                <strong>
-                  {displayCurrency} {displayPrice.toFixed(2)}
-                </strong>
-              </div>
-
               {originalPrice > displayPrice && (
                 <div className="activityDetailsUi__bookingSaving">
                   <span>
@@ -1177,21 +1622,23 @@ const ActivityDetails = () => {
               )}
 
               <div
-                ref={participantsRef}
+                ref={calendarRef}
                 className="activityDetailsUi__bookingField activityDetailsUi__dateField"
               >
                 <label>Select Date</label>
 
                 <div className="activityDetailsUi__dateInputWrapper">
-                  <span className="activityDetailsUi__fieldIcon">▣</span>
+                  <span className="activityDetailsUi__fieldIcon">📅</span>
 
                   <button
                     type="button"
                     className="activityDetailsUi__dateTrigger"
-                    onClick={() => setCalendarOpen((prev) => !prev)}
+                    onClick={() => setCalendarOpen((previous) => !previous)}
                   >
                     <span>
-                      {selectedDate ? formatDate(selectedDate) : "Select Date"}
+                      {selectedDate
+                        ? formatDisplayDate(selectedDate)
+                        : "Select Date"}
                     </span>
                   </button>
 
@@ -1205,15 +1652,23 @@ const ActivityDetails = () => {
                         <Calendar
                           value={
                             selectedDate
-                              ? new Date(
-                                  `${getDateInputValue(selectedDate)}T00:00:00`,
-                                )
+                              ? new Date(`${selectedDate}T00:00:00`)
                               : null
                           }
                           onChange={handleCalendarDateChange}
                           tileDisabled={tileDisabled}
                           tileContent={tileContent}
-                          minDate={new Date()}
+                          minDate={
+                            calendarAvailableDateObjects.length > 0
+                              ? new Date(
+                                  Math.min(
+                                    ...calendarAvailableDateObjects.map(
+                                      (date) => date.getTime(),
+                                    ),
+                                  ),
+                                )
+                              : new Date()
+                          }
                           prev2Label={null}
                           next2Label={null}
                         />
@@ -1229,7 +1684,6 @@ const ActivityDetails = () => {
 
               <div
                 ref={participantsRef}
-                onClick={(event) => event.stopPropagation()}
                 className="activityDetailsUi__bookingField activityDetailsUi__participantsField"
               >
                 <label>Participants</label>
@@ -1237,7 +1691,7 @@ const ActivityDetails = () => {
                 <button
                   type="button"
                   className="activityDetailsUi__participantsTrigger"
-                  onClick={() => setParticipantsOpen((prev) => !prev)}
+                  onClick={() => setParticipantsOpen((previous) => !previous)}
                 >
                   <span className="activityDetailsUi__fieldIcon">♙</span>
 
@@ -1260,132 +1714,67 @@ const ActivityDetails = () => {
                   <div className="activityDetailsUi__participantsPopup">
                     <div className="activityDetailsUi__participantsHeader">
                       <h3>Select Participants</h3>
+
                       <p>You Can select upto 10 Participants</p>
                     </div>
 
-                    <div className="activityDetailsUi__participantRow">
-                      <div className="activityDetailsUi__participantInfo">
-                        <strong>Adult (16-99)</strong>
-                        <span>Min 1 - Max 10</span>
+                    {[
+                      {
+                        type: "adult",
+                        label: "Adult (16-99)",
+                        min: 1,
+                      },
+                      {
+                        type: "youth",
+                        label: "Youth (5-15)",
+                        min: 0,
+                      },
+                      {
+                        type: "child",
+                        label: "Child (3-4)",
+                        min: 0,
+                      },
+                      {
+                        type: "infant",
+                        label: "Infant (0-2)",
+                        min: 0,
+                      },
+                    ].map((item) => (
+                      <div
+                        key={item.type}
+                        className="activityDetailsUi__participantRow"
+                      >
+                        <div className="activityDetailsUi__participantInfo">
+                          <strong>{item.label}</strong>
+
+                          <span>Min {item.min} - Max 10</span>
+                        </div>
+
+                        <div className="activityDetailsUi__participantControls">
+                          <button
+                            type="button"
+                            className="activityDetailsUi__participantMinus"
+                            disabled={participants[item.type] <= item.min}
+                            onClick={() => updateParticipant(item.type, -1)}
+                          >
+                            −
+                          </button>
+
+                          <span className="activityDetailsUi__participantCount">
+                            {participants[item.type]}
+                          </span>
+
+                          <button
+                            type="button"
+                            className="activityDetailsUi__participantPlus"
+                            disabled={participants[item.type] >= 10}
+                            onClick={() => updateParticipant(item.type, 1)}
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
-
-                      <div className="activityDetailsUi__participantControls">
-                        <button
-                          type="button"
-                          className="activityDetailsUi__participantMinus"
-                          disabled={participants.adult <= 1}
-                          onClick={() => updateParticipant("adult", -1)}
-                        >
-                          −
-                        </button>
-
-                        <span className="activityDetailsUi__participantCount">
-                          {participants.adult}
-                        </span>
-
-                        <button
-                          type="button"
-                          className="activityDetailsUi__participantPlus"
-                          disabled={participants.adult >= 10}
-                          onClick={() => updateParticipant("adult", 1)}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="activityDetailsUi__participantRow">
-                      <div className="activityDetailsUi__participantInfo">
-                        <strong>Youth (5-15)</strong>
-                        <span>Min 0 - Max 10</span>
-                      </div>
-
-                      <div className="activityDetailsUi__participantControls">
-                        <button
-                          type="button"
-                          className="activityDetailsUi__participantMinus"
-                          disabled={participants.youth <= 0}
-                          onClick={() => updateParticipant("youth", -1)}
-                        >
-                          −
-                        </button>
-
-                        <span className="activityDetailsUi__participantCount">
-                          {participants.youth}
-                        </span>
-
-                        <button
-                          type="button"
-                          className="activityDetailsUi__participantPlus"
-                          disabled={participants.youth >= 10}
-                          onClick={() => updateParticipant("youth", 1)}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="activityDetailsUi__participantRow">
-                      <div className="activityDetailsUi__participantInfo">
-                        <strong>Child (3-4)</strong>
-                        <span>Min 0 - Max 10</span>
-                      </div>
-
-                      <div className="activityDetailsUi__participantControls">
-                        <button
-                          type="button"
-                          className="activityDetailsUi__participantMinus"
-                          disabled={participants.child <= 0}
-                          onClick={() => updateParticipant("child", -1)}
-                        >
-                          −
-                        </button>
-
-                        <span className="activityDetailsUi__participantCount">
-                          {participants.child}
-                        </span>
-
-                        <button
-                          type="button"
-                          className="activityDetailsUi__participantPlus"
-                          disabled={participants.child >= 10}
-                          onClick={() => updateParticipant("child", 1)}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="activityDetailsUi__participantRow">
-                      <div className="activityDetailsUi__participantInfo">
-                        <strong>Infant (0-2)</strong>
-                        <span>Min 0 - Max 10</span>
-                      </div>
-
-                      <div className="activityDetailsUi__participantControls">
-                        <button
-                          type="button"
-                          className="activityDetailsUi__participantMinus"
-                          disabled={participants.infant <= 0}
-                          onClick={() => updateParticipant("infant", -1)}
-                        >
-                          −
-                        </button>
-
-                        <span className="activityDetailsUi__participantCount">
-                          {participants.infant}
-                        </span>
-
-                        <button
-                          type="button"
-                          className="activityDetailsUi__participantPlus"
-                          disabled={participants.infant >= 10}
-                          onClick={() => updateParticipant("infant", 1)}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
+                    ))}
 
                     <button
                       type="button"
@@ -1401,8 +1790,8 @@ const ActivityDetails = () => {
               <button
                 type="button"
                 className="activityDetailsUi__updateButton"
+                disabled={availabilityLoading || !selectedDate}
                 onClick={handleUpdateSearch}
-                disabled={availabilityLoading}
               >
                 {availabilityLoading ? "Updating..." : "Update search"}
               </button>
@@ -1410,8 +1799,10 @@ const ActivityDetails = () => {
               {freeCancellation && (
                 <div className="activityDetailsUi__freeCancellation">
                   <span>✓</span>
+
                   <div>
                     <strong>Free Cancellation</strong>
+
                     {cancellationPolicy?.description && (
                       <small>{cancellationPolicy.description}</small>
                     )}

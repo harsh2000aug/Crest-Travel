@@ -67,6 +67,11 @@ header {
   margin-right: 15px;
 }
 
+.dark-header .header-btns button.member-log {
+  color: #dca648;
+  border: 1px solid #dca648;
+}
+
 .header-btns button:last-child {
   margin-right: 0;
 }

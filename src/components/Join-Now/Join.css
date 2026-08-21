@@ -11,7 +11,7 @@
 .pricing-header span {
   display: inline-block;
   background: rgba(0, 157, 255, 0.12);
-  color: #009dff;
+  color: #dca648;
   padding: 8px 18px;
   border-radius: 30px;
   font-size: 14px;
@@ -59,7 +59,7 @@
 
 .featured {
   transform: scale(1.05);
-  background: linear-gradient(135deg, #009dff, #00c6ff);
+  background: linear-gradient(135deg, #dca648, #00c6ff);
   color: white;
 }
 
@@ -143,7 +143,7 @@
   cursor: pointer;
   font-size: 16px;
   font-weight: 700;
-  background: linear-gradient(135deg, #009dff, #00c6ff);
+  background: linear-gradient(135deg, #dca648, #00c6ff);
   color: white;
   transition: 0.3s;
 }
@@ -154,7 +154,7 @@
 
 .featured button {
   background: white;
-  color: #009dff;
+  color: #dca648;
 }
 
 @media (max-width: 992px) {
@@ -225,9 +225,10 @@
 .travelClubGuide {
   width: 100%;
   padding: 90px 20px;
-  background:
+  /* background:
     radial-gradient(circle at top left, rgba(0, 157, 255, 0.08), transparent 35%),
-    linear-gradient(135deg, #f7fbff 0%, #eef7ff 50%, #f9fcff 100%);
+    linear-gradient(135deg, #f7fbff 0%, #eef7ff 50%, #f9fcff 100%); */
+    background-color: #fff;
   overflow: hidden;
 }
 
@@ -242,11 +243,11 @@
    INTRODUCTION
 ========================================= */
 
-.travelClubGuide__intro {
+/* .travelClubGuide__intro {
   max-width: 900px;
   margin: 0 auto 65px;
   text-align: center;
-}
+} */
 
 .travelClubGuide__eyebrow {
   display: inline-block;
@@ -254,7 +255,7 @@
   margin-bottom: 18px;
   border-radius: 50px;
   background: rgba(0, 157, 255, 0.1);
-  color: #009dff;
+  color: #dca648;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -270,12 +271,12 @@
 }
 
 .travelClubGuide__title span {
-  color: #009dff;
+  color: #dca648;
 }
 
 .travelClubGuide__intro p {
-  max-width: 850px;
-  margin: 0 auto 15px;
+  /* max-width: 850px; */
+  margin: 0 auto 30px;
   color: #64748b;
   font-size: 16px;
   line-height: 1.8;
@@ -343,7 +344,7 @@
       rgba(0, 157, 255, 0.06),
       rgba(255, 255, 255, 0.96)
     );
-  border-left: 5px solid #009dff;
+  border-left: 5px solid #dca648;
 }
 
 
@@ -375,7 +376,7 @@
 }
 
 .travelClubGuide__planCard--featured {
-  background: linear-gradient(145deg, #009dff, #00b7ff);
+  background: linear-gradient(145deg, #dca648, #dca648);
   border-color: transparent;
   color: #ffffff;
   transform: translateY(-5px);
@@ -394,7 +395,7 @@
   justify-content: center;
   border-radius: 50%;
   background: rgba(0, 157, 255, 0.1);
-  color: #009dff;
+  color: #dca648;
   font-size: 27px;
 }
 
@@ -446,7 +447,7 @@
 
 .travelClubGuide__highlight svg {
   flex-shrink: 0;
-  color: #009dff;
+  color: #dca648;
   font-size: 23px;
 }
 
@@ -487,7 +488,7 @@
 .travelClubGuide__benefitList li svg {
   flex-shrink: 0;
   margin-top: 4px;
-  color: #009dff;
+  color: #dca648;
 }
 
 
@@ -520,7 +521,7 @@
 
 .travelClubGuide__trustGrid svg {
   margin-bottom: 15px;
-  color: #009dff;
+  color: #dca648;
   font-size: 25px;
 }
 
@@ -687,7 +688,7 @@
   margin: 0 auto;
   padding: 28px 32px;
   background: #ffffff;
-  border-left: 4px solid #009dff;
+  border-left: 4px solid #dca648;
   border-radius: 14px;
   color: #5f6f82;
   font-size: 16px;
@@ -696,7 +697,7 @@
 }
 
 .membership-info-text a {
-  color: #009dff;
+  color: #dca648;
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;

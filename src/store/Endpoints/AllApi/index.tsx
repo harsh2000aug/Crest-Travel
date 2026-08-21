@@ -117,6 +117,13 @@ export const allApi = {
       uri: "/member/cancel-membership",
     },
   },
+  memberTripCoins: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphamember/balance",
+    },
+  },
   newMemberDetails: {
     v1: {
       ...defaults.methods.POST,
@@ -307,6 +314,13 @@ export const allApi = {
       ...defaults.methods.POST,
       ...defaults.versions.v1,
       uri: "/alphaactivity/availability",
+    },
+  },
+  activityOrder: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/add-order",
     },
   },
 

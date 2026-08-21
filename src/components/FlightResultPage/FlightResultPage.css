@@ -45,7 +45,6 @@
 }
 
 .brand-name {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 20px;
   font-weight: 700;
   color: var(--white);
@@ -188,7 +187,6 @@
   border: none;
   border-radius: var(--radius-sm);
   color: var(--white);
-  font-family: "Space Grotesk", sans-serif;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -266,7 +264,6 @@
 }
 
 .results-count {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 15px;
   font-weight: 600;
   color: var(--text-main);
@@ -320,7 +317,6 @@
 }
 
 .filter-title {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 15px;
   font-weight: 600;
   color: var(--text-main);
@@ -374,7 +370,6 @@
 }
 
 .price-range-val {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-main);
@@ -660,7 +655,6 @@
 }
 
 .airline-card-name {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-main);
@@ -691,7 +685,6 @@
 }
 
 .flight-time {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 22px;
   font-weight: 700;
   color: var(--text-main);
@@ -809,7 +802,6 @@
 }
 
 .price-amount {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 26px;
   font-weight: 700;
   color: var(--text-main);
@@ -838,7 +830,6 @@
   border: none;
   border-radius: var(--radius-sm);
   color: var(--white);
-  font-family: "Space Grotesk", sans-serif;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -935,7 +926,6 @@
 }
 
 .segment-route {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: var(--text-main);
@@ -990,7 +980,6 @@
 }
 
 .timeline-time {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 15px;
   font-weight: 700;
   color: var(--text-main);
@@ -1094,7 +1083,6 @@
 }
 
 .fare-name {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: var(--text-main);
@@ -1102,7 +1090,6 @@
 }
 
 .fare-price {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 20px;
   font-weight: 700;
   color: var(--sky);
@@ -1131,7 +1118,6 @@
   margin-top: 12px;
   padding: 8px;
   border-radius: var(--radius-sm);
-  font-family: "Space Grotesk", sans-serif;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -1210,7 +1196,6 @@
   margin-bottom: 16px;
 }
 .no-flights-title {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 18px;
   font-weight: 600;
   color: var(--text-main);

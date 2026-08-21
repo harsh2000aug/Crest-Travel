@@ -97,7 +97,7 @@
   font-size: 74px;
   line-height: 1.05;
   font-weight: 500;
-  max-width: 650px;
+  max-width: 800px;
 }
 
 .tripHero h1 span {
@@ -107,7 +107,7 @@
 .tripHero__description {
   margin-top: 30px;
   font-size: 19px;
-  max-width: 520px;
+  max-width: 800px;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.85);
 }

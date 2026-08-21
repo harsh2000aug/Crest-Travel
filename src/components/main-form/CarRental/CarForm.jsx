@@ -371,7 +371,7 @@ const CarForm = () => {
       </div>
 
       <div className="car-input-box car-dropoff-location-field">
-        <label>Drop-Off (Optional)</label>
+        <label>Drop-Off</label>
 
         <input
           type="text"

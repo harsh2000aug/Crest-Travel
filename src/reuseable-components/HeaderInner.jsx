@@ -39,6 +39,7 @@ const HeaderInner = () => {
     "/activities",
     "/activity-details",
     "/vacation-list",
+    "/activity-book",
     "/vacation-details",
     "/vacation-billing",
   ];
