@@ -33,6 +33,7 @@ import ActivityDetails from "./components/main-form/Activity/ActivityDetails";
 import VacationList from "./components/main-form/Vacations/VacationList";
 import ActivityBook from "./components/main-form/Activity/ActivityBook";
 import VacationDetail from "./components/main-form/Vacations/VacationDetail";
+import VacationBilling from "./components/main-form/Vacations/VacationBilling";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -118,6 +119,7 @@ function App() {
           <Route path="/activity-book" element={<ActivityBook />} />
           <Route path="/vacation-list" element={<VacationList />} />
           <Route path="/vacation-details" element={<VacationDetail />} />
+          <Route path="/vacation-billing" element={<VacationBilling />} />
         </Route>
 
         <Route

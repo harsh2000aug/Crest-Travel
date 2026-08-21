@@ -382,4 +382,19 @@ export const allApi = {
       vacationResortFinal: true,
     },
   },
+  vacationAddOrder: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphavr/add-order",
+    },
+  },
+  vacationPay: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphavr/pay-now",
+      vacationResortFinal: true,
+    },
+  },
 };
