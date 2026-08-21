@@ -349,7 +349,7 @@ const Join = () => {
               </span> */}
 
               <h1 className="travelClubGuide__title">
-                Unlock Travel Potential:{" "}
+                Unlock Travel Potential :{" "}
                 <span>Join the Crest Travel Club Today!</span>
               </h1>
 
@@ -369,7 +369,7 @@ const Join = () => {
             </div>
 
             {/* Why Sign Up */}
-            <div className="travelClubGuide__contentBlock">
+            {/* <div className="travelClubGuide__contentBlock">
               <div className="travelClubGuide__content">
                 <h3>Why Sign Up Is Required?</h3>
 
@@ -390,6 +390,52 @@ const Join = () => {
                   promise and what benefits each membership plan offers. You can
                   check the details for free, but to get them, you must sign up.
                 </p>
+              </div>
+            </div> */}
+
+            <div className="travelClubGuide__contentBlock">
+              <div className="travelClubGuide__content">
+                <h3>Why Trust Crest Travel Club?</h3>
+
+                <p>
+                  All policies, rules, and regulations are clearly stated on
+                  their website. The travel club also offers membership
+                  cancellation and refunds. However, you must meet certain rules
+                  and submit the request within a set timeframe.
+                </p>
+
+                <p>
+                  In addition, the club offers 40-50% member discount and helps
+                  you save up to 70% even on personalized vacation packages.
+                </p>
+
+                <div className="travelClubGuide__trustGrid">
+                  <div>
+                    <FaShieldAlt />
+                    <strong>Clear Policies</strong>
+                    <span>
+                      Membership rules and regulations are clearly stated.
+                    </span>
+                  </div>
+
+                  <div>
+                    <FaLock />
+                    <strong>Membership Protection</strong>
+                    <span>
+                      Cancellation and refund options are available subject to
+                      applicable rules.
+                    </span>
+                  </div>
+
+                  <div>
+                    <FaTags />
+                    <strong>Member Savings</strong>
+                    <span>
+                      Members can access advertised discounts and travel
+                      savings.
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -535,52 +581,6 @@ const Join = () => {
             </div>
 
             {/* Trust */}
-            <div className="travelClubGuide__contentBlock">
-              <div className="travelClubGuide__content">
-                <h3>Why Trust Crest Travel Club?</h3>
-
-                <p>
-                  All policies, rules, and regulations are clearly stated on
-                  their website. The travel club also offers membership
-                  cancellation and refunds. However, you must meet certain rules
-                  and submit the request within a set timeframe.
-                </p>
-
-                <p>
-                  In addition, the club claims to offer a 40-50% member discount
-                  and helps you save up to 70% even on personalized vacation
-                  packages.
-                </p>
-
-                <div className="travelClubGuide__trustGrid">
-                  <div>
-                    <FaShieldAlt />
-                    <strong>Clear Policies</strong>
-                    <span>
-                      Membership rules and regulations are clearly stated.
-                    </span>
-                  </div>
-
-                  <div>
-                    <FaLock />
-                    <strong>Membership Protection</strong>
-                    <span>
-                      Cancellation and refund options are available subject to
-                      applicable rules.
-                    </span>
-                  </div>
-
-                  <div>
-                    <FaTags />
-                    <strong>Member Savings</strong>
-                    <span>
-                      Members can access advertised discounts and travel
-                      savings.
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
