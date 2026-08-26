@@ -1,0 +1,278 @@
+.addPost {
+    padding: 40px 100px;
+    font-family: inherit;
+    background-color: #fff;
+    color: #333;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .addPost--loading {
+    text-align: center;
+    color: #0d6efd;
+  }
+  
+  .addPost__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  
+  .addPost__header h1 {
+    font-size: 28px;
+    font-weight: 500;
+    margin: 0;
+  }
+  
+  .addPost__viewBtn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .addPost__viewBtn:hover {
+    background-color: #5a6268;
+  }
+  
+  .addPost__card {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  
+  /* Grids for side-by-side inputs */
+  .addPost__gridTwo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  
+  .addPost__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .addPost__field label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .addPost__field input[type="text"],
+  .addPost__field input[type="email"],
+  .addPost__field input[type="url"],
+  .addPost__field select,
+  .addPost__field textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    color: #495057;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  
+  .addPost__field input[type="text"]:focus,
+  .addPost__field input[type="email"]:focus,
+  .addPost__field input[type="url"]:focus,
+  .addPost__field select:focus,
+  .addPost__field textarea:focus {
+    border-color: #0d6efd;
+  }
+  
+  .addPost__field input::placeholder,
+  .addPost__field textarea::placeholder {
+    color: #6c757d;
+  }
+  
+  .addPost__field textarea {
+    resize: vertical;
+  }
+  
+  .addPost__codeTextarea {
+    font-family: monospace;
+  }
+  
+  .addPost__fileInput {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 6px;
+    background-color: #fff;
+  }
+  
+  .addPost__editorMock {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .addPost__editorMock textarea {
+    border: none;
+    border-radius: 0;
+    font-family: monospace;
+  }
+  
+  .addPost__editorBreadcrumb {
+    background-color: #f8f9fa;
+    border-top: 1px solid #ced4da;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #6c757d;
+  }
+  
+  /* Structural Boxes / Cards */
+  .addPost__sectionTitle {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 16px 0 0 0;
+    color: #212529;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 8px;
+  }
+  
+  .addPost__sectionBox {
+    background-color: #f9fafb;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .addPost__subHeading {
+    font-size: 16px;
+    margin: 0;
+    color: #495057;
+  }
+  
+  /* Image Upload & Preview Styles */
+  .addPost__imageSection {
+    display: grid;
+    grid-template-columns: 1fr 180px;
+    gap: 20px;
+    align-items: center;
+  }
+  
+  .addPost__imageFields {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .addPost__previewContainer,
+  .addPost__avatarContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .addPost__previewContainer label,
+  .addPost__avatarContainer label {
+    font-size: 12px;
+    color: #6c757d;
+  }
+  
+  .addPost__previewBox {
+    width: 200px;
+    height: 120px; 
+    border: 2px dashed #ced4da;
+    border-radius: 6px;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  .addPost__previewBox img {
+    width: 100%;
+    height: 100%; 
+    object-fit: cover; 
+    display: block; 
+  }
+  
+  .addPost__previewBox span {
+    font-size: 12px;
+    color: #a0aec0;
+  }
+  
+  /* Author Section Layout */
+  .addPost__authorSection {
+    display: grid;
+    grid-template-columns: 1fr 1fr 100px;
+    gap: 16px;
+    align-items: center;
+  }
+  
+  .addPost__avatarBox {
+    width: 70px;
+    height: 70px;
+    border: 2px dashed #ced4da;
+    border-radius: 50%;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  .addPost__avatarBox img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .addPost__avatarBox span {
+    font-size: 10px;
+    color: #a0aec0;
+    text-align: center;
+  }
+  
+  .addPost__submitBtn {
+    align-self: flex-start;
+    background-color: #198754;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background-color 0.2s;
+  }
+  
+  .addPost__submitBtn:hover {
+    background-color: #157347;
+  }
+  
+  .addPost__submitBtn:disabled {
+    background-color: #a5d6a7;
+    cursor: not-allowed;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .addPost {
+      padding: 20px;
+    }
+    .addPost__gridTwo,
+    .addPost__imageSection,
+    .addPost__authorSection {
+      grid-template-columns: 1fr;
+    }
+  }

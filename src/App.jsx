@@ -34,6 +34,8 @@ import VacationList from "./components/main-form/Vacations/VacationList";
 import ActivityBook from "./components/main-form/Activity/ActivityBook";
 import VacationDetail from "./components/main-form/Vacations/VacationDetail";
 import VacationBilling from "./components/main-form/Vacations/VacationBilling";
+import AdminDash from "./components/admin/adminDashboard/adminDash";
+import AddPost from "./components/admin/addPost/addPost";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -61,7 +63,7 @@ function App() {
         setPersonDetails(res?.data?.get?.result);
         localStorage.setItem(
           "personDetails",
-          JSON.stringify(res?.data?.get?.result),
+          JSON.stringify(res?.data?.get?.result)
         );
       } catch (error) {
         console.error("Error fetching new member details:", error);
@@ -89,6 +91,8 @@ function App() {
           element={token ? <Navigate to="/home" replace /> : <BeforeHome />}
         />
 
+        <Route path="/admin-addPost" element={<AddPost />} />
+        <Route path="/admin-dash" element={<AdminDash />} />
         <Route path="/whats-included" element={<IncludingPage />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/join-now" element={<Join />} />
