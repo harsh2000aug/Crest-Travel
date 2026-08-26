@@ -127,7 +127,7 @@ const AdminDash = () => {
         {/* Toolbar */}
         <div className="dash-toolbar">
           <div className="dash-entries-selector">
-            <label>Show</label>
+            {/* <label>Show :</label> */}
             <select
               value={entries}
               onChange={(e) => {
