@@ -155,7 +155,7 @@ const AdminDash = () => {
             </svg>
             <input
               type="text"
-              placeholder="Search by title, category, or slug..."
+              placeholder="Search by article..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
