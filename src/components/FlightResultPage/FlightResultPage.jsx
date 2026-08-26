@@ -1891,23 +1891,13 @@ export default function FlightResultPage() {
     }
   };
 
-  /* =========================================================
-     UI
-  ========================================================= */
-
   return (
     <>
       <HeaderInner />
 
-      {/* =====================================================
-          SEARCH HEADER
-      ===================================================== */}
-
       <header className="search-header">
         <div className="container">
           <div className="search-header-inner">
-            {/* Trip Type */}
-
             <div className="trip-type-row">
               <button
                 type="button"
@@ -1935,8 +1925,6 @@ export default function FlightResultPage() {
                 Multi City
               </button>
             </div>
-
-            {/* Search Form */}
 
             <form onSubmit={handleSubmit(onSubmit)}>
               {isMultiCity ? (
@@ -2760,8 +2748,6 @@ export default function FlightResultPage() {
               )}
             </form>
 
-            {/* Meta */}
-
             <div className="search-meta-row">
               <div className="meta-pill">
                 👤 {adults} Adult
@@ -2786,14 +2772,8 @@ export default function FlightResultPage() {
         </div>
       </header>
 
-      {/* =====================================================
-          RESULTS
-      ===================================================== */}
-
       <div className="container">
         <div className="page-body">
-          {/* Results Summary */}
-
           <div className="results-summary">
             <div className="results-count">
               Showing <span>{filteredFlights.length}</span> of{" "}
@@ -2875,8 +2855,6 @@ export default function FlightResultPage() {
               </div>
             </div>
 
-            {/* Airlines */}
-
             <div className="filter-section">
               <div className="filter-section-title">Airlines</div>
 
@@ -2903,10 +2881,6 @@ export default function FlightResultPage() {
               </div>
             </div>
           </aside>
-
-          {/* =================================================
-              FLIGHT LIST
-          ================================================= */}
 
           <div className="flight-list">
             {/* Loading */}

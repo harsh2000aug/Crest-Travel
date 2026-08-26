@@ -293,7 +293,22 @@ const ProfileDetails = () => {
 
   return (
     <>
-      {loading && <Loader />}
+      {loading && (
+        <div className="simple-hotel-loader">
+          <div className="simple-hotel-loader__box">
+            <div className="simple-hotel-loader__loading">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <h2 className="simple-hotel-loader__title">Please wait </h2>
+
+            <p className="simple-hotel-loader__text">
+              while we fetch your profile details
+            </p>
+          </div>
+        </div>
+      )}
 
       <HeaderInner />
 

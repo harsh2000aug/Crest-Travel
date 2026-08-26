@@ -14,6 +14,8 @@ import {
 import {
   getHotelDetails,
   getHotelDetailsAndRates,
+  hotelAddOrder,
+  hotelBooking,
   hotelPayment,
   payNow,
   revalidate,
@@ -33,7 +35,11 @@ const Hotel = () => {
   const hotelId = searchParams.get("hotelId") || "";
   const token =
     searchParams.get("token") || localStorage.getItem("hotelToken") || "";
+  const hotelName = searchParams.get("hotelName") || "";
   const correlationId = searchParams.get("correlationId") || "";
+  if (correlationId) {
+    localStorage.setItem("correlationId", correlationId);
+  }
   const recommendationId = searchParams.get("recommendationIdFinal");
   const checkIn = searchParams.get("checkIn") || "";
   const checkOut = searchParams.get("checkOut") || "";
@@ -109,12 +115,10 @@ const Hotel = () => {
   const savings = Math.max(0, selectedPublishedRate - selectedOurPrice);
 
   const [hotelLoader, setHotelLoader] = useState(false);
-  const [bookingData, setBookingData] = useState({});
   const [hotelImages, setHotelImages] = useState({});
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [showFailurePopup, setShowFailurePopup] = useState(false);
-
   const [leadGuest, setLeadGuest] = useState({
     title: "Mr",
     firstName: "",
@@ -257,13 +261,6 @@ const Hotel = () => {
     setValue("expiryDate", value);
   };
 
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-    });
-  }, []);
-
   const roomCountToStore = useAtomValue(TotalRooms);
 
   const totalNumberofRooms =
@@ -277,6 +274,194 @@ const Hotel = () => {
 
   const totalChildren =
     localStorage.getItem("childCountToStore") || childFinalCount;
+
+  const handleAddOrder = async (data) => {
+    setHotelLoader(true);
+
+    try {
+      const nights = Math.max(
+        1,
+        Math.ceil(
+          (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24),
+        ),
+      );
+
+      const guests = [
+        {
+          primary: true,
+          title: leadGuest.title || "Mr",
+          firstname: data.firstName || "",
+          lastname: data.lastName || "",
+          email: data.email || "",
+          phone: `${leadGuest.countryCode || "+91"}${data.phone || ""}`,
+          gender: data.gender || "",
+          type: Number(data.age) >= 18 ? "ADULT" : "CHILD",
+        },
+        ...(data.travellers || []).map((traveller) => ({
+          primary: false,
+          title: traveller.title || "Mr",
+          firstname: traveller.firstName || "",
+          lastname: traveller.lastName || "",
+          gender: traveller.gender || "",
+          type: Number(traveller.age) >= 18 ? "ADULT" : "CHILD",
+        })),
+      ];
+
+      const response = await hotelAddOrder({
+        body: {
+          moduleid: 1433,
+          hotelid: hotelId,
+          recommendationId,
+          start_date: checkIn,
+          end_date: checkOut,
+          rooms: Number(totalNumberofRooms) || 0,
+          nights,
+          adults: Number(totalAdults) || 0,
+          children: Number(totalChildren) || 0,
+          payment_mode: "CREDIT",
+          guests,
+          billing_name: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+          billing_country: data.country || "",
+          billing_state: data.state || "",
+          billing_city: data.city || "",
+          billing_address1: data.address1 || "",
+          billing_address2: data.address2 || "",
+          billing_postal_code: data.zipCode || "",
+          billing_email: data.email || "",
+          billing_phone: `${leadGuest.countryCode || "+91"}${data.phone || ""}`,
+        },
+      });
+
+      console.log("ADD ORDER RESPONSE:", response);
+
+      const itemId = response?.data?.itemid;
+
+      if (!itemId) {
+        console.error("itemid not found in hotelAddOrder response");
+        setShowFailurePopup(true);
+        return;
+      }
+
+      const bookingResponse = await handleBookingHotel(itemId, data);
+      console.log("HOTEL BOOKING RESPONSE:", bookingResponse);
+
+      return bookingResponse;
+    } catch (error) {
+      console.error("HOTEL BOOKING ERROR:", error);
+      setShowFailurePopup(true);
+    } finally {
+      setHotelLoader(false);
+    }
+  };
+
+  const handleBookingHotel = async (itemId, data) => {
+    try {
+      const guests = [
+        {
+          age: Number(data.age) || 0,
+          email: data.email || "",
+          title: leadGuest.title?.toUpperCase() || "MR",
+          type: Number(data.age) >= 18 ? "ADULT" : "CHILD",
+          lastName: data.lastName || "",
+          firstName: data.firstName || "",
+        },
+        ...(data.travellers || []).map((traveller) => ({
+          age: Number(traveller.age) || 0,
+          email: data.email || "",
+          title: traveller.title?.toUpperCase() || "MR",
+          type: Number(traveller.age) >= 18 ? "ADULT" : "CHILD",
+          lastName: traveller.lastName || "",
+          firstName: traveller.firstName || "",
+        })),
+      ];
+
+      const bookingResponse = await hotelBooking({
+        body: {
+          orderNumber: itemId,
+          hotelId: hotelId,
+          ourprice: selectedOurPrice,
+          rooms: [
+            {
+              roomId: selectedRoom?.roomId || roomId,
+              rateId: localStorage.getItem("rateid"),
+              guests,
+            },
+          ],
+          billing: {
+            type: Number(data.age) >= 18 ? "ADULT" : "CHILD",
+            title: leadGuest.title?.toUpperCase() || "MR",
+            firstName: data.firstName || "",
+            lastName: data.lastName || "",
+            age: Number(data.age) || 0,
+            line1: data.address1 || "",
+            line2: data.address2 || "",
+            postalCode: data.zipCode || "",
+            phone: data.phone || "",
+            email: data.email || "",
+            city: {
+              code: data.city || "",
+              name: data.city || "",
+            },
+            state: {
+              code: data.state || "",
+              name: data.state || "",
+            },
+            country: {
+              name:
+                Country.getCountryByCode(data.country)?.name ||
+                data.country ||
+                "",
+              code: data.country || "",
+            },
+          },
+          identity: {
+            number: encodeBase64(
+              String(data.cardNumber || "").replace(/\s/g, ""),
+            ),
+            name: encodeBase64(data.cardHolder || ""),
+            code: encodeBase64(data.cvv || ""),
+            type: getCardType(String(data.cardNumber || "").replace(/\s/g, "")),
+            em: encodeBase64(String(data.expiryDate || "").split("/")[0] || ""),
+            ey: encodeBase64(String(data.expiryDate || "").split("/")[1] || ""),
+            line1: data.address1 || "",
+            line2: data.address2 || "",
+            city: {
+              name: data.city || "",
+              code: data.city || "",
+            },
+            state: {
+              name: data.state || "",
+              code: data.state || "",
+            },
+            country: {
+              name:
+                Country.getCountryByCode(data.country)?.name ||
+                data.country ||
+                "",
+              code: data.country || "",
+            },
+            postalCode: data.zipCode || "",
+            phone: data.phone || "",
+            email: data.email || "",
+          },
+        },
+      });
+
+      console.log("HOTEL BOOKING RESPONSE:", bookingResponse);
+
+      return bookingResponse;
+    } catch (error) {
+      console.error("HOTEL BOOKING ERROR:", error);
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
 
   return (
     <>
@@ -404,23 +589,48 @@ const Hotel = () => {
                           <p className="booking-error">{errors.age.message}</p>
                         )}
                       </div>
+
+                      <div className="form-group small-field">
+                        <label>Gender *</label>
+
+                        <select
+                          className="booking-input"
+                          {...register("gender", {
+                            required: "Gender is required",
+                          })}
+                        >
+                          <option value="">Select Gender</option>
+                          <option value="MALE">Male</option>
+                          <option value="FEMALE">Female</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+
+                        {errors.gender && (
+                          <p className="booking-error">
+                            {errors.gender.message}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </form>
 
-                  <button
-                    type="button"
-                    className="add-traveller-btn-custom"
-                    onClick={() =>
-                      appendTraveller({
-                        title: "Mr",
-                        firstName: "",
-                        lastName: "",
-                        age: "",
-                      })
-                    }
-                  >
-                    + Add Traveller
-                  </button>
+                  {Number(totalAdults) > 1 && (
+                    <button
+                      type="button"
+                      className="add-traveller-btn-custom"
+                      onClick={() =>
+                        appendTraveller({
+                          title: "Mr",
+                          firstName: "",
+                          lastName: "",
+                          age: "",
+                          gender: "",
+                        })
+                      }
+                    >
+                      + Add Traveller
+                    </button>
+                  )}
                 </div>
 
                 {travellerFields.map((traveller, index) => (
@@ -512,6 +722,28 @@ const Hotel = () => {
                         {errors.travellers?.[index]?.age && (
                           <p className="booking-error">
                             {errors.travellers[index].age.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="form-group small-field">
+                        <label>Gender *</label>
+
+                        <select
+                          className="booking-input"
+                          {...register(`travellers.${index}.gender`, {
+                            required: "Gender is required",
+                          })}
+                        >
+                          <option value="">Select Gender</option>
+                          <option value="MALE">Male</option>
+                          <option value="FEMALE">Female</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+
+                        {errors.travellers?.[index]?.gender && (
+                          <p className="booking-error">
+                            {errors.travellers[index].gender.message}
                           </p>
                         )}
                       </div>
@@ -813,8 +1045,9 @@ const Hotel = () => {
                 </div>
 
                 <button
+                  type="button"
                   className="payment-btn"
-                  onClick={handleSubmit(onSubmit)}
+                  onClick={handleSubmit(handleAddOrder)}
                 >
                   Proceed To Payment
                 </button>
@@ -825,12 +1058,12 @@ const Hotel = () => {
               <div className="booking-summary-card">
                 <img
                   src={heroImageMain}
-                  alt={hotelImages?.name}
+                  alt={hotelName}
                   className="booking-summary-image"
                 />
 
                 <div className="booking-summary-content">
-                  <h3>{hotelImages?.name}</h3>
+                  <h3>{hotelName}</h3>
 
                   <div className="booking-date-row">
                     <div>

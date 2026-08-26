@@ -231,6 +231,16 @@ export const forgotPasswordReset = ({ body }: any) =>
     uriEndPoint: allApi.forgotPasswordReset.v1,
     body,
   });
+export const hotelAddOrder = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.hotelAddOrder.v1,
+    body,
+  });
+export const hotelBooking = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.hotelBooking.v1,
+    body,
+  });
 
 // vacation services
 export const searchVacationLocation = ({ body }: any) =>

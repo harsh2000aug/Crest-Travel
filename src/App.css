@@ -42,3 +42,236 @@ a {
     padding: 20px 0;
   }
 }
+
+/* hotel loader css styles*/
+.simple-hotel-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(5px);
+}
+
+.simple-hotel-loader__box {
+  width: 340px;
+  padding: 35px 30px;
+  text-align: center;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 20px 60px rgba(25, 45, 70, 0.1);
+}
+
+.simple-hotel-loader__icon-wrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.simple-hotel-loader__circle {
+  position: absolute;
+  width: 115px;
+  height: 115px;
+  border-radius: 50%;
+  border: 1px solid #e6c98d;
+  animation: simple-hotel-loader__circle-pulse 2.2s ease-in-out infinite;
+}
+
+.simple-hotel-loader__icon {
+  position: relative;
+  z-index: 2;
+  width: 72px;
+  height: 82px;
+  animation: simple-hotel-loader__float 2.5s ease-in-out infinite;
+}
+
+.simple-hotel-loader__roof {
+  position: absolute;
+  top: 0;
+  left: -5px;
+  width: 82px;
+  height: 9px;
+  border-radius: 4px;
+  background: #183452;
+}
+
+.simple-hotel-loader__building {
+  position: absolute;
+  top: 8px;
+  left: 4px;
+  width: 64px;
+  height: 68px;
+  padding: 10px 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(90deg, #edf0f2, #ffffff, #e8ebed);
+  box-shadow: 0 8px 20px rgba(24, 52, 82, 0.12);
+}
+
+.simple-hotel-loader__building span {
+  height: 14px;
+  border-radius: 2px;
+  background: #e0b45f;
+  animation: simple-hotel-loader__windows 1.8s ease-in-out infinite;
+}
+
+.simple-hotel-loader__building span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.simple-hotel-loader__building span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.simple-hotel-loader__building span:nth-child(4) {
+  animation-delay: 0.6s;
+}
+
+.simple-hotel-loader__building span:nth-child(5) {
+  animation-delay: 0.8s;
+}
+
+.simple-hotel-loader__building span:nth-child(6) {
+  animation-delay: 1s;
+}
+
+.simple-hotel-loader__door {
+  position: absolute;
+  bottom: 0;
+  left: 27px;
+  width: 20px;
+  height: 28px;
+  border-radius: 3px 3px 0 0;
+  background: #183452;
+  border: 2px solid #d5a653;
+}
+
+.simple-hotel-loader__title {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 600;
+  color: #183452;
+}
+
+.simple-hotel-loader__text {
+  margin: 9px 0 18px;
+  font-size: 13px;
+  color: #8a919a;
+}
+
+.simple-hotel-loader__loading {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.simple-hotel-loader__loading span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d3a04b;
+  animation: simple-hotel-loader__dots 1.2s ease-in-out infinite;
+}
+
+.simple-hotel-loader__loading span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.simple-hotel-loader__loading span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.simple-hotel-loader__line {
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #edf0f2;
+}
+
+.simple-hotel-loader__line-fill {
+  width: 30%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #183452, #d3a04b);
+  animation: simple-hotel-loader__progress 2.2s ease-in-out infinite;
+}
+
+@keyframes simple-hotel-loader__float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes simple-hotel-loader__circle-pulse {
+  0%,
+  100% {
+    transform: scale(0.94);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes simple-hotel-loader__windows {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(224, 180, 95, 0.5);
+  }
+}
+
+@keyframes simple-hotel-loader__dots {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+
+  50% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+@keyframes simple-hotel-loader__progress {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+@media (max-width: 480px) {
+  .simple-hotel-loader__box {
+    width: 290px;
+    padding: 30px 22px;
+  }
+
+  .simple-hotel-loader__title {
+    font-size: 22px;
+  }
+}

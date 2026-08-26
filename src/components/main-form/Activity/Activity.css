@@ -4012,6 +4012,7 @@
 
 .activityDetailsUi__participantsField {
   position: relative;
+  margin-top: 10px;
 }
 
 .activityDetailsUi__participantsTrigger {
@@ -5498,4 +5499,14 @@
   .activity-book-activity-details h2 {
     font-size: 18px;
   }
+}
+
+.activityDetailsUi__loader {
+  margin-right: 10px;
+}
+
+.activityDetailsUi__availabilityLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

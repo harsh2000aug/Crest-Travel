@@ -577,28 +577,30 @@ const ActivityArea = () => {
           <h4 className="activityArea__filterTitle">Rating</h4>
 
           <div className="activityArea__ratingOptions">
-            {filterData.rating.map((rating) => (
-              <label className="activityArea__ratingOption" key={rating}>
-                <input
-                  type="radio"
-                  name="activityRating"
-                  checked={selectedRating === rating}
-                  onChange={() => handleRatingChange(rating)}
-                />
+            {[...filterData.rating]
+              .sort((a, b) => Number(b) - Number(a))
+              .map((rating) => (
+                <label className="activityArea__ratingOption" key={rating}>
+                  <input
+                    type="radio"
+                    name="activityRating"
+                    checked={selectedRating === rating}
+                    onChange={() => handleRatingChange(rating)}
+                  />
 
-                <span className="activityArea__radioCircle" />
+                  <span className="activityArea__radioCircle" />
 
-                <span className="activityArea__filterStars">
-                  {"★".repeat(rating)}
+                  <span className="activityArea__filterStars">
+                    {"★".repeat(Number(rating))}
 
-                  <span className="activityArea__emptyStars">
-                    {"★".repeat(5 - rating)}
+                    <span className="activityArea__emptyStars">
+                      {"★".repeat(5 - Number(rating))}
+                    </span>
                   </span>
-                </span>
 
-                <span className="activityArea__ratingText">{rating}+</span>
-              </label>
-            ))}
+                  <span className="activityArea__ratingText">{rating}+</span>
+                </label>
+              ))}
           </div>
         </div>
 

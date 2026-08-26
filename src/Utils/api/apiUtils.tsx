@@ -98,6 +98,11 @@ const callAxios = async (
         correlationid: localStorage.getItem("CorelationIdOfVacation"),
       }
     : {};
+  const hotelHeader = uriEndPoint?.useHotelHeaders
+    ? {
+        correlationid: localStorage.getItem("correlationId"),
+      }
+    : {};
   const activityHeader = uriEndPoint?.activitiesCalendar
     ? {
         type: "MEMBER",
@@ -122,6 +127,7 @@ const callAxios = async (
       ...carHeaders,
       ...activityHeader,
       ...vacationHeader,
+      ...hotelHeader,
     },
     data: body || undefined,
     withCredentials: withCredentials || false, // Add withCredentials here

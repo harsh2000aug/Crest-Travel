@@ -1767,7 +1767,6 @@
 /* hotel page css */
 .hotel-booking-page {
   padding: 50px 0;
-  background: #f5f7fb;
   min-height: 100vh;
 }
 
@@ -2007,7 +2006,7 @@
 
 .traveller-form-grid {
   display: grid;
-  grid-template-columns: 120px 1fr 1fr 120px;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 18px;
   margin-bottom: 20px;
 }

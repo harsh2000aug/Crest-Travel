@@ -156,6 +156,68 @@ const ActivityDetails = () => {
   const activityCode = searchParams.get("activityCode") || "";
   const startDate = searchParams.get("travelDate") || "";
 
+  const getAgeBandConfig = (ageBand) => {
+    const band = String(ageBand?.ageBand || "").toUpperCase();
+
+    const labels = {
+      ADULT: "Adult",
+      YOUTH: "Youth",
+      CHILD: "Child",
+      INFANT: "Infant",
+      SENIOR: "Senior",
+    };
+
+    const typeMap = {
+      ADULT: "adult",
+      YOUTH: "youth",
+      CHILD: "child",
+      INFANT: "infant",
+      SENIOR: "senior",
+    };
+
+    return {
+      ageBand: band,
+      type: typeMap[band] || band.toLowerCase(),
+      label: labels[band] || band,
+      startAge: Number(ageBand?.startAge),
+      endAge: Number(ageBand?.endAge),
+      minTravelers: Number(ageBand?.minTravelers) || 0,
+      maxTravelers: Number(ageBand?.maxTravelers) || 10,
+    };
+  };
+
+  const activityAgeBands = useMemo(() => {
+    const ageBands = activityData?.pricingInfo?.ageBands;
+
+    if (!Array.isArray(ageBands)) {
+      return [];
+    }
+
+    return ageBands.map(getAgeBandConfig);
+  }, [activityData?.pricingInfo?.ageBands]);
+
+  useEffect(() => {
+    if (!activityAgeBands.length) {
+      return;
+    }
+
+    const nextParticipants = {};
+
+    activityAgeBands.forEach((ageBand) => {
+      nextParticipants[ageBand.type] = ageBand.minTravelers;
+    });
+
+    setParticipants((previous) => ({
+      ...previous,
+      ...nextParticipants,
+    }));
+
+    setAppliedParticipants((previous) => ({
+      ...previous,
+      ...nextParticipants,
+    }));
+  }, [activityAgeBands]);
+
   const loadAvailability = async (date, participantState) => {
     if (!activityCode || !date) {
       return null;
@@ -165,22 +227,30 @@ const ActivityDetails = () => {
     setAvailabilityError("");
 
     try {
-      const ageBands = [
-        {
-          ageBand: "SENIOR",
-          numberOfTravelers: 0,
+      const ageBands = (activityData?.pricingInfo?.ageBands || []).map(
+        (ageBand) => {
+          const band = String(ageBand?.ageBand || "").toUpperCase();
+
+          let participantType = band.toLowerCase();
+
+          if (band === "ADULT") {
+            participantType = "adult";
+          } else if (band === "YOUTH") {
+            participantType = "youth";
+          } else if (band === "CHILD") {
+            participantType = "child";
+          } else if (band === "INFANT") {
+            participantType = "infant";
+          } else if (band === "SENIOR") {
+            participantType = "senior";
+          }
+
+          return {
+            ageBand: band,
+            numberOfTravelers: Number(participantState?.[participantType]) || 0,
+          };
         },
-        {
-          ageBand: "ADULT",
-          numberOfTravelers: Number(participantState?.adult) || 0,
-        },
-        {
-          ageBand: "CHILD",
-          numberOfTravelers:
-            (Number(participantState?.youth) || 0) +
-            (Number(participantState?.child) || 0),
-        },
-      ];
+      );
 
       const requestBody = {
         activityCode,
@@ -518,22 +588,29 @@ const ActivityDetails = () => {
   );
 
   const updateParticipant = (type, change) => {
+    const ageBand = activityAgeBands.find((item) => item.type === type);
+
+    if (!ageBand) {
+      return;
+    }
+
     setParticipants((previous) => {
       const currentValue = Number(previous[type]) || 0;
-      const minimum = type === "adult" ? 1 : 0;
 
-      const nextValue = Math.max(minimum, Math.min(10, currentValue + change));
+      const nextValue = Math.max(
+        ageBand.minTravelers,
+        Math.min(ageBand.maxTravelers, currentValue + change),
+      );
 
       const nextParticipants = {
         ...previous,
         [type]: nextValue,
       };
 
-      const total =
-        nextParticipants.adult +
-        nextParticipants.youth +
-        nextParticipants.child +
-        nextParticipants.infant;
+      const total = Object.values(nextParticipants).reduce(
+        (sum, value) => sum + Number(value || 0),
+        0,
+      );
 
       if (total > 10) {
         return previous;
@@ -544,13 +621,14 @@ const ActivityDetails = () => {
   };
 
   const applyParticipants = () => {
-    setAppliedParticipants({
-      adult: Number(participants.adult) || 1,
-      youth: Number(participants.youth) || 0,
-      child: Number(participants.child) || 0,
-      infant: Number(participants.infant) || 0,
+    const nextAppliedParticipants = {};
+
+    activityAgeBands.forEach((ageBand) => {
+      nextAppliedParticipants[ageBand.type] =
+        Number(participants[ageBand.type]) || ageBand.minTravelers;
     });
 
+    setAppliedParticipants(nextAppliedParticipants);
     setParticipantsOpen(false);
   };
 
@@ -757,15 +835,10 @@ const ActivityDetails = () => {
     return Math.round((getRatingCount(rating) / totalReviewCount) * 100);
   };
 
-  const totalParticipants =
-    Number(appliedParticipants.adult) +
-    Number(appliedParticipants.youth) +
-    Number(appliedParticipants.child) +
-    Number(appliedParticipants.infant);
-
-  const participantLabel = `${totalParticipants} ${
-    totalParticipants === 1 ? "Participant" : "Participants"
-  }`;
+  const totalParticipants = Object.values(appliedParticipants).reduce(
+    (sum, value) => sum + Number(value || 0),
+    0,
+  );
 
   const {
     title,
@@ -1296,7 +1369,7 @@ const ActivityDetails = () => {
                                     </strong>
 
                                     <span>
-                                      {participantLabel} ×{" "}
+                                      {totalParticipants} Participants ×{" "}
                                       {itemPerPersonPrice.toFixed(2)}
                                     </span>
 
@@ -1785,17 +1858,23 @@ const ActivityDetails = () => {
                   <span className="activityDetailsUi__fieldIcon">♙</span>
 
                   <strong>
-                    {appliedParticipants.adult} Adult
-                    {appliedParticipants.adult !== 1 ? "s" : ""}
-                    {appliedParticipants.youth > 0
-                      ? `, ${appliedParticipants.youth} Youth`
-                      : ""}
-                    {appliedParticipants.child > 0
-                      ? `, ${appliedParticipants.child} Child`
-                      : ""}
-                    {appliedParticipants.infant > 0
-                      ? `, ${appliedParticipants.infant} Infant`
-                      : ""}
+                    {activityAgeBands
+                      .filter(
+                        (ageBand) =>
+                          Number(appliedParticipants[ageBand.type]) > 0,
+                      )
+                      .map((ageBand, index) => {
+                        const count =
+                          Number(appliedParticipants[ageBand.type]) || 0;
+
+                        return (
+                          <React.Fragment key={ageBand.type}>
+                            {index > 0 ? ", " : ""}
+                            {count} {ageBand.label}
+                            {count !== 1 ? "s" : ""}
+                          </React.Fragment>
+                        );
+                      })}
                   </strong>
                 </button>
 
@@ -1803,67 +1882,82 @@ const ActivityDetails = () => {
                   <div className="activityDetailsUi__participantsPopup">
                     <div className="activityDetailsUi__participantsHeader">
                       <h3>Select Participants</h3>
-
                       <p>You Can select upto 10 Participants</p>
                     </div>
 
-                    {[
-                      {
-                        type: "adult",
-                        label: "Adult (16-99)",
-                        min: 1,
-                      },
-                      {
-                        type: "youth",
-                        label: "Youth (5-15)",
-                        min: 0,
-                      },
-                      {
-                        type: "child",
-                        label: "Child (3-4)",
-                        min: 0,
-                      },
-                      {
-                        type: "infant",
-                        label: "Infant (0-2)",
-                        min: 0,
-                      },
-                    ].map((item) => (
-                      <div
-                        key={item.type}
-                        className="activityDetailsUi__participantRow"
-                      >
-                        <div className="activityDetailsUi__participantInfo">
-                          <strong>{item.label}</strong>
+                    {(activityData?.pricingInfo?.ageBands || []).map(
+                      (ageBand) => {
+                        const band = String(
+                          ageBand?.ageBand || "",
+                        ).toUpperCase();
 
-                          <span>Min {item.min} - Max 10</span>
-                        </div>
+                        const typeMap = {
+                          ADULT: "adult",
+                          YOUTH: "youth",
+                          CHILD: "child",
+                          INFANT: "infant",
+                          SENIOR: "senior",
+                        };
 
-                        <div className="activityDetailsUi__participantControls">
-                          <button
-                            type="button"
-                            className="activityDetailsUi__participantMinus"
-                            disabled={participants[item.type] <= item.min}
-                            onClick={() => updateParticipant(item.type, -1)}
+                        const labelMap = {
+                          ADULT: "Adult",
+                          YOUTH: "Youth",
+                          CHILD: "Child",
+                          INFANT: "Infant",
+                          SENIOR: "Senior",
+                        };
+
+                        const type = typeMap[band] || band.toLowerCase();
+                        const label = labelMap[band] || band;
+
+                        const startAge = Number(ageBand?.startAge);
+                        const endAge = Number(ageBand?.endAge);
+                        const min = Number(ageBand?.minTravelers) || 0;
+                        const max = Number(ageBand?.maxTravelers) || 10;
+                        const currentCount = Number(participants[type]) || 0;
+
+                        return (
+                          <div
+                            key={band}
+                            className="activityDetailsUi__participantRow"
                           >
-                            −
-                          </button>
+                            <div className="activityDetailsUi__participantInfo">
+                              <strong>
+                                {label} ({startAge}-{endAge})
+                              </strong>
 
-                          <span className="activityDetailsUi__participantCount">
-                            {participants[item.type]}
-                          </span>
+                              <span>
+                                Min {min} - Max {max}
+                              </span>
+                            </div>
 
-                          <button
-                            type="button"
-                            className="activityDetailsUi__participantPlus"
-                            disabled={participants[item.type] >= 10}
-                            onClick={() => updateParticipant(item.type, 1)}
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                            <div className="activityDetailsUi__participantControls">
+                              <button
+                                type="button"
+                                className="activityDetailsUi__participantMinus"
+                                disabled={currentCount <= min}
+                                onClick={() => updateParticipant(type, -1)}
+                              >
+                                −
+                              </button>
+
+                              <span className="activityDetailsUi__participantCount">
+                                {currentCount}
+                              </span>
+
+                              <button
+                                type="button"
+                                className="activityDetailsUi__participantPlus"
+                                disabled={currentCount >= max}
+                                onClick={() => updateParticipant(type, 1)}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      },
+                    )}
 
                     <button
                       type="button"

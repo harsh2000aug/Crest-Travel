@@ -305,10 +305,6 @@ const HotelDetailPage = () => {
   // DEBUG
   // =========================================================
 
-  console.log("FINAL HOTEL DATA:", hotelImages);
-
-  console.log("FINAL ROOM GROUPS:", roomDetails);
-
   // =========================================================
   // RATINGS
   // =========================================================
@@ -521,6 +517,11 @@ const HotelDetailPage = () => {
   // =========================================================
 
   const handleBookRoom = (room) => {
+    const rateId = room?.rateid || "";
+
+    if (rateId) {
+      localStorage.setItem("rateid", rateId);
+    }
     const params = new URLSearchParams();
 
     const occupancy = room?.occupancies?.[0] || {};
@@ -629,7 +630,7 @@ const HotelDetailPage = () => {
     // ---------------------------------------------------------
 
     params.set("hotelId", hotelId || "");
-
+    params.set("hotelName", hotelName || "");
     params.set("token", token || "");
 
     params.set("correlationId", correlationId || "");
@@ -708,7 +709,48 @@ const HotelDetailPage = () => {
     <>
       <HeaderInner />
 
-      {hotelLoader && <HotelLoader />}
+      {hotelLoader && (
+        <div className="simple-hotel-loader">
+          <div className="simple-hotel-loader__box">
+            <div className="simple-hotel-loader__icon-wrap">
+              <div className="simple-hotel-loader__icon">
+                <div className="simple-hotel-loader__roof"></div>
+
+                <div className="simple-hotel-loader__building">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+
+                <div className="simple-hotel-loader__door"></div>
+              </div>
+
+              <div className="simple-hotel-loader__circle"></div>
+            </div>
+
+            <h2 className="simple-hotel-loader__title">
+              Finding your perfect stay
+            </h2>
+
+            <p className="simple-hotel-loader__text">
+              Please wait while we get hotel details for you.
+            </p>
+
+            <div className="simple-hotel-loader__loading">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <div className="simple-hotel-loader__line">
+              <div className="simple-hotel-loader__line-fill"></div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* =====================================================
           HOTEL GALLERY

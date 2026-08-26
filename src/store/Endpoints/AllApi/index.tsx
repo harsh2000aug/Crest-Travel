@@ -152,6 +152,22 @@ export const allApi = {
       uri: "/alphahotel/hotel-listings",
     },
   },
+  hotelAddOrder: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphahotel/add-order",
+      useHotelHeaders: true,
+    },
+  },
+  hotelBooking: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphahotel/hotel-booking",
+      useHotelHeaders: true,
+    },
+  },
   changePassword: {
     v1: {
       ...defaults.methods.POST,
