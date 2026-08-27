@@ -155,7 +155,7 @@ const AdminDash = () => {
             </svg>
             <input
               type="text"
-              placeholder="Search by article..."
+              placeholder="Search by Title..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -190,7 +190,7 @@ const AdminDash = () => {
                 <tr>
                   <th style={{ width: "80px" }}>#ID</th>
                   <th>Image</th>
-                  <th>Article Details</th>
+                  <th>Title</th>
                   <th>Category</th>
                   <th>Published Date</th>
                   <th style={{ textAlign: "right", width: "160px" }}>
