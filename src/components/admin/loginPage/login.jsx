@@ -32,7 +32,7 @@ const Login = () => {
       console.log("Login Response:", data);
 
       if (response.ok) {
-        navigate("/admin-Dash");
+        navigate("/admin-dashboard");
       } else {
         // Login failed
         alert(data.message || "Invalid Login ID or Password");

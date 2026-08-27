@@ -29,6 +29,7 @@ const AdminDash = () => {
     try {
       setLoading(true);
       setError(null);
+
       const response = await fetch(`${API_BASE_URL}/blog`);
 
       if (!response.ok) {
@@ -36,7 +37,9 @@ const AdminDash = () => {
       }
 
       const data = await response.json();
+
       const postsList = Array.isArray(data) ? data : data.data || [];
+
       setPosts(postsList);
     } catch (err) {
       console.error("Fetch Error:", err);
@@ -50,6 +53,7 @@ const AdminDash = () => {
     const title = post.title || post.name || "";
     const category = post.category || "";
     const slug = post.slug || "";
+
     const query = search.toLowerCase();
 
     return (
@@ -63,6 +67,7 @@ const AdminDash = () => {
   const totalEntries = filteredPosts.length;
   const totalPages = Math.ceil(totalEntries / entries) || 1;
   const startIndex = (currentPage - 1) * entries;
+
   const paginatedPosts = filteredPosts.slice(startIndex, startIndex + entries);
 
   const handleDelete = async (id) => {
@@ -72,7 +77,9 @@ const AdminDash = () => {
           method: "DELETE",
         });
 
-        if (!response.ok) throw new Error("Failed to delete post.");
+        if (!response.ok) {
+          throw new Error("Failed to delete post.");
+        }
 
         setPosts((prev) => prev.filter((post) => (post._id || post.id) !== id));
       } catch (err) {
@@ -83,7 +90,9 @@ const AdminDash = () => {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
+
     const date = new Date(dateStr);
+
     return isNaN(date.getTime())
       ? dateStr
       : date.toLocaleDateString("en-US", {
@@ -99,10 +108,12 @@ const AdminDash = () => {
       <div className="dash-header-card">
         <div>
           <h1 className="dash-title">Posts Management</h1>
+
           <p className="dash-subtitle">
             Manage, search, and organize all published articles
           </p>
         </div>
+
         <button
           className="btn-primary"
           onClick={() => navigate("/admin-addPost")}
@@ -116,6 +127,7 @@ const AdminDash = () => {
             strokeWidth="2.5"
           >
             <line x1="12" y1="5" x2="12" y2="19"></line>
+
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
           Add New Post
@@ -127,7 +139,6 @@ const AdminDash = () => {
         {/* Toolbar */}
         <div className="dash-toolbar">
           <div className="dash-entries-selector">
-            {/* <label>Show :</label> */}
             <select
               value={entries}
               onChange={(e) => {
@@ -151,8 +162,10 @@ const AdminDash = () => {
               strokeWidth="2"
             >
               <circle cx="11" cy="11" r="8"></circle>
+
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
+
             <input
               type="text"
               placeholder="Search by Title..."
@@ -162,6 +175,7 @@ const AdminDash = () => {
                 setCurrentPage(1);
               }}
             />
+
             {search && (
               <button className="clear-search" onClick={() => setSearch("")}>
                 ×
@@ -171,6 +185,7 @@ const AdminDash = () => {
         </div>
 
         {/* Content States */}
+
         {loading ? (
           <div className="dash-state-container">
             <div className="spinner"></div>
@@ -179,6 +194,7 @@ const AdminDash = () => {
         ) : error ? (
           <div className="dash-state-container error">
             <p>Something went wrong: {error}</p>
+
             <button className="btn-retry" onClick={fetchPosts}>
               Try Again
             </button>
@@ -189,19 +205,31 @@ const AdminDash = () => {
               <thead>
                 <tr>
                   <th style={{ width: "80px" }}>#ID</th>
+
                   <th>Image</th>
+
                   <th>Title</th>
+
                   <th>Category</th>
+
                   <th>Published Date</th>
-                  <th style={{ textAlign: "right", width: "160px" }}>
+
+                  <th
+                    style={{
+                      textAlign: "right",
+                      width: "160px",
+                    }}
+                  >
                     Actions
                   </th>
                 </tr>
               </thead>
+
               <tbody>
                 {paginatedPosts.length > 0 ? (
                   paginatedPosts.map((post, idx) => {
                     const postId = post._id || post.id || startIndex + idx + 1;
+
                     const imageUrl = post.image?.startsWith("http")
                       ? post.image
                       : post.image
@@ -209,13 +237,18 @@ const AdminDash = () => {
                       : null;
 
                     return (
-                      <tr key={postId}>
+                      <tr
+                        key={postId}
+                        className="clickable-row"
+                        onClick={() => navigate(`/blog-detail/${postId}`)}
+                      >
                         <td className="col-id">
                           #
                           {typeof postId === "string"
                             ? postId.slice(-4)
                             : postId}
                         </td>
+
                         <td>
                           <div className="thumbnail-box">
                             {imageUrl ? (
@@ -230,35 +263,49 @@ const AdminDash = () => {
                             )}
                           </div>
                         </td>
+
                         <td className="col-details">
                           <span className="post-title">
                             {post.title || post.name}
                           </span>
+
                           <span className="post-slug">/{post.slug}</span>
                         </td>
+
                         <td>
                           <span className="badge-category">
                             {post.category || "Uncategorized"}
                           </span>
                         </td>
+
                         <td className="col-date">
                           {formatDate(post.createdAt || post.startDate)}
                         </td>
+
                         <td>
                           <div className="action-buttons-group">
+                            {/* EDIT */}
                             <button
                               className="btn-icon btn-edit"
                               title="Edit Post"
-                              onClick={() =>
-                                navigate(`/admin-addPost?edit=${postId}`)
-                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+
+                                navigate(`/admin-addPost?edit=${postId}`);
+                              }}
                             >
                               Edit
                             </button>
+
+                            {/* DELETE */}
                             <button
                               className="btn-icon btn-delete"
                               title="Delete Post"
-                              onClick={() => handleDelete(postId)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+
+                                handleDelete(postId);
+                              }}
                             >
                               Delete
                             </button>
@@ -280,6 +327,7 @@ const AdminDash = () => {
         )}
 
         {/* Footer & Pagination */}
+
         <div className="dash-footer">
           <span className="footer-info">
             Showing {totalEntries === 0 ? 0 : startIndex + 1} to{" "}
@@ -294,9 +342,11 @@ const AdminDash = () => {
             >
               Previous
             </button>
+
             <span className="pagination-page">
               Page {currentPage} of {totalPages}
             </span>
+
             <button
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}

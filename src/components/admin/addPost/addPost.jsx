@@ -176,7 +176,7 @@ const AddPost = () => {
       }
 
       alert(`Post ${editId ? "updated" : "created"} successfully!`);
-      navigate("/admin-dash");
+      navigate("/admin-dashboard");
     } catch (err) {
       alert(err.message);
     } finally {
@@ -199,7 +199,7 @@ const AddPost = () => {
         <button
           type="button"
           className="addPost__viewBtn"
-          onClick={() => navigate("/admin-dash")}
+          onClick={() => navigate("/admin-dashboard")}
         >
           Cancel
         </button>
@@ -327,7 +327,7 @@ const AddPost = () => {
 
         {/* Article Content */}
         <div className="addPost__field">
-          <label htmlFor="content">Content (HTML)</label>
+          <label htmlFor="content">CK Editor</label>
           <div className="addPost__editorMock">
             <textarea
               id="content"

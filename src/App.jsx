@@ -37,6 +37,7 @@ import VacationBilling from "./components/main-form/Vacations/VacationBilling";
 import AdminDash from "./components/admin/adminDashboard/adminDash";
 import AddPost from "./components/admin/addPost/addPost";
 import Login from "./components/admin/loginPage/login";
+import BlogDetail from "./components/admin/blogDetail/blogDetail";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -92,9 +93,10 @@ function App() {
           element={token ? <Navigate to="/home" replace /> : <BeforeHome />}
         />
 
+        <Route path="/blog-detail/:id" element={<BlogDetail />} />
         <Route path="/login-page" element={<Login />} />
         <Route path="/admin-addPost" element={<AddPost />} />
-        <Route path="/admin-dash" element={<AdminDash />} />
+        <Route path="/admin-dashboard" element={<AdminDash />} />
         <Route path="/whats-included" element={<IncludingPage />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/join-now" element={<Join />} />
