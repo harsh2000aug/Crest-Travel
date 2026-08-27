@@ -276,3 +276,34 @@
       grid-template-columns: 1fr;
     }
   }
+
+  .addPost__ckeditor {
+    width: 100%;
+  }
+  
+  .addPost__ckeditor .ck-editor__editable {
+    min-height: 350px;
+    max-height: 600px;
+  }
+  
+  .addPost__ckeditor .ck-editor__editable_inline {
+    padding: 20px;
+  }
+  
+  .addPost__ckeditor .ck-content {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  
+  .addPost__ckeditor .ck-content h2 {
+    font-size: 28px;
+  }
+  
+  .addPost__ckeditor .ck-content h3 {
+    font-size: 22px;
+  }
+  
+  .addPost__ckeditor .ck-content img {
+    max-width: 100%;
+    height: auto;
+  }
