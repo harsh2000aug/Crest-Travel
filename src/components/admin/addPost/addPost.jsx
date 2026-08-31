@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import "./addPost.css";
 
 const API_BASE_URL =
@@ -13,6 +15,7 @@ const API_BASE_URL =
 
 const getFullImageUrl = (path) => {
   if (!path) return "";
+
   if (
     path.startsWith("http://") ||
     path.startsWith("https://") ||
@@ -20,10 +23,13 @@ const getFullImageUrl = (path) => {
   ) {
     return path;
   }
+
   const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+
   const cleanBase = API_BASE_URL.endsWith("/")
     ? API_BASE_URL.slice(0, -1)
     : API_BASE_URL;
+
   return `${cleanBase}/${cleanPath}`;
 };
 
@@ -53,37 +59,46 @@ const AddPost = () => {
     status: "published",
   });
 
-  // Files & Previews State
+  // Files & Previews
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
 
   const [authorImageFile, setAuthorImageFile] = useState(null);
   const [authorImagePreview, setAuthorImagePreview] = useState("");
 
+  // Fetch existing post when editing
   useEffect(() => {
     if (editId) {
       fetchPostDetails(editId);
     }
   }, [editId]);
 
+  // Cleanup blob URLs
   useEffect(() => {
     return () => {
       if (imagePreview && imagePreview.startsWith("blob:")) {
         URL.revokeObjectURL(imagePreview);
       }
+
       if (authorImagePreview && authorImagePreview.startsWith("blob:")) {
         URL.revokeObjectURL(authorImagePreview);
       }
     };
   }, [imagePreview, authorImagePreview]);
 
+  // Fetch post details
   const fetchPostDetails = async (id) => {
     try {
       setLoading(true);
+
       const response = await fetch(`${API_BASE_URL}/blog/${id}`);
-      if (!response.ok) throw new Error("Failed to fetch post details.");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch post details.");
+      }
 
       const result = await response.json();
+
       const data = result.data || result;
 
       setFormData({
@@ -103,51 +118,78 @@ const AddPost = () => {
         status: data.status || "published",
       });
 
+      // Cover image
       const existingCoverPath =
         data.image || data.coverImage || data.imageUrl || "";
+
       if (existingCoverPath) {
         setImagePreview(getFullImageUrl(existingCoverPath));
       }
 
+      // Author image
       const existingAuthorPath =
         data.authorImage || data.authorAvatar || data.avatar || "";
+
       if (existingAuthorPath) {
         setAuthorImagePreview(getFullImageUrl(existingAuthorPath));
       }
     } catch (err) {
+      console.error(err);
       alert(`Error fetching article details: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
+  // Normal input change
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
+  // CKEditor change
+  const handleEditorChange = (event, editor) => {
+    const data = editor.getData();
+
+    setFormData((prev) => ({
+      ...prev,
+      content: data,
+    }));
+  };
+
+  // Cover image
   const handleCoverImageChange = (e) => {
     const file = e.target.files[0];
+
     if (file) {
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
     }
   };
 
+  // Author image
   const handleAuthorImageChange = (e) => {
     const file = e.target.files[0];
+
     if (file) {
       setAuthorImageFile(file);
       setAuthorImagePreview(URL.createObjectURL(file));
     }
   };
 
+  // Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setSubmitting(true);
 
     try {
       const payload = new FormData();
+
       Object.keys(formData).forEach((key) => {
         payload.append(key, formData[key]);
       });
@@ -167,7 +209,7 @@ const AddPost = () => {
       const method = editId ? "PUT" : "POST";
 
       const response = await fetch(url, {
-        method: method,
+        method,
         body: payload,
       });
 
@@ -176,14 +218,17 @@ const AddPost = () => {
       }
 
       alert(`Post ${editId ? "updated" : "created"} successfully!`);
-      navigate("/admin-dash");
+
+      navigate("/admin-dashboard");
     } catch (err) {
+      console.error(err);
       alert(err.message);
     } finally {
       setSubmitting(false);
     }
   };
 
+  // Loading
   if (loading) {
     return (
       <div className="addPost addPost--loading">
@@ -194,22 +239,26 @@ const AddPost = () => {
 
   return (
     <div className="addPost">
+      {/* Header */}
       <div className="addPost__header">
         <h1>{editId ? "Edit Article" : "Create New Article"}</h1>
+
         <button
           type="button"
           className="addPost__viewBtn"
-          onClick={() => navigate("/admin-dash")}
+          onClick={() => navigate("/admin-dashboard")}
         >
           Cancel
         </button>
       </div>
 
+      {/* Form */}
       <form onSubmit={handleSubmit} className="addPost__card">
-        {/* Title & Slug Group */}
+        {/* Title & Slug */}
         <div className="addPost__gridTwo">
           <div className="addPost__field">
             <label htmlFor="title">Title *</label>
+
             <input
               id="title"
               type="text"
@@ -223,6 +272,7 @@ const AddPost = () => {
 
           <div className="addPost__field">
             <label htmlFor="slug">Slug *</label>
+
             <input
               id="slug"
               type="text"
@@ -235,10 +285,11 @@ const AddPost = () => {
           </div>
         </div>
 
-        {/* Category & Status Group */}
+        {/* Category & Status */}
         <div className="addPost__gridTwo">
           <div className="addPost__field">
             <label htmlFor="category">Category</label>
+
             <input
               id="category"
               type="text"
@@ -251,6 +302,7 @@ const AddPost = () => {
 
           <div className="addPost__field">
             <label htmlFor="status">Status</label>
+
             <select
               id="status"
               name="status"
@@ -258,18 +310,21 @@ const AddPost = () => {
               onChange={handleChange}
             >
               <option value="published">Published</option>
+
               <option value="draft">Draft</option>
             </select>
           </div>
         </div>
 
-        {/* Cover Image Section */}
+        {/* Cover Image */}
         <div className="addPost__sectionBox">
           <h3 className="addPost__subHeading">Cover Image</h3>
+
           <div className="addPost__imageSection">
             <div className="addPost__imageFields">
               <div className="addPost__field">
                 <label htmlFor="imageFile">Upload Cover Image</label>
+
                 <input
                   id="imageFile"
                   type="file"
@@ -281,6 +336,7 @@ const AddPost = () => {
 
               <div className="addPost__field">
                 <label htmlFor="imageAlt">Image Alt Text</label>
+
                 <input
                   id="imageAlt"
                   type="text"
@@ -292,9 +348,10 @@ const AddPost = () => {
               </div>
             </div>
 
-            {/* Cover Image Preview */}
+            {/* Cover Preview */}
             <div className="addPost__previewContainer">
               <label>Preview</label>
+
               <div className="addPost__previewBox">
                 {imagePreview ? (
                   <img
@@ -315,6 +372,7 @@ const AddPost = () => {
         {/* Short Description */}
         <div className="addPost__field">
           <label htmlFor="shortDescription">Short Description</label>
+
           <textarea
             id="shortDescription"
             name="shortDescription"
@@ -325,27 +383,87 @@ const AddPost = () => {
           />
         </div>
 
-        {/* Article Content */}
+        {/* ============================= */}
+        {/* CKEDITOR CONTENT ONLY */}
+        {/* ============================= */}
+
         <div className="addPost__field">
-          <label htmlFor="content">Content (HTML)</label>
-          <div className="addPost__editorMock">
-            <textarea
-              id="content"
-              name="content"
-              value={formData.content}
-              onChange={handleChange}
-              rows={8}
-              placeholder="Write your article content here..."
+          <label htmlFor="content">Content</label>
+
+          <div className="addPost__ckeditor">
+            <CKEditor
+              editor={ClassicEditor}
+              data={formData.content}
+              onChange={(event, editor) => {
+                const data = editor.getData();
+                setFormData((prev) => ({
+                  ...prev,
+                  content: data,
+                }));
+              }}
+              config={{
+                toolbar: [
+                  "sourceEditing", // Allows editing raw HTML
+                  "|",
+                  "heading",
+                  "|",
+                  "fontFamily",
+                  "fontSize",
+                  "fontColor",
+                  "fontBackgroundColor",
+                  "|",
+                  "bold",
+                  "italic",
+                  "underline",
+                  "strikethrough",
+                  "subscript",
+                  "superscript",
+                  "highlight",
+                  "|",
+                  "link",
+                  "blockQuote",
+                  "code",
+                  "codeBlock",
+                  "|",
+                  "bulletedList",
+                  "numberedList",
+                  "todoList",
+                  "|",
+                  "outdent",
+                  "indent",
+                  "|",
+                  "alignment",
+                  "|",
+                  "insertImage", // For adding images
+                  "insertTable",
+                  "mediaEmbed",
+                  "horizontalLine",
+                  "specialCharacters",
+                  "|",
+                  "removeFormat",
+                  "findAndReplace",
+                  "|",
+                  "undo",
+                  "redo",
+                ],
+                // Add plugin configurations here if needed (e.g., fontSize options)
+                fontSize: {
+                  options: [9, 11, 13, "default", 17, 19, 21],
+                },
+                placeholder: "Write your article content here...",
+              }}
             />
-            <div className="addPost__editorBreadcrumb">p &gt; html</div>
           </div>
         </div>
 
-        {/* SEO Configuration Section */}
-        <h2 className="addPost__sectionTitle">SEO &amp; Metadata</h2>
+        {/* SEO */}
+        <h2 className="addPost__sectionTitle">SEO & Metadata</h2>
+
         <div className="addPost__sectionBox">
+          {/* Meta Title */}
           <div className="addPost__field">
             <label htmlFor="metaTitle">Meta Title</label>
+
             <input
               id="metaTitle"
               type="text"
@@ -356,8 +474,10 @@ const AddPost = () => {
             />
           </div>
 
+          {/* Meta Description */}
           <div className="addPost__field">
             <label htmlFor="metaDescription">Meta Description</label>
+
             <textarea
               id="metaDescription"
               name="metaDescription"
@@ -368,8 +488,10 @@ const AddPost = () => {
             />
           </div>
 
+          {/* Schema */}
           <div className="addPost__field">
             <label htmlFor="schemaCode">Schema Code (JSON-LD)</label>
+
             <textarea
               id="schemaCode"
               name="schemaCode"
@@ -377,17 +499,20 @@ const AddPost = () => {
               onChange={handleChange}
               rows={3}
               className="addPost__codeTextarea"
-              placeholder='<script type="application/ld+json">...</script>'
+              placeholder={`<script type="application/ld+json">...</script>`}
             />
           </div>
         </div>
 
-        {/* Author Information Section */}
+        {/* Author Information */}
         <h2 className="addPost__sectionTitle">Author Information</h2>
+
         <div className="addPost__sectionBox">
+          {/* Author Name & Email */}
           <div className="addPost__gridTwo">
             <div className="addPost__field">
               <label htmlFor="authorName">Author Name</label>
+
               <input
                 id="authorName"
                 type="text"
@@ -400,6 +525,7 @@ const AddPost = () => {
 
             <div className="addPost__field">
               <label htmlFor="authorEmail">Author Email</label>
+
               <input
                 id="authorEmail"
                 type="email"
@@ -411,8 +537,10 @@ const AddPost = () => {
             </div>
           </div>
 
+          {/* Author Bio */}
           <div className="addPost__field">
             <label htmlFor="authorBio">Author Bio</label>
+
             <textarea
               id="authorBio"
               name="authorBio"
@@ -423,9 +551,11 @@ const AddPost = () => {
             />
           </div>
 
+          {/* Instagram & Avatar */}
           <div className="addPost__authorSection">
             <div className="addPost__field">
               <label htmlFor="instagramLink">Instagram Profile Link</label>
+
               <input
                 id="instagramLink"
                 type="url"
@@ -438,6 +568,7 @@ const AddPost = () => {
 
             <div className="addPost__field">
               <label htmlFor="authorImageFile">Author Avatar</label>
+
               <input
                 id="authorImageFile"
                 type="file"
@@ -447,9 +578,10 @@ const AddPost = () => {
               />
             </div>
 
-            {/* Author Avatar Preview */}
+            {/* Avatar Preview */}
             <div className="addPost__avatarContainer">
               <label>Avatar</label>
+
               <div className="addPost__avatarBox">
                 {authorImagePreview ? (
                   <img
@@ -467,7 +599,7 @@ const AddPost = () => {
           </div>
         </div>
 
-        {/* Submit Button */}
+        {/* Submit */}
         <button
           type="submit"
           disabled={submitting}
