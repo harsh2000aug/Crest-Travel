@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
+import { hostname } from "../../../Utils/api/apiUtils";
 
 const Login = () => {
   const [loginId, setLoginId] = useState("");
@@ -9,14 +10,14 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-
+  const API_BASE_URL = hostname();
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setLoading(true);
 
     try {
-      const response = await fetch("http://192.168.1.11:3000/blog/login", {
+      const response = await fetch(`${API_BASE_URL}/blog/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

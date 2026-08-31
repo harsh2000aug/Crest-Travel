@@ -3,15 +3,9 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import "./addPost.css";
+import { hostname } from "../../../Utils/api/apiUtils";
 
-const API_BASE_URL =
-  (typeof import.meta !== "undefined" &&
-    import.meta.env &&
-    import.meta.env.VITE_API_URL) ||
-  (typeof process !== "undefined" &&
-    process.env &&
-    process.env.REACT_APP_API_URL) ||
-  "http://192.168.1.11:3000";
+const API_BASE_URL = hostname();
 
 const getFullImageUrl = (path) => {
   if (!path) return "";

@@ -1,15 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./blogDetail.css";
+import { hostname } from "../../../Utils/api/apiUtils";
 
-const API_BASE_URL =
-  (typeof import.meta !== "undefined" &&
-    import.meta.env &&
-    import.meta.env.VITE_API_URL) ||
-  (typeof process !== "undefined" &&
-    process.env &&
-    process.env.REACT_APP_API_URL) ||
-  "http://192.168.1.11:3000";
+const API_BASE_URL = hostname();
 
 const getFullImageUrl = (path) => {
   if (!path) return "";

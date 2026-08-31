@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "./adminDash.css";
 import { useNavigate } from "react-router-dom";
+import { hostname } from "../../../Utils/api/apiUtils";
+import logo from "../../../assets/images/logo.png";
 
-const API_BASE_URL =
-  (typeof import.meta !== "undefined" &&
-    import.meta.env &&
-    import.meta.env.VITE_API_URL) ||
-  (typeof process !== "undefined" &&
-    process.env &&
-    process.env.REACT_APP_API_URL) ||
-  "http://192.168.1.11:3000";
+const API_BASE_URL = hostname();
 
 const AdminDash = () => {
   const [posts, setPosts] = useState([]);
@@ -102,21 +97,26 @@ const AdminDash = () => {
         });
   };
 
-  return (
-    <div className="dash-container">
-      {/* Top Header */}
-      <div className="dash-header-card">
-        <div>
-          <h1 className="dash-title">Posts Management</h1>
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("hotelToken");
 
-          <p className="dash-subtitle">
-            Manage, search, and organize all published articles
-          </p>
+    navigate("/login-page");
+  };
+
+  return (
+    <div className="admin-dashboard">
+      <header className="admin-header">
+        {/* LOGO */}
+        <div className="admin-header__logo" onClick={() => navigate("/")}>
+          <img src={logo} alt="Logo" />
         </div>
 
+        {/* LOGOUT */}
         <button
-          className="btn-primary"
-          onClick={() => navigate("/admin-addPost")}
+          type="button"
+          className="admin-header__logout"
+          onClick={handleLogout}
         >
           <svg
             width="18"
@@ -124,235 +124,272 @@ const AdminDash = () => {
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2.5"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-
-            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          Add New Post
-        </button>
-      </div>
 
-      {/* Main Card */}
-      <div className="dash-content-card">
-        {/* Toolbar */}
-        <div className="dash-toolbar">
-          <div className="dash-entries-selector">
-            <select
-              value={entries}
-              onChange={(e) => {
-                setEntries(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-            >
-              <option value={10}>10 entries</option>
-              <option value={25}>25 entries</option>
-              <option value={50}>50 entries</option>
-            </select>
+          <span>Logout</span>
+        </button>
+      </header>
+      <div className="dash-container">
+        {/* Top Header */}
+        <div className="dash-header-card">
+          <div>
+            <h1 className="dash-title">Posts Management</h1>
+
+            <p className="dash-subtitle">
+              Manage, search, and organize all published articles
+            </p>
           </div>
 
-          <div className="dash-search-box">
+          <button
+            className="btn-primary"
+            onClick={() => navigate("/admin-addPost")}
+          >
             <svg
-              width="16"
-              height="16"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.5"
             >
-              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="12" y1="5" x2="12" y2="19"></line>
 
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-
-            <input
-              type="text"
-              placeholder="Search by Title..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setCurrentPage(1);
-              }}
-            />
-
-            {search && (
-              <button className="clear-search" onClick={() => setSearch("")}>
-                ×
-              </button>
-            )}
-          </div>
+            Add New Post
+          </button>
         </div>
 
-        {/* Content States */}
+        {/* Main Card */}
+        <div className="dash-content-card">
+          {/* Toolbar */}
+          <div className="dash-toolbar">
+            <div className="dash-entries-selector">
+              <select
+                value={entries}
+                onChange={(e) => {
+                  setEntries(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
+                <option value={10}>10 entries</option>
+                <option value={25}>25 entries</option>
+                <option value={50}>50 entries</option>
+              </select>
+            </div>
 
-        {loading ? (
-          <div className="dash-state-container">
-            <div className="spinner"></div>
-            <p>Fetching articles...</p>
+            <div className="dash-search-box">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+
+              <input
+                type="text"
+                placeholder="Search by Title..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+
+              {search && (
+                <button className="clear-search" onClick={() => setSearch("")}>
+                  ×
+                </button>
+              )}
+            </div>
           </div>
-        ) : error ? (
-          <div className="dash-state-container error">
-            <p>Something went wrong: {error}</p>
 
-            <button className="btn-retry" onClick={fetchPosts}>
-              Try Again
-            </button>
-          </div>
-        ) : (
-          <div className="dash-table-wrapper">
-            <table className="dash-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "80px" }}>#ID</th>
+          {/* Content States */}
 
-                  <th>Image</th>
+          {loading ? (
+            <div className="dash-state-container">
+              <div className="spinner"></div>
+              <p>Fetching articles...</p>
+            </div>
+          ) : error ? (
+            <div className="dash-state-container error">
+              <p>Something went wrong: {error}</p>
 
-                  <th>Title</th>
-
-                  <th>Category</th>
-
-                  <th>Published Date</th>
-
-                  <th
-                    style={{
-                      textAlign: "right",
-                      width: "160px",
-                    }}
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {paginatedPosts.length > 0 ? (
-                  paginatedPosts.map((post, idx) => {
-                    const postId = post._id || post.id || startIndex + idx + 1;
-
-                    const imageUrl = post.image?.startsWith("http")
-                      ? post.image
-                      : post.image
-                      ? `${API_BASE_URL}/${post.image}`
-                      : null;
-
-                    return (
-                      <tr
-                        key={postId}
-                        className="clickable-row"
-                        onClick={() => navigate(`/blog-detail/${postId}`)}
-                      >
-                        <td className="col-id">
-                          #
-                          {typeof postId === "string"
-                            ? postId.slice(-4)
-                            : postId}
-                        </td>
-
-                        <td>
-                          <div className="thumbnail-box">
-                            {imageUrl ? (
-                              <img
-                                src={imageUrl}
-                                alt={post.imageAlt || "Thumbnail"}
-                              />
-                            ) : (
-                              <div className="no-image-placeholder">
-                                No Image
-                              </div>
-                            )}
-                          </div>
-                        </td>
-
-                        <td className="col-details">
-                          <span className="post-title">
-                            {post.title || post.name}
-                          </span>
-
-                          <span className="post-slug">/{post.slug}</span>
-                        </td>
-
-                        <td>
-                          <span className="badge-category">
-                            {post.category || "Uncategorized"}
-                          </span>
-                        </td>
-
-                        <td className="col-date">
-                          {formatDate(post.createdAt || post.startDate)}
-                        </td>
-
-                        <td>
-                          <div className="action-buttons-group">
-                            {/* EDIT */}
-                            <button
-                              className="btn-icon btn-edit"
-                              title="Edit Post"
-                              onClick={(e) => {
-                                e.stopPropagation();
-
-                                navigate(`/admin-addPost?edit=${postId}`);
-                              }}
-                            >
-                              Edit
-                            </button>
-
-                            {/* DELETE */}
-                            <button
-                              className="btn-icon btn-delete"
-                              title="Delete Post"
-                              onClick={(e) => {
-                                e.stopPropagation();
-
-                                handleDelete(postId);
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
+              <button className="btn-retry" onClick={fetchPosts}>
+                Try Again
+              </button>
+            </div>
+          ) : (
+            <div className="dash-table-wrapper">
+              <table className="dash-table">
+                <thead>
                   <tr>
-                    <td colSpan="6" className="dash-empty-state">
-                      No matching records found.
-                    </td>
+                    <th style={{ width: "80px" }}>#ID</th>
+
+                    <th>Image</th>
+
+                    <th>Title</th>
+
+                    <th>Category</th>
+
+                    <th>Published Date</th>
+
+                    <th
+                      style={{
+                        textAlign: "right",
+                        width: "160px",
+                      }}
+                    >
+                      Actions
+                    </th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
 
-        {/* Footer & Pagination */}
+                <tbody>
+                  {paginatedPosts.length > 0 ? (
+                    paginatedPosts.map((post, idx) => {
+                      const postId =
+                        post._id || post.id || startIndex + idx + 1;
 
-        <div className="dash-footer">
-          <span className="footer-info">
-            Showing {totalEntries === 0 ? 0 : startIndex + 1} to{" "}
-            {Math.min(startIndex + entries, totalEntries)} of {totalEntries}{" "}
-            entries
-          </span>
+                      const imageUrl = post.image?.startsWith("http")
+                        ? post.image
+                        : post.image
+                        ? `${API_BASE_URL}/${post.image}`
+                        : null;
 
-          <div className="dash-pagination">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-            >
-              Previous
-            </button>
+                      return (
+                        <tr
+                          key={postId}
+                          className="clickable-row"
+                          onClick={() => navigate(`/blog-detail/${postId}`)}
+                        >
+                          <td className="col-id">
+                            #
+                            {typeof postId === "string"
+                              ? postId.slice(-4)
+                              : postId}
+                          </td>
 
-            <span className="pagination-page">
-              Page {currentPage} of {totalPages}
+                          <td>
+                            <div className="thumbnail-box">
+                              {imageUrl ? (
+                                <img
+                                  src={imageUrl}
+                                  alt={post.imageAlt || "Thumbnail"}
+                                />
+                              ) : (
+                                <div className="no-image-placeholder">
+                                  No Image
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="col-details">
+                            <span className="post-title">
+                              {post.title || post.name}
+                            </span>
+
+                            <span className="post-slug">/{post.slug}</span>
+                          </td>
+
+                          <td>
+                            <span className="badge-category">
+                              {post.category || "Uncategorized"}
+                            </span>
+                          </td>
+
+                          <td className="col-date">
+                            {formatDate(post.createdAt || post.startDate)}
+                          </td>
+
+                          <td>
+                            <div className="action-buttons-group">
+                              {/* EDIT */}
+                              <button
+                                className="btn-icon btn-edit"
+                                title="Edit Post"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+
+                                  navigate(`/admin-addPost?edit=${postId}`);
+                                }}
+                              >
+                                Edit
+                              </button>
+
+                              {/* DELETE */}
+                              <button
+                                className="btn-icon btn-delete"
+                                title="Delete Post"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+
+                                  handleDelete(postId);
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="dash-empty-state">
+                        No matching records found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Footer & Pagination */}
+
+          <div className="dash-footer">
+            <span className="footer-info">
+              Showing {totalEntries === 0 ? 0 : startIndex + 1} to{" "}
+              {Math.min(startIndex + entries, totalEntries)} of {totalEntries}{" "}
+              entries
             </span>
 
-            <button
-              disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-            >
-              Next
-            </button>
+            <div className="dash-pagination">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              >
+                Previous
+              </button>
+
+              <span className="pagination-page">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                disabled={currentPage >= totalPages}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
+                }
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>
