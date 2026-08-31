@@ -63,7 +63,7 @@ function App() {
         setPersonDetails(res?.data?.get?.result);
         localStorage.setItem(
           "personDetails",
-          JSON.stringify(res?.data?.get?.result)
+          JSON.stringify(res?.data?.get?.result),
         );
       } catch (error) {
         console.error("Error fetching new member details:", error);
@@ -91,7 +91,7 @@ function App() {
           element={token ? <Navigate to="/home" replace /> : <BeforeHome />}
         />
 
-        <Route path="/admin-addPost" element={<AddPost />} />
+        <Route path="/admin-addpost" element={<AddPost />} />
         <Route path="/admin-dash" element={<AdminDash />} />
         <Route path="/whats-included" element={<IncludingPage />} />
         <Route path="/about-us" element={<AboutUs />} />
