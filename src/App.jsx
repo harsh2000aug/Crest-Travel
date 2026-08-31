@@ -88,15 +88,14 @@ function App() {
       />
 
       <Routes>
-        <Route
-          path="/"
-          element={token ? <Navigate to="/home" replace /> : <BeforeHome />}
-        />
-
         <Route path="/blog-detail/:id" element={<BlogDetail />} />
         <Route path="/login-page" element={<Login />} />
         <Route path="/admin-addPost" element={<AddPost />} />
         <Route path="/admin-dashboard" element={<AdminDash />} />
+        <Route
+          path="/"
+          element={token ? <Navigate to="/home" replace /> : <BeforeHome />}
+        />
         <Route path="/whats-included" element={<IncludingPage />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/join-now" element={<Join />} />

@@ -13,6 +13,7 @@
     "@ckeditor/ckeditor5-build-classic": "^41.4.2",
     "@ckeditor/ckeditor5-react": "^11.2.0",
     "axios": "^1.18.1",
+    "ckeditor": "^4.12.1",
     "country-state-city": "^3.2.1",
     "jotai": "^2.20.2",
     "leaflet": "^1.9.4",
