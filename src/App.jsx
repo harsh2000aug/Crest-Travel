@@ -96,7 +96,6 @@ function App() {
           path="/"
           element={token ? <Navigate to="/home" replace /> : <BeforeHome />}
         />
-
         <Route path="/whats-included" element={<IncludingPage />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/join-now" element={<Join />} />
