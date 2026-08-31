@@ -36,9 +36,7 @@
     transition: background-color 0.2s;
   }
   
-  .addPost__viewBtn:hover {
-    background-color: #5a6268;
-  }
+
   
   .addPost__card {
     border: 1px solid #e0e0e0;

@@ -413,4 +413,39 @@ export const allApi = {
       vacationResortFinal: true,
     },
   },
+  blogLogin: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/blog/login",
+    },
+  },
+  blogAll: {
+    v1: {
+      ...defaults.methods.GET,
+      ...defaults.versions.v1,
+      uri: "/blog",
+    },
+  },
+  blogAdd: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/blog",
+    },
+  },
+  blogEdit: {
+    v1: {
+      ...defaults.methods.PUT,
+      ...defaults.versions.v1,
+      uri: "/blog/:id",
+    },
+  },
+  blogDelete: {
+    v1: {
+      ...defaults.methods.DELETE,
+      ...defaults.versions.v1,
+      uri: "/blog/:id",
+    },
+  },
 };
