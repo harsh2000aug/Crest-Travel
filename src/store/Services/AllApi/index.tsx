@@ -288,33 +288,3 @@ export const vacvationPay = ({ body }: any) =>
     uriEndPoint: allApi.vacationPay.v1,
     body,
   });
-export const blogLogin = ({ body }: any) =>
-  callApi({
-    uriEndPoint: allApi.blogLogin.v1,
-    body,
-  });
-export const blogAll = () =>
-  callApi({
-    uriEndPoint: allApi.blogAll.v1,
-  });
-export const blogAdd = ({ body }: any) =>
-  callApi({
-    uriEndPoint: allApi.blogAdd.v1,
-    body,
-  });
-export const blogEdit = ({ id, body }: any) =>
-  callApi({
-    uriEndPoint: {
-      ...allApi.blogEdit.v1,
-      uri: `/blog/${id}`,
-    },
-    body,
-  });
-
-export const blogDelete = ({ id }: any) =>
-  callApi({
-    uriEndPoint: {
-      ...allApi.blogDelete.v1,
-      uri: `/blog/${id}`,
-    },
-  });

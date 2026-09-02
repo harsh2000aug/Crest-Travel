@@ -38,6 +38,9 @@ import AdminDash from "./components/admin/adminDashboard/adminDash";
 import AddPost from "./components/admin/addPost/addPost";
 import Login from "./components/admin/loginPage/login";
 import BlogDetail from "./components/admin/blogDetail/blogDetail";
+import BlogdetailPage from "./components/admin/BlogPage/BlogdetailPage";
+import BlogProtectedRoutes from "./BlogProtectedRoutes";
+import BlogPage from "./components/admin/BlogPage/BlogPage";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -65,7 +68,7 @@ function App() {
         setPersonDetails(res?.data?.get?.result);
         localStorage.setItem(
           "personDetails",
-          JSON.stringify(res?.data?.get?.result),
+          JSON.stringify(res?.data?.get?.result)
         );
       } catch (error) {
         console.error("Error fetching new member details:", error);
@@ -88,10 +91,12 @@ function App() {
       />
 
       <Routes>
-        <Route path="/blog-detail/:id" element={<BlogDetail />} />
         <Route path="/login-page" element={<Login />} />
-        <Route path="/admin-addpost" element={<AddPost />} />
-        <Route path="/admin-dashboard" element={<AdminDash />} />
+        <Route element={<BlogProtectedRoutes />}>
+          <Route path="/admin-dashboard" element={<AdminDash />} />
+          <Route path="/admin-addpost" element={<AddPost />} />
+          <Route path="/admin-blog-detail/:id" element={<BlogDetail />} />
+        </Route>
         <Route
           path="/"
           element={token ? <Navigate to="/home" replace /> : <BeforeHome />}
@@ -107,6 +112,8 @@ function App() {
         />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/customer-service" element={<CustomerServices />} />
+        <Route path="/blog-details" element={<BlogdetailPage />} />
+        <Route path="/blog/:slug" element={<BlogPage />} />
 
         <Route element={<ProtectedRoutes />}>
           <Route path="/home" element={<Home />} />

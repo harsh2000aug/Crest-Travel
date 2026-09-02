@@ -101,7 +101,7 @@ const HeaderInner = () => {
     } catch (error) {
       console.error("Change password error:", error);
       setPasswordError(
-        error?.message || "Something went wrong. Please try again.",
+        error?.message || "Something went wrong. Please try again."
       );
     } finally {
       setPasswordLoading(false);
