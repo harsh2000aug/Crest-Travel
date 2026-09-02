@@ -31,7 +31,7 @@ const Login = () => {
       const data = await response.json();
 
       console.log("Login Response:", data);
-
+      localStorage.setItem("blogToken", data.data.token);
       if (response.ok) {
         navigate("/admin-dashboard");
       } else {

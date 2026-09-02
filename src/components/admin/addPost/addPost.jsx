@@ -35,7 +35,10 @@ const AddPost = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // =========================
   // Form State
+  // =========================
+
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -53,21 +56,30 @@ const AddPost = () => {
     status: "published",
   });
 
+  // =========================
   // Files & Previews
+  // =========================
+
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
 
   const [authorImageFile, setAuthorImageFile] = useState(null);
   const [authorImagePreview, setAuthorImagePreview] = useState("");
 
-  // Fetch existing post when editing
+  // =========================
+  // Fetch Existing Post
+  // =========================
+
   useEffect(() => {
     if (editId) {
       fetchPostDetails(editId);
     }
   }, [editId]);
 
-  // Cleanup blob URLs
+  // =========================
+  // Cleanup Blob URLs
+  // =========================
+
   useEffect(() => {
     return () => {
       if (imagePreview && imagePreview.startsWith("blob:")) {
@@ -80,7 +92,10 @@ const AddPost = () => {
     };
   }, [imagePreview, authorImagePreview]);
 
-  // Fetch post details
+  // =========================
+  // Fetch Post Details
+  // =========================
+
   const fetchPostDetails = async (id) => {
     try {
       setLoading(true);
@@ -88,7 +103,7 @@ const AddPost = () => {
       const response = await fetch(`${API_BASE_URL}/blog/${id}`);
 
       if (!response.ok) {
-        throw new Error("Failed to fetch post details.");
+        throw new Error("Something went wrong.");
       }
 
       const result = await response.json();
@@ -112,7 +127,10 @@ const AddPost = () => {
         status: data.status || "published",
       });
 
-      // Cover image
+      // =========================
+      // Existing Cover Image
+      // =========================
+
       const existingCoverPath =
         data.image || data.coverImage || data.imageUrl || "";
 
@@ -120,7 +138,10 @@ const AddPost = () => {
         setImagePreview(getFullImageUrl(existingCoverPath));
       }
 
-      // Author image
+      // =========================
+      // Existing Author Image
+      // =========================
+
       const existingAuthorPath =
         data.authorImage || data.authorAvatar || data.avatar || "";
 
@@ -129,13 +150,17 @@ const AddPost = () => {
       }
     } catch (err) {
       console.error(err);
+
       alert(`Error fetching article details: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  // Normal input change
+  // =========================
+  // Normal Input Change
+  // =========================
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -145,7 +170,10 @@ const AddPost = () => {
     }));
   };
 
-  // CKEditor change
+  // =========================
+  // CKEditor Change
+  // =========================
+
   const handleEditorChange = (event, editor) => {
     const data = editor.getData();
 
@@ -155,74 +183,139 @@ const AddPost = () => {
     }));
   };
 
-  // Cover image
+  // =========================
+  // Cover Image Change
+  // =========================
+
   const handleCoverImageChange = (e) => {
     const file = e.target.files[0];
 
     if (file) {
       setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+
+      const previewUrl = URL.createObjectURL(file);
+
+      setImagePreview(previewUrl);
     }
   };
 
-  // Author image
+  // =========================
+  // Author Image Change
+  // =========================
+
   const handleAuthorImageChange = (e) => {
     const file = e.target.files[0];
 
     if (file) {
       setAuthorImageFile(file);
-      setAuthorImagePreview(URL.createObjectURL(file));
+
+      const previewUrl = URL.createObjectURL(file);
+
+      setAuthorImagePreview(previewUrl);
     }
   };
 
+  // =========================
+  // Create Payload
+  // =========================
+
+  const buildPayload = () => {
+    const payload = new FormData();
+
+    // Add all form fields
+    Object.keys(formData).forEach((key) => {
+      payload.append(key, formData[key]);
+    });
+
+    // Add cover image
+    if (imageFile) {
+      payload.append("image", imageFile);
+    }
+
+    // Add author image
+    if (authorImageFile) {
+      payload.append("authorImage", authorImageFile);
+    }
+
+    return payload;
+  };
+
+  // =========================
+  // POST - Create New Post
+  // =========================
+
+  const createPost = async (payload) => {
+    const response = await fetch(`${API_BASE_URL}/blog`, {
+      method: "POST",
+      body: payload,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create post.");
+    }
+
+    return response.json();
+  };
+
+  // =========================
+  // PUT - Update Existing Post
+  // =========================
+
+  const updatePost = async (payload) => {
+    const response = await fetch(`${API_BASE_URL}/blog/${editId}`, {
+      method: "PUT",
+      body: payload,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update post.");
+    }
+
+    return response.json();
+  };
+
+  // =========================
   // Submit
+  // =========================
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setSubmitting(true);
 
     try {
-      const payload = new FormData();
+      const payload = buildPayload();
 
-      Object.keys(formData).forEach((key) => {
-        payload.append(key, formData[key]);
-      });
+      console.log("Form Data:", formData);
+      console.log("Cover Image:", imageFile);
+      console.log("Author Image:", authorImageFile);
 
-      if (imageFile) {
-        payload.append("image", imageFile);
+      if (editId) {
+        // PUT API
+        await updatePost(payload);
+
+        alert("Post updated successfully!");
+      } else {
+        // POST API
+        await createPost(payload);
+
+        alert("Post created successfully!");
       }
-
-      if (authorImageFile) {
-        payload.append("authorImage", authorImageFile);
-      }
-
-      const url = editId
-        ? `${API_BASE_URL}/blog/${editId}`
-        : `${API_BASE_URL}/blog`;
-
-      const method = editId ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        body: payload,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${editId ? "update" : "create"} post.`);
-      }
-
-      alert(`Post ${editId ? "updated" : "created"} successfully!`);
 
       navigate("/admin-dashboard");
     } catch (err) {
       console.error(err);
+
       alert(err.message);
     } finally {
       setSubmitting(false);
     }
   };
 
+  // =========================
   // Loading
+  // =========================
+
   if (loading) {
     return (
       <div className="addPost addPost--loading">
@@ -231,9 +324,14 @@ const AddPost = () => {
     );
   }
 
+  // =========================
+  // UI
+  // =========================
+
   return (
     <div className="addPost">
       {/* Header */}
+
       <div className="addPost__header">
         <h1>{editId ? "Edit Article" : "Create New Article"}</h1>
 
@@ -247,8 +345,12 @@ const AddPost = () => {
       </div>
 
       {/* Form */}
+
       <form onSubmit={handleSubmit} className="addPost__card">
-        {/* Title & Slug */}
+        {/* =========================
+            Title & Slug
+        ========================= */}
+
         <div className="addPost__gridTwo">
           <div className="addPost__field">
             <label htmlFor="title">Title *</label>
@@ -279,7 +381,10 @@ const AddPost = () => {
           </div>
         </div>
 
-        {/* Category & Status */}
+        {/* =========================
+            Category & Status
+        ========================= */}
+
         <div className="addPost__gridTwo">
           <div className="addPost__field">
             <label htmlFor="category">Category</label>
@@ -310,7 +415,10 @@ const AddPost = () => {
           </div>
         </div>
 
-        {/* Cover Image */}
+        {/* =========================
+            Cover Image
+        ========================= */}
+
         <div className="addPost__sectionBox">
           <h3 className="addPost__subHeading">Cover Image</h3>
 
@@ -343,6 +451,7 @@ const AddPost = () => {
             </div>
 
             {/* Cover Preview */}
+
             <div className="addPost__previewContainer">
               <label>Preview</label>
 
@@ -363,7 +472,10 @@ const AddPost = () => {
           </div>
         </div>
 
-        {/* Short Description */}
+        {/* =========================
+            Short Description
+        ========================= */}
+
         <div className="addPost__field">
           <label htmlFor="shortDescription">Short Description</label>
 
@@ -377,84 +489,58 @@ const AddPost = () => {
           />
         </div>
 
-        {/* ============================= */}
-        {/* CKEDITOR CONTENT ONLY */}
-        {/* ============================= */}
+        {/* =========================
+            CKEDITOR
+        ========================= */}
 
         <div className="addPost__field">
-          <label htmlFor="content">Content</label>
+          <label>Content</label>
 
           <div className="addPost__ckeditor">
             <CKEditor
               editor={ClassicEditor}
               data={formData.content}
-              onChange={(event, editor) => {
-                const data = editor.getData();
-                setFormData((prev) => ({
-                  ...prev,
-                  content: data,
-                }));
-              }}
+              onChange={handleEditorChange}
               config={{
                 toolbar: [
-                  "sourceEditing", // Allows editing raw HTML
-                  "|",
                   "heading",
-                  "|",
-                  "fontFamily",
-                  "fontSize",
-                  "fontColor",
-                  "fontBackgroundColor",
                   "|",
                   "bold",
                   "italic",
                   "underline",
-                  "strikethrough",
-                  "subscript",
-                  "superscript",
-                  "highlight",
                   "|",
                   "link",
                   "blockQuote",
-                  "code",
-                  "codeBlock",
                   "|",
                   "bulletedList",
                   "numberedList",
-                  "todoList",
                   "|",
                   "outdent",
                   "indent",
                   "|",
-                  "alignment",
-                  "|",
-                  "insertImage", // For adding images
                   "insertTable",
                   "mediaEmbed",
                   "horizontalLine",
-                  "specialCharacters",
-                  "|",
-                  "removeFormat",
-                  "findAndReplace",
                   "|",
                   "undo",
                   "redo",
                 ],
-                // Add plugin configurations here if needed (e.g., fontSize options)
-                fontSize: {
-                  options: [9, 11, 13, "default", 17, 19, 21],
-                },
+
                 placeholder: "Write your article content here...",
               }}
             />
           </div>
         </div>
 
-        {/* SEO */}
+        {/* =========================
+            SEO
+        ========================= */}
+
         <h2 className="addPost__sectionTitle">SEO & Metadata</h2>
 
         <div className="addPost__sectionBox">
           {/* Meta Title */}
+
           <div className="addPost__field">
             <label htmlFor="metaTitle">Meta Title</label>
 
@@ -469,6 +555,7 @@ const AddPost = () => {
           </div>
 
           {/* Meta Description */}
+
           <div className="addPost__field">
             <label htmlFor="metaDescription">Meta Description</label>
 
@@ -483,6 +570,7 @@ const AddPost = () => {
           </div>
 
           {/* Schema */}
+
           <div className="addPost__field">
             <label htmlFor="schemaCode">Schema Code (JSON-LD)</label>
 
@@ -498,11 +586,15 @@ const AddPost = () => {
           </div>
         </div>
 
-        {/* Author Information */}
+        {/* =========================
+            Author Information
+        ========================= */}
+
         <h2 className="addPost__sectionTitle">Author Information</h2>
 
         <div className="addPost__sectionBox">
           {/* Author Name & Email */}
+
           <div className="addPost__gridTwo">
             <div className="addPost__field">
               <label htmlFor="authorName">Author Name</label>
@@ -532,6 +624,7 @@ const AddPost = () => {
           </div>
 
           {/* Author Bio */}
+
           <div className="addPost__field">
             <label htmlFor="authorBio">Author Bio</label>
 
@@ -546,6 +639,7 @@ const AddPost = () => {
           </div>
 
           {/* Instagram & Avatar */}
+
           <div className="addPost__authorSection">
             <div className="addPost__field">
               <label htmlFor="instagramLink">Instagram Profile Link</label>
@@ -573,6 +667,7 @@ const AddPost = () => {
             </div>
 
             {/* Avatar Preview */}
+
             <div className="addPost__avatarContainer">
               <label>Avatar</label>
 
@@ -593,7 +688,10 @@ const AddPost = () => {
           </div>
         </div>
 
-        {/* Submit */}
+        {/* =========================
+            Submit
+        ========================= */}
+
         <button
           type="submit"
           disabled={submitting}

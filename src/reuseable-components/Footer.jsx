@@ -51,6 +51,12 @@ const Footer = () => {
           </p>
         </div>
         <div className="luxFooter__column">
+          <h4>COMPANY</h4>
+          <Link to="/about-us">About Us</Link>
+          <Link to="/join-now">Membership</Link>
+          <Link to="/blog-details">Blogs</Link>
+        </div>
+        <div className="luxFooter__column">
           <h4>LEGAL</h4>
           <Link
             to="/terms-and-conditions"
@@ -71,11 +77,7 @@ const Footer = () => {
             Refund and Cancellation Policies
           </Link>
         </div>
-        <div className="luxFooter__column">
-          <h4>COMPANY</h4>
-          <Link to="/about-us">About Us</Link>
-          <Link to="/join-now">Membership</Link>
-        </div>
+
         <div className="luxFooter__column">
           <h4>CONTACT</h4>
           <a href="mailto:contact@cresttravelclub.com">

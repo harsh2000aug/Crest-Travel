@@ -98,8 +98,7 @@ const AdminDash = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("hotelToken");
+    localStorage.removeItem("blogToken");
 
     navigate("/login-page");
   };
@@ -149,7 +148,7 @@ const AdminDash = () => {
 
           <button
             className="btn-primary"
-            onClick={() => navigate("/admin-addPost")}
+            onClick={() => navigate("/admin-addpost")}
           >
             <svg
               width="18"
@@ -274,7 +273,9 @@ const AdminDash = () => {
                         <tr
                           key={postId}
                           className="clickable-row"
-                          onClick={() => navigate(`/blog-detail/${postId}`)}
+                          onClick={() =>
+                            navigate(`/admin-blog-detail/${postId}`)
+                          }
                         >
                           <td className="col-id">
                             #
@@ -325,7 +326,7 @@ const AdminDash = () => {
                                 onClick={(e) => {
                                   e.stopPropagation();
 
-                                  navigate(`/admin-addPost?edit=${postId}`);
+                                  navigate(`/admin-addpost?edit=${postId}`);
                                 }}
                               >
                                 Edit
