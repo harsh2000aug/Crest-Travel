@@ -41,6 +41,7 @@ import BlogDetail from "./components/admin/blogDetail/blogDetail";
 import BlogdetailPage from "./components/admin/BlogPage/BlogdetailPage";
 import BlogProtectedRoutes from "./BlogProtectedRoutes";
 import BlogPage from "./components/admin/BlogPage/BlogPage";
+import PaymentStatus from "./components/PaymentSuccessFail/PaymentStatus";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -68,7 +69,7 @@ function App() {
         setPersonDetails(res?.data?.get?.result);
         localStorage.setItem(
           "personDetails",
-          JSON.stringify(res?.data?.get?.result)
+          JSON.stringify(res?.data?.get?.result),
         );
       } catch (error) {
         console.error("Error fetching new member details:", error);
@@ -92,6 +93,7 @@ function App() {
 
       <Routes>
         <Route path="/login-page" element={<Login />} />
+        <Route path="/payment/status" element={<PaymentStatus />} />
         <Route element={<BlogProtectedRoutes />}>
           <Route path="/admin-dashboard" element={<AdminDash />} />
           <Route path="/admin-addpost" element={<AddPost />} />
@@ -112,8 +114,8 @@ function App() {
         />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/customer-service" element={<CustomerServices />} />
-        <Route path="/blog-details" element={<BlogdetailPage />} />
-        <Route path="/blog/:slug" element={<BlogPage />} />
+        <Route path="/blogs" element={<BlogdetailPage />} />
+        <Route path="/blogs/:slug" element={<BlogPage />} />
 
         <Route element={<ProtectedRoutes />}>
           <Route path="/home" element={<Home />} />

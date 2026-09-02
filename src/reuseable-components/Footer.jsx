@@ -54,7 +54,7 @@ const Footer = () => {
           <h4>COMPANY</h4>
           <Link to="/about-us">About Us</Link>
           <Link to="/join-now">Membership</Link>
-          <Link to="/blog-details">Blogs</Link>
+          <Link to="/blogs">Blogs</Link>
         </div>
         <div className="luxFooter__column">
           <h4>LEGAL</h4>

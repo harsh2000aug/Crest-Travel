@@ -47,7 +47,7 @@ const BlogdetailPage = () => {
   const handleReadMore = (slug) => {
     if (!slug) return;
 
-    navigate(`/blog/${slug}`);
+    navigate(`/blogs/${slug}`);
   };
 
   const truncateWords = (text, wordLimit = 10) => {
@@ -90,7 +90,11 @@ const BlogdetailPage = () => {
         <section className="blogDetailPage__related">
           <div className="blogDetailPage__cards">
             {posts.map((item) => (
-              <article className="blogDetailPage__relatedCard" key={item?._id}>
+              <article
+                className="blogDetailPage__relatedCard"
+                key={item?._id}
+                onClick={() => handleReadMore(item?.slug)}
+              >
                 <div className="blogDetailPage__relatedImage">
                   <img src={item?.image} alt={item?.imageAlt || item?.title} />
                 </div>
@@ -102,12 +106,7 @@ const BlogdetailPage = () => {
 
                   <p>{truncateWords(item?.shortDescription, 15)}</p>
 
-                  <button
-                    type="button"
-                    onClick={() => handleReadMore(item?.slug)}
-                  >
-                    Read More →
-                  </button>
+                  <button type="button">Read More →</button>
                 </div>
               </article>
             ))}

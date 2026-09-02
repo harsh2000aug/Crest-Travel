@@ -418,9 +418,9 @@ const BeforeHome = ({ personDetails }) => {
         <div className="partners-container">
           <div className="partners-heading">
             <h2>Partner Network</h2>
-            <div class="travelBenefits__divider">
+            <div className="travelBenefits__divider">
               <span></span>
-              <div class="travelBenefits__diamond"></div>
+              <div className="travelBenefits__diamond"></div>
               <span></span>
             </div>
           </div>
@@ -476,13 +476,13 @@ const BeforeHome = ({ personDetails }) => {
       <section className="mp-section tb-gap">
         <div className="container">
           <div className="mp-heading">
-            <span class="crest-member-tag">MEMBERSHIP</span>
+            <span className="crest-member-tag">MEMBERSHIP</span>
             <h2>
               Choose The Perfect <span>Membership</span>
             </h2>
-            <div class="travelBenefits__divider">
+            <div className="travelBenefits__divider">
               <span></span>
-              <div class="travelBenefits__diamond"></div>
+              <div className="travelBenefits__diamond"></div>
               <span></span>
             </div>
           </div>
