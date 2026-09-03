@@ -899,23 +899,24 @@
 }
 
 .tripoFullBlogAuthorBoxContent {
-    /* flex: 1; */
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+  /* flex: 1; */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .tripoFullBlogWrittenBy {
   display: block;
   margin-bottom: 5px;
   color: #8a94a6;
-  font-size: 15px;
-margin-right: 5px;}
+  font-size: 12px;
+  margin-right: 5px;
+}
 
 .tripoFullBlogAuthorBoxName {
   margin: 0 0 7px;
   color: #172033;
-  font-size: 18px;
+  font-size: 14px;
 }
 
 .tripoFullBlogAuthorBoxBio {
@@ -998,6 +999,9 @@ margin-right: 5px;}
   width: 100%;
   position: sticky;
   top: 100px;
+  border: 1px solid #e5e7eb;
+  padding: 20px;
+  border-radius: 12px;
 }
 
 .tripoLatestBlogsHeading {

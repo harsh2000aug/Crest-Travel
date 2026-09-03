@@ -378,7 +378,6 @@ const AddPost = () => {
               name="title"
               value={formData.title}
               onChange={handleChange}
-              required
               placeholder="Enter post title"
             />
           </div>
@@ -392,7 +391,6 @@ const AddPost = () => {
               name="slug"
               value={formData.slug}
               onChange={handleChange}
-              required
               placeholder="post-url-slug"
             />
           </div>
@@ -412,7 +410,6 @@ const AddPost = () => {
               name="category"
               value={formData.category}
               onChange={handleChange}
-              required
               placeholder="e.g. Technology"
             />
           </div>
@@ -425,7 +422,6 @@ const AddPost = () => {
               name="status"
               value={formData.status}
               onChange={handleChange}
-              required
             >
               <option value="published">Published</option>
 
@@ -466,7 +462,6 @@ const AddPost = () => {
                   value={formData.imageAlt}
                   onChange={handleChange}
                   placeholder="Alt description for image"
-                  required
                 />
               </div>
             </div>
@@ -507,7 +502,6 @@ const AddPost = () => {
             onChange={handleChange}
             rows={2}
             placeholder="Brief snippet of the post"
-            required
           />
         </div>
 
@@ -560,7 +554,6 @@ const AddPost = () => {
               value={formData.metaTitle}
               onChange={handleChange}
               placeholder="SEO Meta Title"
-              required
             />
           </div>
 
@@ -576,7 +569,6 @@ const AddPost = () => {
               onChange={handleChange}
               rows={2}
               placeholder="SEO Meta Description"
-              required
             />
           </div>
 
@@ -593,7 +585,6 @@ const AddPost = () => {
               rows={3}
               className="addPost__codeTextarea"
               placeholder={`<script type="application/ld+json">...</script>`}
-              required
             />
           </div>
         </div>
@@ -618,7 +609,6 @@ const AddPost = () => {
                 value={formData.authorName}
                 onChange={handleChange}
                 placeholder="John Doe"
-                required
               />
             </div>
 
@@ -632,7 +622,6 @@ const AddPost = () => {
                 value={formData.authorEmail}
                 onChange={handleChange}
                 placeholder="author@example.com"
-                required
               />
             </div>
           </div>
@@ -649,7 +638,6 @@ const AddPost = () => {
               onChange={handleChange}
               rows={2}
               placeholder="Short bio about the author"
-              required
             />
           </div>
 
@@ -716,8 +704,8 @@ const AddPost = () => {
           {submitting
             ? "Saving Post..."
             : editId
-            ? "Update Article"
-            : "Publish Article"}
+              ? "Update Article"
+              : "Publish Article"}
         </button>
       </form>
     </div>

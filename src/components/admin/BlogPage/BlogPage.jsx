@@ -42,11 +42,7 @@ const BlogPage = () => {
         }
         const latest = blogs
           .filter((item) => item.slug !== slug)
-          .sort(
-            (a, b) =>
-              new Date(b.updatedAt || b.createdAt) -
-              new Date(a.updatedAt || a.createdAt)
-          )
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
           .slice(0, 5);
         setLatestBlogs(latest);
       } else {
@@ -137,7 +133,7 @@ const BlogPage = () => {
               <div className="tripoFullBlogDate">
                 <span>Published</span>
 
-                <strong>{formatDate(blog.updatedAt || blog.createdAt)}</strong>
+                <strong>{formatDate(blog.createdAt)}</strong>
               </div>
 
               <div className="tripoFullBlogAuthorBoxContent">
@@ -216,35 +212,37 @@ const BlogPage = () => {
                 <h2 className="tripoLatestBlogsHeading">Latest Blogs</h2>
 
                 <div className="tripoLatestBlogsList">
-                  {latestBlogs.map((latestBlog) => (
-                    <Link
-                      key={latestBlog._id || latestBlog.id || latestBlog.slug}
-                      to={`/blogs/${latestBlog.slug}`}
-                      className="tripoLatestBlogCard"
-                    >
-                      {latestBlog.image && (
-                        <div className="tripoLatestBlogImageWrapper">
-                          <img
-                            src={latestBlog.image}
-                            alt={latestBlog.imageAlt || latestBlog.title}
-                            className="tripoLatestBlogImage"
-                          />
-                        </div>
-                      )}
+                  {latestBlogs.length > 0 ? (
+                    latestBlogs.map((latestBlog) => (
+                      <Link
+                        key={latestBlog._id || latestBlog.id || latestBlog.slug}
+                        to={`/blogs/${latestBlog.slug}`}
+                        className="tripoLatestBlogCard"
+                      >
+                        {latestBlog.image && (
+                          <div className="tripoLatestBlogImageWrapper">
+                            <img
+                              src={latestBlog.image}
+                              alt={latestBlog.imageAlt || latestBlog.title}
+                              className="tripoLatestBlogImage"
+                            />
+                          </div>
+                        )}
 
-                      <div className="tripoLatestBlogInfo">
-                        <h3 className="tripoLatestBlogTitle">
-                          {latestBlog.title}
-                        </h3>
+                        <div className="tripoLatestBlogInfo">
+                          <h3 className="tripoLatestBlogTitle">
+                            {latestBlog.title}
+                          </h3>
 
-                        <div className="tripoLatestBlogDate">
-                          {formatDate(
-                            latestBlog.updatedAt || latestBlog.createdAt
-                          )}
+                          <div className="tripoLatestBlogDate">
+                            {formatDate(latestBlog.createdAt)}
+                          </div>
                         </div>
-                      </div>
-                    </Link>
-                  ))}
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="noCurrentBlog">No blogs available.</div>
+                  )}
                 </div>
               </aside>
             </div>

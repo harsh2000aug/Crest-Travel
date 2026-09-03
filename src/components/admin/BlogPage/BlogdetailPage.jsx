@@ -100,7 +100,7 @@ const BlogdetailPage = () => {
                 </div>
 
                 <div className="blogDetailPage__relatedInfo">
-                  <small>{formatDate(item?.updatedAt)}</small>
+                  <small>{formatDate(item?.createdAt)}</small>
 
                   <h3>{item?.title}</h3>
 
