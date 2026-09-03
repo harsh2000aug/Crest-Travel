@@ -9,12 +9,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Country, State } from "country-state-city";
 import { toast } from "react-toastify";
 import HeaderInner from "../../reuseable-components/HeaderInner";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Checkout = () => {
   const location = useLocation();
 
   const [loading, setLoading] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
   const membership = location.state || {
     membershipId: "",
     membershipName: "",
@@ -308,19 +309,32 @@ const Checkout = () => {
                     <div className="itc-input-group">
                       <label>Password</label>
 
-                      <input
-                        type="password"
-                        placeholder="********"
-                        {...register("password", {
-                          required: "Password is required",
-                          pattern: {
-                            value:
-                              /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/,
-                            message:
-                              "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character.",
-                          },
-                        })}
-                      />
+                      <div className="itc-password-wrapper">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="John@123"
+                          {...register("password", {
+                            required: "Password is required",
+                            pattern: {
+                              value:
+                                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/,
+                              message:
+                                "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character.",
+                            },
+                          })}
+                        />
+
+                        <button
+                          type="button"
+                          className="itc-password-toggle"
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
+                        >
+                          {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
 
                       {errors.password && <p>{errors.password.message}</p>}
                     </div>

@@ -743,3 +743,31 @@ hr {
     font-size: 13px;
   }
 }
+
+.itc-password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.itc-password-wrapper input {
+  width: 100%;
+  padding-right: 45px;
+}
+
+.itc-password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.itc-password-toggle svg {
+  color: #64748b;
+  font-size: 14px;
+}

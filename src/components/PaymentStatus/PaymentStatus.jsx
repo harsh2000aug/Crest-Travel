@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./PaymentStatus.css";
+
 const PaymentStatus = () => {
   const navigate = useNavigate();
 
@@ -8,6 +9,9 @@ const PaymentStatus = () => {
   const [message, setMessage] = useState(
     "Please wait while we confirm your payment...",
   );
+
+  // Countdown state
+  const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
     const orderId = localStorage.getItem("membershipOrderId");
@@ -87,7 +91,6 @@ const PaymentStatus = () => {
           console.log("PAYMENT SUCCESS");
 
           setPaymentStatus("success");
-
           setMessage(
             data?.message ||
               "Your payment was successful and your membership has been activated.",
@@ -99,7 +102,6 @@ const PaymentStatus = () => {
           }
 
           isChecking = false;
-
           return;
         }
 
@@ -115,7 +117,6 @@ const PaymentStatus = () => {
           console.log("PAYMENT FAILED");
 
           setPaymentStatus("failed");
-
           setMessage(
             data?.message ||
               "Unfortunately, your payment could not be completed.",
@@ -127,7 +128,6 @@ const PaymentStatus = () => {
           }
 
           isChecking = false;
-
           return;
         }
 
@@ -138,7 +138,6 @@ const PaymentStatus = () => {
           console.log("PAYMENT REFUNDED");
 
           setPaymentStatus("failed");
-
           setMessage(
             data?.message ||
               "Your payment was refunded. Please contact support for assistance.",
@@ -150,7 +149,6 @@ const PaymentStatus = () => {
           }
 
           isChecking = false;
-
           return;
         }
 
@@ -160,11 +158,11 @@ const PaymentStatus = () => {
         console.log("PAYMENT STILL PROCESSING");
 
         setPaymentStatus("pending");
-
         setMessage(
           "Your payment is being processed. Please wait while we confirm it.",
         );
 
+        // Stop after 30 attempts
         if (attempts >= 30) {
           console.log("Payment status checking timed out.");
 
@@ -173,7 +171,6 @@ const PaymentStatus = () => {
           }
 
           setPaymentStatus("failed");
-
           setMessage(
             "We could not confirm your payment right now. If your amount was deducted, please contact support.",
           );
@@ -184,11 +181,11 @@ const PaymentStatus = () => {
         console.error("Payment Status Error:", error);
 
         setPaymentStatus("pending");
-
         setMessage(
           "We are still trying to confirm your payment. Please wait...",
         );
 
+        // Stop after 30 attempts
         if (attempts >= 30) {
           console.log("Payment status checking timed out after API errors.");
 
@@ -197,7 +194,6 @@ const PaymentStatus = () => {
           }
 
           setPaymentStatus("failed");
-
           setMessage(
             "We could not confirm your payment. If your amount was deducted, please contact support.",
           );
@@ -210,13 +206,11 @@ const PaymentStatus = () => {
     // --------------------------------
     // FIRST CHECK
     // --------------------------------
-
     checkPaymentStatus();
 
     // --------------------------------
     // CHECK EVERY 2 SECONDS
     // --------------------------------
-
     intervalId = setInterval(() => {
       checkPaymentStatus();
     }, 2000);
@@ -224,7 +218,6 @@ const PaymentStatus = () => {
     // --------------------------------
     // CLEANUP
     // --------------------------------
-
     return () => {
       if (intervalId) {
         clearInterval(intervalId);
@@ -233,21 +226,46 @@ const PaymentStatus = () => {
   }, []);
 
   // --------------------------------
-  // CONTINUE BUTTON
+  // REDIRECT COUNTDOWN
   // --------------------------------
+  useEffect(() => {
+    // Start countdown only after success or failed
+    if (paymentStatus !== "success" && paymentStatus !== "failed") {
+      return;
+    }
 
-  const handleContinue = () => {
-    // Remove temporary payment information
-    localStorage.removeItem("membershipOrderId");
-    localStorage.removeItem("membershipOrderKey");
-    localStorage.removeItem("membershipStatusUrl");
+    // Reset countdown to 5
+    setCountdown(5);
 
-    navigate("/");
-  };
+    const countdownInterval = setInterval(() => {
+      setCountdown((previousCount) => {
+        if (previousCount <= 1) {
+          clearInterval(countdownInterval);
+
+          // Remove temporary payment information
+          localStorage.removeItem("membershipOrderId");
+          localStorage.removeItem("membershipOrderKey");
+          localStorage.removeItem("membershipStatusUrl");
+
+          // Redirect to home page
+          navigate("/");
+
+          return 0;
+        }
+
+        return previousCount - 1;
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(countdownInterval);
+    };
+  }, [paymentStatus, navigate]);
 
   return (
     <div className="payment-status-page">
       <div className="payment-status-card">
+        {/* CHECKING */}
         {paymentStatus === "checking" && (
           <>
             <div className="payment-status-spinner"></div>
@@ -262,6 +280,7 @@ const PaymentStatus = () => {
           </>
         )}
 
+        {/* PENDING */}
         {paymentStatus === "pending" && (
           <>
             <div className="payment-status-spinner"></div>
@@ -276,6 +295,7 @@ const PaymentStatus = () => {
           </>
         )}
 
+        {/* SUCCESS */}
         {paymentStatus === "success" && (
           <>
             <div className="payment-status-icon payment-status-success">✓</div>
@@ -288,16 +308,13 @@ const PaymentStatus = () => {
               Your membership payment has been successfully completed.
             </span>
 
-            <button
-              type="button"
-              className="payment-status-button"
-              onClick={handleContinue}
-            >
-              Continue
-            </button>
+            <div className="payment-status-countdown">
+              Redirecting to home in <strong>{countdown}</strong> seconds
+            </div>
           </>
         )}
 
+        {/* FAILED */}
         {paymentStatus === "failed" && (
           <>
             <div className="payment-status-icon payment-status-failed">×</div>
@@ -311,13 +328,9 @@ const PaymentStatus = () => {
               another payment.
             </span>
 
-            <button
-              type="button"
-              className="payment-status-button"
-              onClick={handleContinue}
-            >
-              Continue
-            </button>
+            <div className="payment-status-countdown">
+              Redirecting to home in <strong>{countdown}</strong> seconds
+            </div>
           </>
         )}
       </div>
