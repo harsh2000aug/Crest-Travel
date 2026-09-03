@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { CKEditor } from "ckeditor4-react";
 import "./addPost.css";
 import { hostname } from "../../../Utils/api/apiUtils";
 
@@ -281,6 +280,24 @@ const AddPost = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Cover image validation
+    if (!imageFile && !imagePreview) {
+      alert("Please upload a cover image.");
+      return;
+    }
+
+    // Author image validation
+    if (!authorImageFile && !authorImagePreview) {
+      alert("Please upload an author image.");
+      return;
+    }
+
+    // CKEditor validation
+    if (!formData.content || formData.content.trim() === "") {
+      alert("Please enter article content.");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -395,6 +412,7 @@ const AddPost = () => {
               name="category"
               value={formData.category}
               onChange={handleChange}
+              required
               placeholder="e.g. Technology"
             />
           </div>
@@ -407,6 +425,7 @@ const AddPost = () => {
               name="status"
               value={formData.status}
               onChange={handleChange}
+              required
             >
               <option value="published">Published</option>
 
@@ -433,6 +452,7 @@ const AddPost = () => {
                   accept="image/*"
                   onChange={handleCoverImageChange}
                   className="addPost__fileInput"
+                  required={!imagePreview}
                 />
               </div>
 
@@ -446,6 +466,7 @@ const AddPost = () => {
                   value={formData.imageAlt}
                   onChange={handleChange}
                   placeholder="Alt description for image"
+                  required
                 />
               </div>
             </div>
@@ -486,6 +507,7 @@ const AddPost = () => {
             onChange={handleChange}
             rows={2}
             placeholder="Brief snippet of the post"
+            required
           />
         </div>
 
@@ -498,35 +520,22 @@ const AddPost = () => {
 
           <div className="addPost__ckeditor">
             <CKEditor
-              editor={ClassicEditor}
-              data={formData.content}
-              onChange={handleEditorChange}
+              editorUrl="https://cdn.ckeditor.com/4.20.0/full/ckeditor.js"
+              initData={formData.content}
               config={{
-                toolbar: [
-                  "heading",
-                  "|",
-                  "bold",
-                  "italic",
-                  "underline",
-                  "|",
-                  "link",
-                  "blockQuote",
-                  "|",
-                  "bulletedList",
-                  "numberedList",
-                  "|",
-                  "outdent",
-                  "indent",
-                  "|",
-                  "insertTable",
-                  "mediaEmbed",
-                  "horizontalLine",
-                  "|",
-                  "undo",
-                  "redo",
-                ],
+                height: 400,
+                toolbar: "Full",
+                allowedContent: true,
+                toolbarCanCollapse: false,
+                toolbarLocation: "top",
+              }}
+              onChange={(event) => {
+                const data = event.editor.getData();
 
-                placeholder: "Write your article content here...",
+                setFormData((prev) => ({
+                  ...prev,
+                  content: data,
+                }));
               }}
             />
           </div>
@@ -551,6 +560,7 @@ const AddPost = () => {
               value={formData.metaTitle}
               onChange={handleChange}
               placeholder="SEO Meta Title"
+              required
             />
           </div>
 
@@ -566,6 +576,7 @@ const AddPost = () => {
               onChange={handleChange}
               rows={2}
               placeholder="SEO Meta Description"
+              required
             />
           </div>
 
@@ -582,6 +593,7 @@ const AddPost = () => {
               rows={3}
               className="addPost__codeTextarea"
               placeholder={`<script type="application/ld+json">...</script>`}
+              required
             />
           </div>
         </div>
@@ -606,6 +618,7 @@ const AddPost = () => {
                 value={formData.authorName}
                 onChange={handleChange}
                 placeholder="John Doe"
+                required
               />
             </div>
 
@@ -619,6 +632,7 @@ const AddPost = () => {
                 value={formData.authorEmail}
                 onChange={handleChange}
                 placeholder="author@example.com"
+                required
               />
             </div>
           </div>
@@ -635,6 +649,7 @@ const AddPost = () => {
               onChange={handleChange}
               rows={2}
               placeholder="Short bio about the author"
+              required
             />
           </div>
 
@@ -663,6 +678,7 @@ const AddPost = () => {
                 accept="image/*"
                 onChange={handleAuthorImageChange}
                 className="addPost__fileInput"
+                required={!authorImagePreview}
               />
             </div>
 

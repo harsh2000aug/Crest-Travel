@@ -45,7 +45,7 @@ const BlogPage = () => {
           .sort(
             (a, b) =>
               new Date(b.updatedAt || b.createdAt) -
-              new Date(a.updatedAt || a.createdAt),
+              new Date(a.updatedAt || a.createdAt)
           )
           .slice(0, 5);
         setLatestBlogs(latest);
@@ -118,6 +118,12 @@ const BlogPage = () => {
           <div className="blog-content">
             <div className="blog-left">
               {/* Blog Image */}
+
+              {/* Date */}
+
+              {/* Title */}
+              <h1 className="tripoFullBlogTitle">{blog.title}</h1>
+
               {blog.image && (
                 <div className="tripoFullBlogHero">
                   <img
@@ -128,15 +134,30 @@ const BlogPage = () => {
                 </div>
               )}
 
-              {/* Date */}
               <div className="tripoFullBlogDate">
                 <span>Published</span>
 
                 <strong>{formatDate(blog.updatedAt || blog.createdAt)}</strong>
               </div>
 
-              {/* Title */}
-              <h1 className="tripoFullBlogTitle">{blog.title}</h1>
+              <div className="tripoFullBlogAuthorBoxContent">
+                <span className="tripoFullBlogWrittenBy">Written by</span>
+
+                <h3 className="tripoFullBlogAuthorBoxName">
+                  {blog.authorName || "Admin"}
+                </h3>
+
+                {blog.instagramLink && (
+                  <a
+                    href={blog.instagramLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tripoFullBlogInstagram"
+                  >
+                    Instagram
+                  </a>
+                )}
+              </div>
 
               {/* Description */}
               {blog.shortDescription && (
@@ -218,7 +239,7 @@ const BlogPage = () => {
 
                         <div className="tripoLatestBlogDate">
                           {formatDate(
-                            latestBlog.updatedAt || latestBlog.createdAt,
+                            latestBlog.updatedAt || latestBlog.createdAt
                           )}
                         </div>
                       </div>
