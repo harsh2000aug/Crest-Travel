@@ -728,6 +728,7 @@
   display: flex;
   flex-direction: row;
   gap: 3px;
+  margin-bottom: 10px;
 }
 
 .tripoFullBlogDate span {
@@ -898,17 +899,18 @@
 }
 
 .tripoFullBlogAuthorBoxContent {
-  flex: 1;
+    /* flex: 1; */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .tripoFullBlogWrittenBy {
   display: block;
   margin-bottom: 5px;
   color: #8a94a6;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
+  font-size: 15px;
+margin-right: 5px;}
 
 .tripoFullBlogAuthorBoxName {
   margin: 0 0 7px;
