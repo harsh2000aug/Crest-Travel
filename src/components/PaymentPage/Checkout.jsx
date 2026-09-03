@@ -3,27 +3,18 @@ import Header from "../../reuseable-components/Header";
 import Footer from "../../reuseable-components/Footer";
 import "./Checkout.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import Loader from "../../reuseable-components/Loader/Loader";
-import {
-  checkoutDetails,
-  memberProfile,
-  memberSignup,
-} from "../../store/Services/AllApi";
+import { Controller, useForm } from "react-hook-form";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { Country, State } from "country-state-city";
 import { toast } from "react-toastify";
 import HeaderInner from "../../reuseable-components/HeaderInner";
+
 const Checkout = () => {
-  const navigate = useNavigate();
-  const API_LOGIN_ID = "376nNNvw";
-  const CLIENT_KEY =
-    "6g272UfSzNs9z6nU7t49wf62Sn8cFSqTC2UL4PmR9M65RFJd975YBH53awCFh3ts";
   const location = useLocation();
-  const [loadingState, setLoadingState] = useState(false);
-  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  const [countdown, setCountdown] = useState(5);
-  const [showFailurePopup, setShowFailurePopup] = useState(false);
-  const [failureMessage, setFailureMessage] = useState("");
+
+  const [loading, setLoading] = useState(false);
+
   const membership = location.state || {
     membershipId: "",
     membershipName: "",
@@ -34,7 +25,7 @@ const Checkout = () => {
     register,
     handleSubmit,
     watch,
-    reset,
+    control,
     formState: { errors },
   } = useForm({
     mode: "onTouched",
@@ -43,183 +34,90 @@ const Checkout = () => {
 
   const selectedCountry = watch("country");
 
-  const handleSignUp = async (data) => {
-    const payload = {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      phone: data.phone,
-      password: data.password,
-      country: data.country,
-      state: data.state,
-      city: data.city,
-    };
-
+  const handleCheckout = async (formData) => {
     try {
-      const res = await memberSignup({
-        body: payload,
-      });
+      setLoading(true);
 
-      localStorage.setItem("accessToken", res.token);
-      localStorage.setItem("firstName", res.data.firstName);
-      localStorage.setItem("lastName", res.data.lastName);
-      localStorage.setItem("userFinal", res.data._id);
-      toast.success(res.message);
+      const formattedDateOfBirth = formData.dateOfBirth
+        ? formData.dateOfBirth.toISOString().split("T")[0]
+        : "";
 
-      return res;
-    } catch (error) {
-      toast.error("Email or Phone already exists");
-      throw error;
-    }
-  };
-
-  const onSubmit = async (data) => {
-    setLoadingState(true);
-    let memberId = localStorage.getItem("userFinal");
-    if (!localStorage.getItem("accessToken")) {
-      try {
-        const signupRes = await handleSignUp(data);
-        memberId = signupRes.data._id;
-      } catch (error) {
-        setLoadingState(false);
-        return;
-      }
-    }
-
-    try {
-      const [month, year] = data.expiryDate.split("/");
-
-      const secureData = {
-        authData: {
-          clientKey: CLIENT_KEY,
-          apiLoginID: API_LOGIN_ID,
-        },
-        cardData: {
-          cardNumber: data.cardNumber.replace(/\s/g, ""),
-          month: month.trim(),
-          year: `20${year.trim()}`,
-          cardCode: data.cvv,
-        },
+      const payload = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password || "",
+        gender: formData.gender,
+        dateOfBirth: formattedDateOfBirth,
+        country: formData.country,
+        state: formData.state,
+        city: formData.city,
+        postalcode: formData.zipCode,
+        address1: formData.address,
+        address2: "",
+        productId: Number(membership.membershipId),
       };
 
-      window.Accept.dispatchData(secureData, async (response) => {
-        console.log("FULL RESPONSE", response);
+      console.log("Membership Order Payload:", payload);
 
-        if (response.messages.resultCode === "Error") {
-          setLoadingState(false);
+      const response = await fetch(
+        "https://backendcms.cresttravelclub.com/index.php?rest_route=%2Fcrest%2Fv1%2Fcreate-membership-order",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
 
-          setFailureMessage(
-            response.messages.message?.map((msg) => msg.text).join("\n") ||
-              "Card validation failed.",
-          );
+      const data = await response.json();
 
-          setShowFailurePopup(true);
-          return;
-        }
+      console.log("Membership Order Response:", data);
 
-        console.log("TOKEN CREATED SUCCESSFULLY");
+      if (!response.ok) {
+        throw new Error(data?.message || "Failed to create membership order");
+      }
 
-        const { dataDescriptor, dataValue } = response.opaqueData;
+      const checkoutUrl = data?.checkoutUrl;
+      const orderId = data?.orderId;
+      const orderKey = data?.orderKey;
 
-        try {
-          const res = await checkoutDetails({
-            body: {
-              amount: membership.price,
-              dataDescriptor,
-              dataValue,
-              firstName: data.firstName,
-              lastName: data.lastName,
-              email: data.email,
-              password: data.password,
-              phone: data.phone,
-              address: data.address,
-              city: data.city,
-              state: data.state,
-              country: data.country,
-              zipCode: data.zipCode,
-              promoCode: data.promoCode,
-              membershipId: membership.membershipId,
-              membershipName: membership.membershipName,
-              memberId: memberId,
-            },
-          });
-          console.log("Checkout Response:", res);
-          if (!res?.success) {
-            setLoadingState(false);
-            setFailureMessage(
-              res?.message || "Payment could not be completed.",
-            );
-            setShowFailurePopup(true);
-            return;
-          }
-          setLoadingState(false);
-          setShowSuccessPopup(true);
+      console.log("Checkout URL:", checkoutUrl);
+      console.log("Order ID:", orderId);
+      console.log("Order Key:", orderKey);
 
-          let timer = 5;
-          setCountdown(timer);
+      if (!checkoutUrl) {
+        throw new Error("Checkout URL not received from server");
+      }
 
-          const interval = setInterval(() => {
-            timer--;
-            setCountdown(timer);
+      if (!orderId || !orderKey) {
+        throw new Error("Order ID or Order Key not received from server");
+      }
 
-            if (timer === 0) {
-              clearInterval(interval);
-              navigate("/home");
-            }
-          }, 1000);
-        } catch (error) {
-          console.log("Checkout API Error:", error);
-          setLoadingState(false);
-          setFailureMessage(
-            error?.data?.message ||
-              error?.data?.error ||
-              error?.message ||
-              "Payment could not be completed.",
-          );
-          setShowFailurePopup(true);
-        }
-      });
+      // Save payment/order information before leaving your website
+      localStorage.setItem("membershipOrderId", String(orderId));
+      localStorage.setItem("membershipOrderKey", orderKey);
+
+      // Optional: save the status URL as well
+      if (data?.statusUrl) {
+        localStorage.setItem("membershipStatusUrl", data.statusUrl);
+      }
+
+      // Redirect to WooCommerce payment page
+      window.location.href = checkoutUrl;
     } catch (error) {
-      console.log("Outer Error:", error);
-      setLoadingState(false);
-      setFailureMessage("Something went wrong.");
-      setShowFailurePopup(true);
+      console.error("Membership Order Error:", error);
+
+      toast.error(
+        error?.message ||
+          "Something went wrong while creating membership order.",
+      );
+    } finally {
+      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const response = await memberProfile({});
-
-        if (response?.success) {
-          const profile = response.data;
-
-          reset({
-            firstName: profile.firstName || "",
-            lastName: profile.lastName || "",
-            email: profile.email || "",
-            phone: profile.phone || "",
-            country: profile.country || "",
-            state: profile.state || "",
-            city: profile.city || "",
-
-            address: "",
-            zipCode: "",
-            password: "",
-            promoCode: "",
-            cardNumber: "",
-            cvv: "",
-            expiryDate: "",
-          });
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchProfileData();
-  }, [reset]);
 
   useEffect(() => {
     window.scrollTo({
@@ -233,58 +131,53 @@ const Checkout = () => {
 
   return (
     <>
-      {loadingState && <Loader />}
-      {showSuccessPopup && (
-        <div className="payment-success-overlay">
-          <div className="payment-success-popup">
-            <div className="payment-success-check">✓</div>
-            <h2>Transaction Successful!</h2>
-            <p>Congratulations 🎉</p>
-            <p className="payment-success-message">
-              Your membership has been activated successfully.
-            </p>
-            <p className="payment-success-redirect">
-              Redirecting to Home Page in
-            </p>
-            <div className="payment-countdown">{countdown}</div>
-            <div className="payment-loader">
-              <div className="payment-loader-fill"></div>
+      {loading && (
+        <div className="proceed-payment-overlay">
+          <div className="proceed-payment-popup">
+            <div className="proceed-payment-loader">
+              <div className="proceed-payment-spinner"></div>
+            </div>
+
+            <div className="proceed-payment-content">
+              <div className="proceed-payment-title">Proceeding to Payment</div>
+
+              <div className="proceed-payment-message">
+                Please wait while we securely redirect you to the payment page.
+              </div>
+
+              <div className="proceed-payment-dots">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
             </div>
           </div>
         </div>
       )}
-      {showFailurePopup && (
-        <div className="payment-failure-overlay">
-          <div className="payment-failure-popup">
-            <div className="payment-failure-icon">✕</div>
-            <h2>Transaction Failed</h2>
-            <p>{failureMessage}</p>
-            <button onClick={() => setShowFailurePopup(false)}>
-              Try Again
-            </button>
-          </div>
-        </div>
-      )}
-
       <section className="itc-membership-page">
         {isLoggedIn ? <HeaderInner /> : <Header />}
+
         <div className="itc-container">
           <div className="itc-page-header">
             <h1>Become a member</h1>
+
             <p>
               Unlock exclusive travel deals, luxury stays, member-only rewards,
               and premium travel experiences.
             </p>
           </div>
+
           <div className="itc-membership-wrapper">
-            <form id="membershipForm" onSubmit={handleSubmit(onSubmit)}>
+            <form id="membershipForm" onSubmit={handleSubmit(handleCheckout)}>
               <div className="itc-form-section">
+                {/* ACCOUNT INFORMATION */}
                 <div className="itc-card">
                   <h3>Account Information</h3>
 
                   <div className="itc-grid">
                     <div className="itc-input-group">
                       <label>First Name</label>
+
                       <input
                         type="text"
                         placeholder="John"
@@ -293,11 +186,13 @@ const Checkout = () => {
                           required: "First Name is required",
                         })}
                       />
+
                       {errors.firstName && <p>{errors.firstName.message}</p>}
                     </div>
 
                     <div className="itc-input-group">
                       <label>Last Name</label>
+
                       <input
                         type="text"
                         placeholder="Doe"
@@ -306,12 +201,93 @@ const Checkout = () => {
                           required: "Last Name is required",
                         })}
                       />
+
                       {errors.lastName && <p>{errors.lastName.message}</p>}
+                    </div>
+                  </div>
+
+                  <div className="itc-grid">
+                    {/* GENDER */}
+                    <div className="itc-input-group">
+                      <label>Gender</label>
+
+                      <select
+                        disabled={isLoggedIn}
+                        {...register("gender", {
+                          required: "Gender is required",
+                          validate: (value) =>
+                            ["Male", "Female", "Other"].includes(value) ||
+                            "Please select a valid gender",
+                        })}
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+
+                      {errors.gender && <p>{errors.gender.message}</p>}
+                    </div>
+
+                    {/* DATE OF BIRTH */}
+                    <div className="itc-input-group">
+                      <label>Date of Birth</label>
+
+                      <Controller
+                        name="dateOfBirth"
+                        control={control}
+                        rules={{
+                          required: "Date of Birth is required",
+                          validate: (value) => {
+                            if (!value) return "Date of Birth is required";
+
+                            const today = new Date();
+
+                            let age = today.getFullYear() - value.getFullYear();
+                            const monthDifference =
+                              today.getMonth() - value.getMonth();
+
+                            if (
+                              monthDifference < 0 ||
+                              (monthDifference === 0 &&
+                                today.getDate() < value.getDate())
+                            ) {
+                              age--;
+                            }
+
+                            if (age < 18) {
+                              return "You must be at least 18 years old";
+                            }
+
+                            return true;
+                          },
+                        }}
+                        render={({ field }) => (
+                          <DatePicker
+                            selected={field.value}
+                            onChange={(date) => field.onChange(date)}
+                            onBlur={field.onBlur}
+                            placeholderText="Select Date of Birth"
+                            dateFormat="dd/MM/yyyy"
+                            maxDate={new Date()}
+                            showMonthDropdown
+                            showYearDropdown
+                            dropdownMode="select"
+                            disabled={isLoggedIn}
+                            className="itc-date-picker"
+                          />
+                        )}
+                      />
+
+                      {errors.dateOfBirth && (
+                        <p>{errors.dateOfBirth.message}</p>
+                      )}
                     </div>
                   </div>
 
                   <div className="itc-input-group">
                     <label>Email Address</label>
+
                     <input
                       type="email"
                       placeholder="john@example.com"
@@ -327,9 +303,11 @@ const Checkout = () => {
 
                     {errors.email && <p>{errors.email.message}</p>}
                   </div>
-                  {!localStorage.getItem("accessToken") && (
+
+                  {!isLoggedIn && (
                     <div className="itc-input-group">
                       <label>Password</label>
+
                       <input
                         type="password"
                         placeholder="********"
@@ -363,7 +341,8 @@ const Checkout = () => {
                             key={country.isoCode}
                             value={country.phonecode}
                           >
-                            {country.flag} {country.name} (+{country.phonecode})
+                            {country.flag} {country.name} (+
+                            {country.phonecode})
                           </option>
                         ))}
                       </select>
@@ -386,7 +365,8 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                <div className="itc-card">
+                {/* PROMO CODE */}
+                {/* <div className="itc-card">
                   <h3>Promo Code</h3>
 
                   <div className="itc-coupon-row">
@@ -395,111 +375,18 @@ const Checkout = () => {
                       placeholder="Enter Coupon Code"
                       {...register("promoCode")}
                     />
+
                     <button type="button">Apply</button>
                   </div>
-                </div>
+                </div> */}
 
-                <div className="itc-card">
-                  <h3>Payment Details</h3>
-
-                  <div className="itc-card-icons">
-                    <span>💳 Visa</span>
-                    <span>💳 Mastercard</span>
-                    <span>💳 Amex</span>
-                  </div>
-
-                  <div className="itc-input-group">
-                    <label>Card Number</label>
-                    <input
-                      type="text"
-                      placeholder="1234 5678 9012 3456"
-                      maxLength={19}
-                      {...register("cardNumber", {
-                        required: "Card Number is required",
-                        pattern: {
-                          value: /^[0-9]{13,19}$/,
-                          message:
-                            "Card number must be between 13 and 19 digits",
-                        },
-                        onChange: (e) => {
-                          e.target.value = e.target.value
-                            .replace(/\D/g, "")
-                            .slice(0, 19);
-                        },
-                      })}
-                    />
-                    {errors.cardNumber && <p>{errors.cardNumber.message}</p>}
-                  </div>
-
-                  <div className="itc-grid">
-                    <div className="itc-input-group">
-                      <label>CVV</label>
-                      <input
-                        type="text"
-                        placeholder="123"
-                        maxLength={4}
-                        {...register("cvv", {
-                          required: "CVV is required",
-                          pattern: {
-                            value: /^[0-9]{3,4}$/,
-                            message: "CVV must be 3 or 4 digits",
-                          },
-                          onChange: (e) => {
-                            e.target.value = e.target.value
-                              .replace(/\D/g, "")
-                              .slice(0, 4);
-                          },
-                        })}
-                      />
-                      {errors.cvv && <p>{errors.cvv.message}</p>}
-                    </div>
-
-                    <div className="itc-input-group">
-                      <label>Expiry Date</label>
-                      <input
-                        type="text"
-                        placeholder="MM/YY"
-                        maxLength={5}
-                        {...register("expiryDate", {
-                          required: "Expiry Date is required",
-                          pattern: {
-                            value: /^(0[1-9]|1[0-2])\/\d{2}$/,
-                            message: "Enter a valid expiry date (MM/YY)",
-                          },
-                          onChange: (e) => {
-                            let value = e.target.value.replace(/\D/g, "");
-
-                            if (value.length >= 2) {
-                              let month = parseInt(value.substring(0, 2), 10);
-
-                              if (month > 12) {
-                                value = "12" + value.substring(2);
-                              } else if (month === 0) {
-                                value = "01" + value.substring(2);
-                              }
-                            }
-
-                            if (value.length > 2) {
-                              value =
-                                value.substring(0, 2) +
-                                "/" +
-                                value.substring(2, 4);
-                            }
-
-                            e.target.value = value;
-                          },
-                        })}
-                      />
-                      {errors.expiryDate && <p>{errors.expiryDate.message}</p>}
-                    </div>
-                  </div>
-                </div>
-
+                {/* BILLING ADDRESS */}
                 <div className="itc-card">
                   <h3>Billing Address</h3>
 
                   <div className="itc-input-group">
                     <label>Address</label>
+
                     <input
                       type="text"
                       placeholder="Street Address"
@@ -507,12 +394,14 @@ const Checkout = () => {
                         required: "Address is required",
                       })}
                     />
+
                     {errors.address && <p>{errors.address.message}</p>}
                   </div>
 
                   <div className="itc-grid">
                     <div className="itc-input-group">
                       <label>City</label>
+
                       <input
                         type="text"
                         placeholder="City"
@@ -520,11 +409,13 @@ const Checkout = () => {
                           required: "City is required",
                         })}
                       />
+
                       {errors.city && <p>{errors.city.message}</p>}
                     </div>
 
                     <div className="itc-input-group">
                       <label>Zip Code</label>
+
                       <input
                         type="text"
                         placeholder="Zip Code"
@@ -532,6 +423,7 @@ const Checkout = () => {
                           required: "Zip Code is required",
                         })}
                       />
+
                       {errors.zipCode && <p>{errors.zipCode.message}</p>}
                     </div>
                   </div>
@@ -539,6 +431,7 @@ const Checkout = () => {
                   <div className="itc-grid">
                     <div className="itc-input-group">
                       <label>Country</label>
+
                       <select
                         {...register("country", {
                           required: "Country is required",
@@ -558,6 +451,7 @@ const Checkout = () => {
 
                     <div className="itc-input-group">
                       <label>State</label>
+
                       <select
                         {...register("state", {
                           required: "State is required",
@@ -582,6 +476,8 @@ const Checkout = () => {
                 </div>
               </div>
             </form>
+
+            {/* SUMMARY */}
             <div className="itc-summary-section">
               <div className="itc-summary-card">
                 <h2>{membership.membershipName}</h2>
@@ -599,6 +495,7 @@ const Checkout = () => {
                           "Please accept the Terms & Conditions and Privacy Policy.",
                       })}
                     />
+
                     <span>
                       I agree to the{" "}
                       <Link to="/terms-and-conditions" target="_blank">
@@ -622,6 +519,7 @@ const Checkout = () => {
                         required: "Please accept the Refund Policy.",
                       })}
                     />
+
                     <span>
                       I agree to the{" "}
                       <Link
@@ -644,8 +542,9 @@ const Checkout = () => {
                   type="submit"
                   form="membershipForm"
                   className="itc-join-btn"
+                  disabled={loading}
                 >
-                  Complete Membership
+                  {loading ? "Processing..." : "Proceed to checkout"}
                 </button>
               </div>
             </div>

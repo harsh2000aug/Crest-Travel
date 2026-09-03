@@ -1,0 +1,277 @@
+/* =========================================
+   PAYMENT STATUS PAGE
+========================================= */
+
+.payment-status-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  box-sizing: border-box;
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(32, 116, 255, 0.08),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(24, 180, 140, 0.08),
+      transparent 30%
+    ),
+    #f7f9fc;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================================
+   CARD
+========================================= */
+
+.payment-status-card {
+  width: 100%;
+  max-width: 500px;
+  min-height: 390px;
+  padding: 50px 40px;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  background: #ffffff;
+  border: 1px solid #edf0f5;
+  border-radius: 24px;
+
+  box-shadow:
+    0 20px 60px rgba(20, 35, 60, 0.08),
+    0 4px 15px rgba(20, 35, 60, 0.04);
+
+  animation: paymentCardAppear 0.5s ease;
+}
+
+/* =========================================
+   HEADINGS
+========================================= */
+
+.payment-status-card h1 {
+  margin: 24px 0 12px;
+  color: #172033;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.payment-status-card p {
+  max-width: 390px;
+  margin: 0;
+  color: #687386;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* =========================================
+   NOTE
+========================================= */
+
+.payment-status-note {
+  display: block;
+  margin-top: 18px;
+  color: #8a94a6;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   LOADER
+========================================= */
+
+.payment-status-spinner {
+  width: 58px;
+  height: 58px;
+  position: relative;
+  box-sizing: border-box;
+
+  border: 4px solid #e9edf4;
+  border-top-color: #2074ff;
+  border-right-color: #2074ff;
+
+  border-radius: 50%;
+
+  animation: paymentStatusSpin 0.85s linear infinite;
+}
+
+/* Inner loader glow */
+
+.payment-status-spinner::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+
+  border-radius: 50%;
+  border: 2px solid rgba(32, 116, 255, 0.12);
+}
+
+/* =========================================
+   STATUS ICON
+========================================= */
+
+.payment-status-icon {
+  width: 76px;
+  height: 76px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-size: 38px;
+  font-weight: 700;
+
+  animation: paymentIconAppear 0.45s ease;
+}
+
+/* =========================================
+   SUCCESS
+========================================= */
+
+.payment-status-success {
+  color: #1a9b67;
+  background: #e9f8f1;
+  border: 7px solid #d5f2e5;
+}
+
+/* =========================================
+   FAILED
+========================================= */
+
+.payment-status-failed {
+  color: #dc4b4b;
+  background: #fff0f0;
+  border: 7px solid #ffe0e0;
+}
+
+/* =========================================
+   BUTTON
+========================================= */
+
+.payment-status-button {
+  min-width: 180px;
+  margin-top: 28px;
+  padding: 14px 28px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #172033;
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.payment-status-button:hover {
+  background: #2074ff;
+
+  transform: translateY(-2px);
+
+  box-shadow: 0 8px 20px rgba(32, 116, 255, 0.22);
+}
+
+.payment-status-button:active {
+  transform: translateY(0);
+}
+
+/* =========================================
+   ANIMATIONS
+========================================= */
+
+@keyframes paymentStatusSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes paymentCardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes paymentIconAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  70% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .payment-status-page {
+    padding: 20px 15px;
+  }
+
+  .payment-status-card {
+    min-height: 360px;
+    padding: 40px 25px;
+    border-radius: 20px;
+  }
+
+  .payment-status-card h1 {
+    font-size: 24px;
+  }
+
+  .payment-status-card p {
+    font-size: 14px;
+  }
+
+  .payment-status-icon {
+    width: 68px;
+    height: 68px;
+    font-size: 34px;
+  }
+
+  .payment-status-spinner {
+    width: 52px;
+    height: 52px;
+  }
+
+  .payment-status-button {
+    width: 100%;
+    max-width: 250px;
+  }
+}

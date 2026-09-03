@@ -732,7 +732,7 @@ const Join = () => {
 
                 <button
                   className="mp-btn"
-                  onClick={() => handleMembershipSelect(1, "Signature", 39.99)}
+                  onClick={() => handleMembershipSelect(13, "Signature", 39.99)}
                 >
                   Choose Signature
                 </button>
@@ -867,7 +867,7 @@ const Join = () => {
 
                 <button
                   className="mp-btn"
-                  onClick={() => handleMembershipSelect(2, "Elite", 59.99)}
+                  onClick={() => handleMembershipSelect(20, "Elite", 59.99)}
                 >
                   Choose Elite
                 </button>
@@ -993,7 +993,7 @@ const Join = () => {
                 </ul>
                 <button
                   className="mp-btn"
-                  onClick={() => handleMembershipSelect(3, "Prestige", 79.99)}
+                  onClick={() => handleMembershipSelect(21, "Prestige", 79.99)}
                 >
                   Choose Prestige
                 </button>

@@ -41,7 +41,7 @@ import BlogDetail from "./components/admin/blogDetail/blogDetail";
 import BlogdetailPage from "./components/admin/BlogPage/BlogdetailPage";
 import BlogProtectedRoutes from "./BlogProtectedRoutes";
 import BlogPage from "./components/admin/BlogPage/BlogPage";
-import PaymentStatus from "./components/PaymentSuccessFail/PaymentStatus";
+import PaymentStatus from "./components/PaymentStatus/PaymentStatus";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");

@@ -291,6 +291,8 @@ const ProfileDetails = () => {
     }
   };
 
+  console.log("personDetails:", personDetails);
+
   return (
     <>
       {loading && (
