@@ -49,4 +49,10 @@
     <priority>0.4</priority>
   </url>
 
+  <url>
+    <loc>https://www.cresttravelclub.com/blogs</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+</url>
+
 </urlset>
