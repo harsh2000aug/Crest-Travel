@@ -395,9 +395,9 @@ const ProfileDetails = () => {
             <div className="card-header">
               <h2>Profile Information</h2>
 
-              <button className="member-badge" onClick={handleEditProfile}>
+              {/* <button className="member-badge" onClick={handleEditProfile}>
                 <FaEdit /> Edit profile
-              </button>
+              </button> */}
             </div>
 
             <div className="profile-grid">

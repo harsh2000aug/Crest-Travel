@@ -67,6 +67,47 @@ const BlogPage = () => {
   };
 
   useEffect(() => {
+    if (!blog) return;
+
+    if (blog.metaTitle) {
+      document.title = blog.metaTitle;
+    }
+
+    if (blog.metaDescription) {
+      let metaDescription = document.querySelector('meta[name="description"]');
+
+      if (!metaDescription) {
+        metaDescription = document.createElement("meta");
+        metaDescription.setAttribute("name", "description");
+        document.head.appendChild(metaDescription);
+      }
+
+      metaDescription.setAttribute("content", blog.metaDescription);
+    }
+
+    if (blog.schemaCode) {
+      let schemaScript = document.getElementById("blog-schema");
+
+      if (!schemaScript) {
+        schemaScript = document.createElement("script");
+        schemaScript.id = "blog-schema";
+        schemaScript.type = "application/ld+json";
+        document.head.appendChild(schemaScript);
+      }
+
+      schemaScript.textContent = blog.schemaCode;
+    }
+
+    return () => {
+      const schemaScript = document.getElementById("blog-schema");
+
+      if (schemaScript) {
+        schemaScript.remove();
+      }
+    };
+  }, [blog]);
+
+  useEffect(() => {
     window.scrollTo({
       top: 0,
       left: 0,
@@ -113,10 +154,6 @@ const BlogPage = () => {
         <div className="container">
           <div className="blog-content">
             <div className="blog-left">
-              {/* Blog Image */}
-
-              {/* Date */}
-
               {/* Title */}
               <h1 className="tripoFullBlogTitle">{blog.title}</h1>
 
