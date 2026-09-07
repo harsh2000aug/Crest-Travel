@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import logo from "../assets/images/logo.webp";
 import "./header.css";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -14,7 +14,30 @@ import {
 } from "../store/Services/AllApi";
 import { useSetAtom } from "jotai";
 import { tokenAtom } from "../atoms/userAtom";
+import { hostname } from "../Utils/api/apiUtils";
 
+const API_BASE_URL = hostname();
+
+const getFullImageUrl = (path) => {
+  if (!path) return "";
+
+  // Convert HTTP API image URL to HTTPS
+  if (path.startsWith("http://")) {
+    return path.replace("http://", "https://");
+  }
+
+  if (path.startsWith("https://") || path.startsWith("blob:")) {
+    return path;
+  }
+
+  const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+
+  const cleanBase = API_BASE_URL.endsWith("/")
+    ? API_BASE_URL.slice(0, -1)
+    : API_BASE_URL;
+
+  return `${cleanBase}/${cleanPath}`;
+};
 const Header = ({ personDetails }) => {
   const navigate = useNavigate();
 
@@ -36,7 +59,7 @@ const Header = ({ personDetails }) => {
   const showDarkHeader = darkHeaderRoutes.includes(location.pathname);
 
   const [isLoggedIn, setIsLoggedIn] = useState(
-    !!localStorage.getItem("accessToken"),
+    !!localStorage.getItem("accessToken")
   );
 
   const {
@@ -215,8 +238,7 @@ const Header = ({ personDetails }) => {
 
       if (!forgotPassword?.success) {
         toast.error(
-          forgotPassword?.message ||
-            "Unable to process forgot password request",
+          forgotPassword?.message || "Unable to process forgot password request"
         );
 
         return;
@@ -229,7 +251,7 @@ const Header = ({ personDetails }) => {
       setShowResetPassword(true);
 
       toast.success(
-        forgotPassword?.message || "OTP sent successfully to your email",
+        forgotPassword?.message || "OTP sent successfully to your email"
       );
     } catch (error) {
       console.error("Forgot password error:", error);
@@ -271,11 +293,190 @@ const Header = ({ personDetails }) => {
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          "Unable to change password",
+          "Unable to change password"
       );
     }
   };
 
+  useEffect(() => {
+    const addOrUpdateMeta = (selector, attribute, value) => {
+      if (!value) return;
+
+      let meta = document.head.querySelector(selector);
+
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.setAttribute(
+          attribute,
+          selector.includes("property=")
+            ? selector.match(/property="([^"]+)"/)?.[1]
+            : selector.match(/name="([^"]+)"/)?.[1]
+        );
+        document.head.appendChild(meta);
+      }
+
+      meta.setAttribute("content", value);
+    };
+
+    const addOrUpdateMetaName = (name, value) => {
+      if (!value) return;
+
+      let meta = document.head.querySelector(`meta[name="${name}"]`);
+
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.setAttribute("name", name);
+        document.head.appendChild(meta);
+      }
+
+      meta.setAttribute("content", value);
+    };
+
+    const addOrUpdateMetaProperty = (property, value) => {
+      if (!value) return;
+
+      let meta = document.head.querySelector(`meta[property="${property}"]`);
+
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.setAttribute("property", property);
+        document.head.appendChild(meta);
+      }
+
+      meta.setAttribute("content", value);
+    };
+
+    const addOrUpdateCanonical = (url) => {
+      if (!url) return;
+
+      let canonical = document.head.querySelector('link[rel="canonical"]');
+
+      if (!canonical) {
+        canonical = document.createElement("link");
+        canonical.setAttribute("rel", "canonical");
+        document.head.appendChild(canonical);
+      }
+
+      canonical.setAttribute("href", url);
+    };
+
+    const loadBlogSEO = async () => {
+      try {
+        console.log("SEO: Loading blog data...");
+
+        const pathname = location.pathname;
+
+        console.log("SEO pathname:", pathname);
+
+        if (!pathname.startsWith("/blogs/")) {
+          console.log("SEO: Not a blog detail page");
+          return;
+        }
+
+        const blogSlug = pathname.split("/blogs/")[1];
+
+        console.log("SEO blog slug:", blogSlug);
+
+        if (!blogSlug) {
+          return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/blog`);
+
+        console.log("SEO API response:", response);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch blog API");
+        }
+
+        const result = await response.json();
+
+        console.log("SEO API data:", result);
+
+        const blogs = Array.isArray(result.data) ? result.data : [];
+
+        const blog = blogs.find((item) => item.slug === blogSlug);
+
+        console.log("SEO selected blog:", blog);
+
+        if (!blog) {
+          console.error("SEO: Blog not found");
+          return;
+        }
+
+        const metaTitle = blog.metaTitle || blog.title || "Crest Travel Club";
+
+        const metaDescription =
+          blog.metaDescription ||
+          blog.shortDescription ||
+          "Discover exclusive travel benefits with Crest Travel Club.";
+
+        let ogImage = blog.image || "";
+
+        // Convert HTTP image to HTTPS
+        if (ogImage.startsWith("http://")) {
+          ogImage = ogImage.replace("http://", "https://");
+        }
+
+        const blogUrl = `https://www.cresttravelclub.com/blogs/${blog.slug}`;
+
+        console.log("===== SEO VALUES =====");
+        console.log("Title:", metaTitle);
+        console.log("Description:", metaDescription);
+        console.log("OG Image:", ogImage);
+        console.log("OG URL:", blogUrl);
+        console.log("======================");
+
+        // TITLE
+        document.title = metaTitle;
+
+        // META DESCRIPTION
+        addOrUpdateMetaName("description", metaDescription);
+
+        // OG TITLE
+        addOrUpdateMetaProperty("og:title", metaTitle);
+
+        // OG DESCRIPTION
+        addOrUpdateMetaProperty("og:description", metaDescription);
+
+        // OG IMAGE
+        addOrUpdateMetaProperty("og:image", ogImage);
+
+        // OG URL
+        addOrUpdateMetaProperty("og:url", blogUrl);
+
+        // OG TYPE
+        addOrUpdateMetaProperty("og:type", "article");
+
+        // OG SITE NAME
+        addOrUpdateMetaProperty("og:site_name", "Crest Travel Club");
+
+        // OG IMAGE ALT
+        addOrUpdateMetaProperty(
+          "og:image:alt",
+          blog.imageAlt || blog.title || "Crest Travel Club"
+        );
+
+        // TWITTER
+        addOrUpdateMetaName("twitter:card", "summary_large_image");
+
+        addOrUpdateMetaName("twitter:title", metaTitle);
+
+        addOrUpdateMetaName("twitter:description", metaDescription);
+
+        addOrUpdateMetaName("twitter:image", ogImage);
+
+        // CANONICAL
+        addOrUpdateCanonical(blogUrl);
+
+        console.log("SEO tags added successfully");
+      } catch (error) {
+        console.error("SEO error:", error);
+      }
+    };
+
+    loadBlogSEO();
+  }, [location.pathname]);
   return (
     <>
       {showLogin && (
