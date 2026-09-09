@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 import "./FlightBookingPage.css";
 
@@ -319,7 +321,7 @@ const createEmptyPassenger = (passenger) => ({
    PASSENGER FORM
 ========================================================= */
 
-function PassengerForm({ passenger, index, register, errors }) {
+function PassengerForm({ passenger, index, register, control, errors }) {
   const typeLabel = getPassengerTypeLabel(passenger.type);
 
   const ageText = getPassengerAgeText(passenger.type);
@@ -482,14 +484,42 @@ function PassengerForm({ passenger, index, register, errors }) {
               Date of Birth <span>*</span>
             </label>
 
-            <input
-              type="date"
-              {...register(`passengers.${index}.dateOfBirth`, {
+            <Controller
+              name={`passengers.${index}.dateOfBirth`}
+              control={control}
+              rules={{
                 required: "Date of birth is required",
 
                 validate: (value) =>
                   validatePassengerDOB(value, passenger.type),
-              })}
+              }}
+              render={({ field }) => (
+                <DatePicker
+                  selected={
+                    field.value ? new Date(`${field.value}T00:00:00`) : null
+                  }
+                  onChange={(date) => {
+                    if (!date) {
+                      field.onChange("");
+                      return;
+                    }
+
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+
+                    field.onChange(`${year}-${month}-${day}`);
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="DD/MM/YYYY"
+                  maxDate={getToday()}
+                  showMonthDropdown
+                  showYearDropdown
+                  dropdownMode="select"
+                  className="fb-date-picker"
+                  autoComplete="off"
+                />
+              )}
             />
 
             {passengerErrors.dateOfBirth && (
@@ -2655,11 +2685,11 @@ export default function FlightBookingPage() {
                   key={passenger.id}
                   passenger={{
                     ...passenger,
-
                     number: Number(passenger.id?.split("-")[1]) || index + 1,
                   }}
                   index={index}
                   register={register}
+                  control={control}
                   errors={errors}
                 />
               ))}

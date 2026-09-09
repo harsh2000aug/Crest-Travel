@@ -1,27 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+
 import HeaderInner from "../../../reuseable-components/HeaderInner";
 import Footer from "../../../reuseable-components/Footer";
 import HotelLoader from "../../../reuseable-components/HotelLoader/HotelLoader";
+
 import { Country, State } from "country-state-city";
 import { countryCodes } from "../../../../countryCodes";
+
 import {
   FaCalendarAlt,
   FaUserFriends,
   FaHotel,
   FaMoneyBillWave,
 } from "react-icons/fa";
+
 import {
   getHotelDetails,
   getHotelDetailsAndRates,
-  hotelAddOrder,
   hotelBooking,
   hotelPayment,
   payNow,
   revalidate,
 } from "../../../store/Services/AllApi";
+
 import { useFieldArray, useForm } from "react-hook-form";
 import { useAtomValue } from "jotai";
+
 import {
   AdultCountToStore,
   ChildCountToStore,
@@ -32,19 +37,32 @@ const Hotel = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  /* =========================================================
+     URL PARAMETERS
+  ========================================================= */
+
   const hotelId = searchParams.get("hotelId") || "";
+
   const token =
     searchParams.get("token") || localStorage.getItem("hotelToken") || "";
+
   const hotelName = searchParams.get("hotelName") || "";
+
   const correlationId = searchParams.get("correlationId") || "";
-  if (correlationId) {
-    localStorage.setItem("correlationId", correlationId);
-  }
-  const recommendationId = searchParams.get("recommendationIdFinal");
+
+  const recommendationId =
+    searchParams.get("recommendationIdFinal") ||
+    searchParams.get("recommendationId") ||
+    "";
+
   const checkIn = searchParams.get("checkIn") || "";
+
   const checkOut = searchParams.get("checkOut") || "";
+
   const roomId = searchParams.get("roomId") || "";
+
   const roomName = searchParams.get("roomName") || "";
+
   const roomDescription = searchParams.get("roomDescription") || "";
 
   const boardBasis = searchParams.get("boardBasis") || "";
@@ -69,6 +87,20 @@ const Hotel = () => {
 
   const heroImageMain = searchParams.get("heroUrl");
 
+  /* =========================================================
+     CORRELATION ID
+  ========================================================= */
+
+  useEffect(() => {
+    if (correlationId) {
+      localStorage.setItem("correlationId", correlationId);
+    }
+  }, [correlationId]);
+
+  /* =========================================================
+     ROOMS
+  ========================================================= */
+
   let rooms = [];
 
   try {
@@ -85,12 +117,14 @@ const Hotel = () => {
     }
   } catch (error) {
     console.error("Invalid rooms data:", error);
+
     rooms = [];
   }
 
   const selectedRoom = rooms?.[0] || {};
 
   const adults = Number(searchParams.get("adults")) || 0;
+
   const children = Number(searchParams.get("children")) || 0;
 
   let childAges = [];
@@ -100,6 +134,10 @@ const Hotel = () => {
   } catch (error) {
     childAges = [];
   }
+
+  /* =========================================================
+     PRICE
+  ========================================================= */
 
   const selectedPublishedRate =
     Number(selectedRoom?.publishedRate ?? publishedRate) || 0;
@@ -114,11 +152,22 @@ const Hotel = () => {
 
   const savings = Math.max(0, selectedPublishedRate - selectedOurPrice);
 
+  /* =========================================================
+     STATE
+  ========================================================= */
+
   const [hotelLoader, setHotelLoader] = useState(false);
+
   const [hotelImages, setHotelImages] = useState({});
+
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+
   const [countdown, setCountdown] = useState(5);
+
   const [showFailurePopup, setShowFailurePopup] = useState(false);
+
+  const [bookingCompleted, setBookingCompleted] = useState(false);
+
   const [leadGuest, setLeadGuest] = useState({
     title: "Mr",
     firstName: "",
@@ -128,6 +177,10 @@ const Hotel = () => {
     countryCode: "+91",
     phone: "",
   });
+
+  /* =========================================================
+     REACT HOOK FORM
+  ========================================================= */
 
   const {
     register,
@@ -142,9 +195,20 @@ const Hotel = () => {
       firstName: "",
       lastName: "",
       age: "",
+      gender: "",
       email: "",
       countryCode: "+91",
       phone: "",
+      country: "",
+      state: "",
+      city: "",
+      address1: "",
+      address2: "",
+      zipCode: "",
+      cardNumber: "",
+      cardHolder: "",
+      expiryDate: "",
+      cvv: "",
       travellers: [],
     },
   });
@@ -160,6 +224,10 @@ const Hotel = () => {
 
   const selectedCountry = watch("country");
 
+  /* =========================================================
+     HELPERS
+  ========================================================= */
+
   const encodeBase64 = (value) => {
     return btoa(String(value || ""));
   };
@@ -167,13 +235,210 @@ const Hotel = () => {
   const getCardType = (cardNumber) => {
     const number = String(cardNumber || "").replace(/\s/g, "");
 
-    if (/^4/.test(number)) return "VI";
-    if (/^(5[1-5]|2[2-7])/.test(number)) return "MC";
-    if (/^3[47]/.test(number)) return "AX";
-    if (/^6(?:011|5)/.test(number)) return "DI";
+    if (/^4/.test(number)) {
+      return "VI";
+    }
+
+    if (/^(5[1-5]|2[2-7])/.test(number)) {
+      return "MC";
+    }
+
+    if (/^3[47]/.test(number)) {
+      return "AX";
+    }
+
+    if (/^6(?:011|5)/.test(number)) {
+      return "DI";
+    }
 
     return "";
   };
+
+  /* =========================================================
+     ROOM / GUEST COUNTS
+  ========================================================= */
+
+  const roomCountToStore = useAtomValue(TotalRooms);
+
+  const totalNumberofRooms =
+    localStorage.getItem("roomCountToStore") || roomCountToStore;
+
+  const adultFinalCount = useAtomValue(AdultCountToStore);
+
+  const childFinalCount = useAtomValue(ChildCountToStore);
+
+  const totalAdults =
+    localStorage.getItem("adultCountToStore") || adultFinalCount;
+
+  const totalChildren =
+    localStorage.getItem("childCountToStore") || childFinalCount;
+
+  /* =========================================================
+     BOOKING API
+     THIS IS CALLED AFTER SUCCESSFUL PAYMENT
+  ========================================================= */
+
+  const handleBookingHotel = async (itemId, data) => {
+    try {
+      console.log("BOOKING WITH PAYNOW ITEM ID:", itemId);
+
+      if (!itemId) {
+        throw new Error("PayNow itemid is missing");
+      }
+
+      const guests = [
+        {
+          age: Number(data.age) || 0,
+
+          email: data.email || "",
+
+          title: leadGuest.title?.toUpperCase() || "MR",
+
+          type: Number(data.age) >= 18 ? "ADULT" : "CHILD",
+
+          lastName: data.lastName || "",
+
+          firstName: data.firstName || "",
+        },
+
+        ...(data.travellers || []).map((traveller) => ({
+          age: Number(traveller.age) || 0,
+
+          email: data.email || "",
+
+          title: traveller.title?.toUpperCase() || "MR",
+
+          type: Number(traveller.age) >= 18 ? "ADULT" : "CHILD",
+
+          lastName: traveller.lastName || "",
+
+          firstName: traveller.firstName || "",
+        })),
+      ];
+
+      const bookingPayload = {
+        orderNumber: itemId,
+
+        hotelId: hotelId,
+
+        ourprice: selectedOurPrice,
+
+        rooms: [
+          {
+            roomId: selectedRoom?.roomId || roomId,
+
+            rateId: localStorage.getItem("rateid") || rateid,
+
+            guests,
+          },
+        ],
+
+        billing: {
+          type: Number(data.age) >= 18 ? "ADULT" : "CHILD",
+
+          title: leadGuest.title?.toUpperCase() || "MR",
+
+          firstName: data.firstName || "",
+
+          lastName: data.lastName || "",
+
+          age: Number(data.age) || 0,
+
+          line1: data.address1 || "",
+
+          line2: data.address2 || "",
+
+          postalCode: data.zipCode || "",
+
+          phone: data.phone || "",
+
+          email: data.email || "",
+
+          city: {
+            code: data.city || "",
+
+            name: data.city || "",
+          },
+
+          state: {
+            code: data.state || "",
+
+            name: data.state || "",
+          },
+
+          country: {
+            name:
+              Country.getCountryByCode(data.country)?.name ||
+              data.country ||
+              "",
+
+            code: data.country || "",
+          },
+        },
+
+        identity: {
+          number: encodeBase64(
+            String(data.cardNumber || "").replace(/\s/g, ""),
+          ),
+
+          name: encodeBase64(data.cardHolder || ""),
+
+          code: encodeBase64(data.cvv || ""),
+
+          type: getCardType(String(data.cardNumber || "").replace(/\s/g, "")),
+
+          em: encodeBase64(String(data.expiryDate || "").split("/")[0] || ""),
+
+          ey: encodeBase64(String(data.expiryDate || "").split("/")[1] || ""),
+
+          line1: data.address1 || "",
+
+          line2: data.address2 || "",
+
+          city: {
+            name: data.city || "",
+
+            code: data.city || "",
+          },
+
+          state: {
+            name: data.state || "",
+
+            code: data.state || "",
+          },
+
+          country: {
+            name:
+              Country.getCountryByCode(data.country)?.name ||
+              data.country ||
+              "",
+
+            code: data.country || "",
+          },
+
+          postalCode: data.zipCode || "",
+
+          phone: data.phone || "",
+
+          email: data.email || "",
+        },
+      };
+
+      const bookingResponse = await hotelBooking({
+        body: bookingPayload,
+      });
+
+      return bookingResponse;
+    } catch (error) {
+      console.error("HOTEL BOOKING ERROR:", error);
+
+      throw error;
+    }
+  };
+
+  /* =========================================================
+     PAYNOW API
+  ========================================================= */
 
   const onSubmit = async (data) => {
     try {
@@ -187,45 +452,105 @@ const Hotel = () => {
       const expiryYear = expiryParts[1] || "";
 
       const paymentPayload = {
-        hotelId,
-        recommendationId,
-        token,
-        start_date: checkIn,
-        end_date: checkOut,
+        hotelId: hotelId,
+
         correlationId,
+
+        paymentRemaining: selectedOurPrice,
+
+        recommendationId: recommendationId,
+
+        token: token,
+
+        start_date: checkIn,
+
+        end_date: checkOut,
+
+        success: `${window.location.origin}/hotel?payment=success`,
+
+        fail: `${window.location.origin}/hotel?payment=failed`,
+
+        mode: "CARD",
 
         identity: {
           number: encodeBase64(cardNumber),
+
           name: data.cardHolder || "",
+
           code: encodeBase64(data.cvv),
+
           type: getCardType(cardNumber),
+
           em: encodeBase64(expiryMonth),
+
           ey: encodeBase64(expiryYear),
+
           line1: data.address1 || "",
+
+          line2: data.address2 || "",
+
+          country: data.country || "",
+
           postalcode: data.zipCode || "",
+
           email: data.email || "",
+
           phone: `${leadGuest.countryCode || "+91"}${data.phone || ""}`,
+
+          city: data.city || "",
+
+          state: data.state || "",
         },
       };
-
-      console.log(
-        "FINAL PAYMENT PAYLOAD:",
-        JSON.stringify(paymentPayload, null, 2),
-      );
-
-      console.log("TRAVELLERS:", data.travellers || []);
 
       const paymentRes = await payNow({
         body: paymentPayload,
       });
 
-      console.log("PAYMENT RESPONSE:", paymentRes);
+      const paymentSuccess = paymentRes?.success === true;
 
-      if (paymentRes?.success) {
+      const requiresAction = paymentRes?.requiresAction === true;
+
+      const itemId = paymentRes?.itemId || paymentRes?.data?.itemid;
+
+      const paymentUrl = paymentRes?.data?.url;
+
+      const action3ds = paymentRes?.data?.action3ds === true;
+
+      if (!paymentSuccess) {
+        console.error("PAYMENT FAILED:", paymentRes);
+
         setHotelLoader(false);
+        setShowFailurePopup(true);
+
+        return;
+      }
+
+      if (!itemId) {
+        console.error("itemId not received from PayNow:", paymentRes);
+
+        setHotelLoader(false);
+        setShowFailurePopup(true);
+
+        return;
+      }
+
+      if (requiresAction === true || action3ds === true) {
+        if (!paymentUrl) {
+          console.error("3DS required but payment URL is missing");
+
+          setHotelLoader(false);
+          setShowFailurePopup(true);
+
+          return;
+        }
+
+        setHotelLoader(false);
+
         setShowSuccessPopup(true);
 
         let time = 5;
+
         setCountdown(time);
 
         const timer = setInterval(() => {
@@ -235,21 +560,287 @@ const Hotel = () => {
             setCountdown(time);
           } else {
             clearInterval(timer);
+
             setShowSuccessPopup(false);
-            window.location.href = paymentRes.redirectUrl;
+
+            // Redirect to CTS 3DS page
+            window.location.href = paymentUrl;
           }
         }, 1000);
-      } else {
+
+        return;
+      }
+
+      const bookingResponse = await handleBookingHotel(itemId, data);
+
+      if (bookingResponse?.success === false) {
+        console.error("BOOKING FAILED:", bookingResponse);
+
         setHotelLoader(false);
         setShowFailurePopup(true);
+
+        return;
       }
-    } catch (error) {
-      console.error("BOOKING/PAYMENT ERROR:", error);
 
       setHotelLoader(false);
+
+      setBookingCompleted(true);
+
+      localStorage.removeItem("hotelPaymentItemId");
+
+      localStorage.removeItem("hotelPaymentFormData");
+
+      localStorage.removeItem("hotelPaymentLeadGuest");
+    } catch (error) {
+      console.error("PAYNOW / BOOKING ERROR:", error);
+
+      setHotelLoader(false);
+
       setShowFailurePopup(true);
     }
   };
+
+  useEffect(() => {
+    const paymentStatus = searchParams.get("payment");
+
+    if (!paymentStatus) {
+      return;
+    }
+
+    if (paymentStatus === "failed") {
+      setShowFailurePopup(true);
+
+      return;
+    }
+
+    if (paymentStatus === "success") {
+      const processSuccessfulPayment = async () => {
+        try {
+          setHotelLoader(true);
+
+          const itemId = localStorage.getItem("hotelPaymentItemId");
+
+          const savedFormData = localStorage.getItem("hotelPaymentFormData");
+
+          const savedLeadGuest = localStorage.getItem("hotelPaymentLeadGuest");
+
+          if (!itemId || !savedFormData) {
+            console.error("Payment success data missing", {
+              itemId,
+              savedFormData,
+            });
+
+            setHotelLoader(false);
+
+            setShowFailurePopup(true);
+
+            return;
+          }
+
+          const bookingData = JSON.parse(savedFormData);
+
+          if (savedLeadGuest) {
+            try {
+              setLeadGuest(JSON.parse(savedLeadGuest));
+            } catch (error) {
+              console.error("Unable to restore lead guest:", error);
+            }
+          }
+
+          let restoredLeadGuest = leadGuest;
+
+          if (savedLeadGuest) {
+            try {
+              restoredLeadGuest = JSON.parse(savedLeadGuest);
+            } catch (error) {
+              console.error(error);
+            }
+          }
+
+          const guests = [
+            {
+              age: Number(bookingData.age) || 0,
+
+              email: bookingData.email || "",
+
+              title: restoredLeadGuest?.title?.toUpperCase() || "MR",
+
+              type: Number(bookingData.age) >= 18 ? "ADULT" : "CHILD",
+
+              lastName: bookingData.lastName || "",
+
+              firstName: bookingData.firstName || "",
+            },
+
+            ...(bookingData.travellers || []).map((traveller) => ({
+              age: Number(traveller.age) || 0,
+
+              email: bookingData.email || "",
+
+              title: traveller.title?.toUpperCase() || "MR",
+
+              type: Number(traveller.age) >= 18 ? "ADULT" : "CHILD",
+
+              lastName: traveller.lastName || "",
+
+              firstName: traveller.firstName || "",
+            })),
+          ];
+
+          const bookingPayload = {
+            orderNumber: itemId,
+
+            hotelId: hotelId,
+
+            ourprice: selectedOurPrice,
+
+            rooms: [
+              {
+                roomId: selectedRoom?.roomId || roomId,
+
+                rateId: localStorage.getItem("rateid") || rateid,
+
+                guests,
+              },
+            ],
+
+            billing: {
+              type: Number(bookingData.age) >= 18 ? "ADULT" : "CHILD",
+
+              title: restoredLeadGuest?.title?.toUpperCase() || "MR",
+
+              firstName: bookingData.firstName || "",
+
+              lastName: bookingData.lastName || "",
+
+              age: Number(bookingData.age) || 0,
+
+              line1: bookingData.address1 || "",
+
+              line2: bookingData.address2 || "",
+
+              postalCode: bookingData.zipCode || "",
+
+              phone: bookingData.phone || "",
+
+              email: bookingData.email || "",
+
+              city: {
+                code: bookingData.city || "",
+
+                name: bookingData.city || "",
+              },
+
+              state: {
+                code: bookingData.state || "",
+
+                name: bookingData.state || "",
+              },
+
+              country: {
+                name:
+                  Country.getCountryByCode(bookingData.country)?.name ||
+                  bookingData.country ||
+                  "",
+
+                code: bookingData.country || "",
+              },
+            },
+
+            identity: {
+              number: encodeBase64(
+                String(bookingData.cardNumber || "").replace(/\s/g, ""),
+              ),
+
+              name: encodeBase64(bookingData.cardHolder || ""),
+
+              code: encodeBase64(bookingData.cvv || ""),
+
+              type: getCardType(
+                String(bookingData.cardNumber || "").replace(/\s/g, ""),
+              ),
+
+              em: encodeBase64(
+                String(bookingData.expiryDate || "").split("/")[0] || "",
+              ),
+
+              ey: encodeBase64(
+                String(bookingData.expiryDate || "").split("/")[1] || "",
+              ),
+
+              line1: bookingData.address1 || "",
+
+              line2: bookingData.address2 || "",
+
+              city: {
+                name: bookingData.city || "",
+
+                code: bookingData.city || "",
+              },
+
+              state: {
+                name: bookingData.state || "",
+
+                code: bookingData.state || "",
+              },
+
+              country: {
+                name:
+                  Country.getCountryByCode(bookingData.country)?.name ||
+                  bookingData.country ||
+                  "",
+
+                code: bookingData.country || "",
+              },
+
+              postalCode: bookingData.zipCode || "",
+
+              phone: bookingData.phone || "",
+
+              email: bookingData.email || "",
+            },
+          };
+
+          console.log(
+            "BOOKING AFTER PAYMENT:",
+            JSON.stringify(bookingPayload, null, 2),
+          );
+
+          const bookingResponse = await hotelBooking({
+            body: bookingPayload,
+          });
+
+          console.log("BOOKING AFTER PAYMENT RESPONSE:", bookingResponse);
+
+          localStorage.removeItem("hotelPaymentItemId");
+
+          localStorage.removeItem("hotelPaymentFormData");
+
+          localStorage.removeItem("hotelPaymentLeadGuest");
+
+          localStorage.removeItem("hotelPaymentBookingInfo");
+
+          setHotelLoader(false);
+
+          setBookingCompleted(true);
+
+          searchParams.delete("payment");
+
+          navigate(`${window.location.pathname}?${searchParams.toString()}`, {
+            replace: true,
+          });
+        } catch (error) {
+          console.error("BOOKING AFTER PAYMENT ERROR:", error);
+
+          setHotelLoader(false);
+
+          setShowFailurePopup(true);
+        }
+      };
+
+      processSuccessfulPayment();
+    }
+  }, []);
 
   const handleExpiryChange = (e) => {
     let value = e.target.value.replace(/\D/g, "");
@@ -261,200 +852,15 @@ const Hotel = () => {
     setValue("expiryDate", value);
   };
 
-  const roomCountToStore = useAtomValue(TotalRooms);
+  useEffect(() => {
+    if (!bookingCompleted) return;
 
-  const totalNumberofRooms =
-    localStorage.getItem("roomCountToStore") || roomCountToStore;
+    const timer = setTimeout(() => {
+      navigate("/home");
+    }, 5000);
 
-  const adultFinalCount = useAtomValue(AdultCountToStore);
-  const childFinalCount = useAtomValue(ChildCountToStore);
-
-  const totalAdults =
-    localStorage.getItem("adultCountToStore") || adultFinalCount;
-
-  const totalChildren =
-    localStorage.getItem("childCountToStore") || childFinalCount;
-
-  const handleAddOrder = async (data) => {
-    setHotelLoader(true);
-
-    try {
-      const nights = Math.max(
-        1,
-        Math.ceil(
-          (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24),
-        ),
-      );
-
-      const guests = [
-        {
-          primary: true,
-          title: leadGuest.title || "Mr",
-          firstname: data.firstName || "",
-          lastname: data.lastName || "",
-          email: data.email || "",
-          phone: `${leadGuest.countryCode || "+91"}${data.phone || ""}`,
-          gender: data.gender || "",
-          type: Number(data.age) >= 18 ? "ADULT" : "CHILD",
-        },
-        ...(data.travellers || []).map((traveller) => ({
-          primary: false,
-          title: traveller.title || "Mr",
-          firstname: traveller.firstName || "",
-          lastname: traveller.lastName || "",
-          gender: traveller.gender || "",
-          type: Number(traveller.age) >= 18 ? "ADULT" : "CHILD",
-        })),
-      ];
-
-      const response = await hotelAddOrder({
-        body: {
-          moduleid: 1433,
-          hotelid: hotelId,
-          recommendationId,
-          start_date: checkIn,
-          end_date: checkOut,
-          rooms: Number(totalNumberofRooms) || 0,
-          nights,
-          adults: Number(totalAdults) || 0,
-          children: Number(totalChildren) || 0,
-          payment_mode: "CREDIT",
-          guests,
-          billing_name: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
-          billing_country: data.country || "",
-          billing_state: data.state || "",
-          billing_city: data.city || "",
-          billing_address1: data.address1 || "",
-          billing_address2: data.address2 || "",
-          billing_postal_code: data.zipCode || "",
-          billing_email: data.email || "",
-          billing_phone: `${leadGuest.countryCode || "+91"}${data.phone || ""}`,
-        },
-      });
-
-      console.log("ADD ORDER RESPONSE:", response);
-
-      const itemId = response?.data?.itemid;
-
-      if (!itemId) {
-        console.error("itemid not found in hotelAddOrder response");
-        setShowFailurePopup(true);
-        return;
-      }
-
-      const bookingResponse = await handleBookingHotel(itemId, data);
-      console.log("HOTEL BOOKING RESPONSE:", bookingResponse);
-
-      return bookingResponse;
-    } catch (error) {
-      console.error("HOTEL BOOKING ERROR:", error);
-      setShowFailurePopup(true);
-    } finally {
-      setHotelLoader(false);
-    }
-  };
-
-  const handleBookingHotel = async (itemId, data) => {
-    try {
-      const guests = [
-        {
-          age: Number(data.age) || 0,
-          email: data.email || "",
-          title: leadGuest.title?.toUpperCase() || "MR",
-          type: Number(data.age) >= 18 ? "ADULT" : "CHILD",
-          lastName: data.lastName || "",
-          firstName: data.firstName || "",
-        },
-        ...(data.travellers || []).map((traveller) => ({
-          age: Number(traveller.age) || 0,
-          email: data.email || "",
-          title: traveller.title?.toUpperCase() || "MR",
-          type: Number(traveller.age) >= 18 ? "ADULT" : "CHILD",
-          lastName: traveller.lastName || "",
-          firstName: traveller.firstName || "",
-        })),
-      ];
-
-      const bookingResponse = await hotelBooking({
-        body: {
-          orderNumber: itemId,
-          hotelId: hotelId,
-          ourprice: selectedOurPrice,
-          rooms: [
-            {
-              roomId: selectedRoom?.roomId || roomId,
-              rateId: localStorage.getItem("rateid"),
-              guests,
-            },
-          ],
-          billing: {
-            type: Number(data.age) >= 18 ? "ADULT" : "CHILD",
-            title: leadGuest.title?.toUpperCase() || "MR",
-            firstName: data.firstName || "",
-            lastName: data.lastName || "",
-            age: Number(data.age) || 0,
-            line1: data.address1 || "",
-            line2: data.address2 || "",
-            postalCode: data.zipCode || "",
-            phone: data.phone || "",
-            email: data.email || "",
-            city: {
-              code: data.city || "",
-              name: data.city || "",
-            },
-            state: {
-              code: data.state || "",
-              name: data.state || "",
-            },
-            country: {
-              name:
-                Country.getCountryByCode(data.country)?.name ||
-                data.country ||
-                "",
-              code: data.country || "",
-            },
-          },
-          identity: {
-            number: encodeBase64(
-              String(data.cardNumber || "").replace(/\s/g, ""),
-            ),
-            name: encodeBase64(data.cardHolder || ""),
-            code: encodeBase64(data.cvv || ""),
-            type: getCardType(String(data.cardNumber || "").replace(/\s/g, "")),
-            em: encodeBase64(String(data.expiryDate || "").split("/")[0] || ""),
-            ey: encodeBase64(String(data.expiryDate || "").split("/")[1] || ""),
-            line1: data.address1 || "",
-            line2: data.address2 || "",
-            city: {
-              name: data.city || "",
-              code: data.city || "",
-            },
-            state: {
-              name: data.state || "",
-              code: data.state || "",
-            },
-            country: {
-              name:
-                Country.getCountryByCode(data.country)?.name ||
-                data.country ||
-                "",
-              code: data.country || "",
-            },
-            postalCode: data.zipCode || "",
-            phone: data.phone || "",
-            email: data.email || "",
-          },
-        },
-      });
-
-      console.log("HOTEL BOOKING RESPONSE:", bookingResponse);
-
-      return bookingResponse;
-    } catch (error) {
-      console.error("HOTEL BOOKING ERROR:", error);
-      throw error;
-    }
-  };
+    return () => clearTimeout(timer);
+  }, [bookingCompleted, navigate]);
 
   useEffect(() => {
     window.scrollTo({
@@ -473,11 +879,15 @@ const Hotel = () => {
         <div className="payment-success-overlay">
           <div className="payment-success-popup">
             <div className="payment-success-check">✓</div>
+
             <p className="payment-success-message">Hooray! Sit back, relax,</p>
+
             <p className="payment-success-redirect">
-              Please wait while we are redirecting you to payment url
+              Please wait while we are redirecting you to secure payment.
             </p>
+
             <div className="payment-countdown">{countdown}</div>
+
             <div className="payment-loader">
               <div className="payment-loader-fill"></div>
             </div>
@@ -489,7 +899,9 @@ const Hotel = () => {
         <div className="payment-failure-overlay">
           <div className="payment-failure-popup">
             <div className="payment-failure-icon">✕</div>
+
             <h2>Transaction Failed</h2>
+
             <button onClick={() => setShowFailurePopup(false)}>
               Try Again
             </button>
@@ -497,13 +909,49 @@ const Hotel = () => {
         </div>
       )}
 
+      {bookingCompleted && (
+        <div className="payment-success-overlay">
+          <div className="payment-success-popup">
+            <div className="payment-success-check">✓</div>
+
+            <h2>Booking Confirmed</h2>
+
+            <p className="payment-success-message">
+              Your hotel booking has been confirmed successfully.
+            </p>
+
+            <p className="payment-success-redirect">
+              Redirecting to home in 5 seconds...
+            </p>
+
+            <div className="payment-countdown">5</div>
+
+            <div className="payment-loader">
+              <div className="payment-loader-fill"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================
+          HOTEL BOOKING PAGE
+      ===================================================== */}
+
       <section className="hotel-booking-page">
         <div className="container">
           <div className="hotel-booking-wrapper">
+            {/* =================================================
+                LEFT
+            ================================================= */}
+
             <div className="hotel-booking-left">
               <h2 className="booking-page-title">Enter Traveller Details</h2>
 
               <div className="traveller-form-wrapper">
+                {/* =================================================
+                    LEAD GUEST
+                ================================================= */}
+
                 <div className="traveller-card">
                   <div className="traveller-card-header lead-guest-header-custom">
                     <h3>Lead Guest</h3>
@@ -511,6 +959,8 @@ const Hotel = () => {
 
                   <form>
                     <div className="traveller-form-grid">
+                      {/* TITLE */}
+
                       <div className="form-group small-field">
                         <label>Title</label>
 
@@ -525,11 +975,16 @@ const Hotel = () => {
                           }
                         >
                           <option>Mr</option>
+
                           <option>Mrs</option>
+
                           <option>Ms</option>
+
                           <option>Miss</option>
                         </select>
                       </div>
+
+                      {/* FIRST NAME */}
 
                       <div className="form-group">
                         <label>First Name *</label>
@@ -550,6 +1005,8 @@ const Hotel = () => {
                         )}
                       </div>
 
+                      {/* LAST NAME */}
+
                       <div className="form-group">
                         <label>Last Name *</label>
 
@@ -569,6 +1026,8 @@ const Hotel = () => {
                         )}
                       </div>
 
+                      {/* AGE */}
+
                       <div className="form-group small-field">
                         <label>Age</label>
 
@@ -578,6 +1037,7 @@ const Hotel = () => {
                           placeholder="Age"
                           {...register("age", {
                             required: "Age is required",
+
                             min: {
                               value: 1,
                               message: "Invalid age",
@@ -590,6 +1050,8 @@ const Hotel = () => {
                         )}
                       </div>
 
+                      {/* GENDER */}
+
                       <div className="form-group small-field">
                         <label>Gender *</label>
 
@@ -600,8 +1062,11 @@ const Hotel = () => {
                           })}
                         >
                           <option value="">Select Gender</option>
+
                           <option value="MALE">Male</option>
+
                           <option value="FEMALE">Female</option>
+
                           <option value="OTHER">Other</option>
                         </select>
 
@@ -613,6 +1078,8 @@ const Hotel = () => {
                       </div>
                     </div>
                   </form>
+
+                  {/* ADD TRAVELLER */}
 
                   {Number(totalAdults) > 1 && (
                     <button
@@ -633,6 +1100,10 @@ const Hotel = () => {
                   )}
                 </div>
 
+                {/* =================================================
+                    ADDITIONAL TRAVELLERS
+                ================================================= */}
+
                 {travellerFields.map((traveller, index) => (
                   <div
                     className="traveller-card added-traveller-card-custom"
@@ -651,6 +1122,8 @@ const Hotel = () => {
                     </div>
 
                     <div className="traveller-form-grid">
+                      {/* TITLE */}
+
                       <div className="form-group small-field">
                         <label>Title</label>
 
@@ -659,11 +1132,16 @@ const Hotel = () => {
                           {...register(`travellers.${index}.title`)}
                         >
                           <option value="Mr">Mr</option>
+
                           <option value="Mrs">Mrs</option>
+
                           <option value="Ms">Ms</option>
+
                           <option value="Miss">Miss</option>
                         </select>
                       </div>
+
+                      {/* FIRST NAME */}
 
                       <div className="form-group">
                         <label>First Name *</label>
@@ -684,6 +1162,8 @@ const Hotel = () => {
                         )}
                       </div>
 
+                      {/* LAST NAME */}
+
                       <div className="form-group">
                         <label>Last Name *</label>
 
@@ -703,6 +1183,8 @@ const Hotel = () => {
                         )}
                       </div>
 
+                      {/* AGE */}
+
                       <div className="form-group small-field">
                         <label>Age</label>
 
@@ -712,6 +1194,7 @@ const Hotel = () => {
                           placeholder="Age"
                           {...register(`travellers.${index}.age`, {
                             required: "Age is required",
+
                             min: {
                               value: 1,
                               message: "Invalid age",
@@ -726,6 +1209,8 @@ const Hotel = () => {
                         )}
                       </div>
 
+                      {/* GENDER */}
+
                       <div className="form-group small-field">
                         <label>Gender *</label>
 
@@ -736,8 +1221,11 @@ const Hotel = () => {
                           })}
                         >
                           <option value="">Select Gender</option>
+
                           <option value="MALE">Male</option>
+
                           <option value="FEMALE">Female</option>
+
                           <option value="OTHER">Other</option>
                         </select>
 
@@ -751,10 +1239,16 @@ const Hotel = () => {
                   </div>
                 ))}
 
+                {/* =================================================
+                    CONTACT DETAILS
+                ================================================= */}
+
                 <div className="traveller-card">
                   <h3 className="booking-contact-title">
                     Booking details will be sent to
                   </h3>
+
+                  {/* EMAIL */}
 
                   <div className="form-group full-width">
                     <label>Email Address</label>
@@ -765,8 +1259,10 @@ const Hotel = () => {
                       placeholder="Email"
                       {...register("email", {
                         required: "Email is required",
+
                         pattern: {
                           value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+
                           message: "Invalid email address",
                         },
                       })}
@@ -776,6 +1272,8 @@ const Hotel = () => {
                       <p className="booking-error">{errors.email.message}</p>
                     )}
                   </div>
+
+                  {/* PHONE */}
 
                   <div className="phone-wrapper">
                     <div className="country-code">
@@ -804,6 +1302,7 @@ const Hotel = () => {
                         placeholder="Phone Number"
                         {...register("phone", {
                           required: "Phone number is required",
+
                           minLength: {
                             value: 10,
                             message: "Enter a valid phone number",
@@ -818,8 +1317,14 @@ const Hotel = () => {
                   </div>
                 </div>
 
+                {/* =================================================
+                    BILLING ADDRESS
+                ================================================= */}
+
                 <div className="traveller-card">
                   <h3 className="booking-contact-title">Billing Address</h3>
+
+                  {/* ADDRESS 1 */}
 
                   <div className="form-group full-width">
                     <label>Address Line 1 *</label>
@@ -838,6 +1343,8 @@ const Hotel = () => {
                     )}
                   </div>
 
+                  {/* ADDRESS 2 */}
+
                   <div className="form-group full-width">
                     <label>Address Line 2 (Optional)</label>
 
@@ -850,6 +1357,8 @@ const Hotel = () => {
                   </div>
 
                   <div className="billing-grid">
+                    {/* COUNTRY */}
+
                     <div className="form-group">
                       <label>Country *</label>
 
@@ -874,6 +1383,8 @@ const Hotel = () => {
                         </p>
                       )}
                     </div>
+
+                    {/* STATE */}
 
                     <div className="form-group">
                       <label>State *</label>
@@ -904,6 +1415,8 @@ const Hotel = () => {
                   </div>
 
                   <div className="billing-grid">
+                    {/* CITY */}
+
                     <div className="form-group">
                       <label>City *</label>
 
@@ -920,6 +1433,8 @@ const Hotel = () => {
                         <p className="booking-error">{errors.city.message}</p>
                       )}
                     </div>
+
+                    {/* ZIP */}
 
                     <div className="form-group">
                       <label>Zip / Postal Code *</label>
@@ -942,10 +1457,16 @@ const Hotel = () => {
                   </div>
                 </div>
 
+                {/* =================================================
+                    CARD DETAILS
+                ================================================= */}
+
                 <div className="traveller-card">
                   <h3 className="booking-contact-title">Card Details</h3>
 
                   <div className="billing-grid">
+                    {/* CARD NUMBER */}
+
                     <div className="form-group">
                       <label>Card Number *</label>
 
@@ -956,8 +1477,10 @@ const Hotel = () => {
                         maxLength={16}
                         {...register("cardNumber", {
                           required: "Card Number is required",
+
                           pattern: {
                             value: /^[0-9 ]+$/,
+
                             message: "Invalid Card Number",
                           },
                         })}
@@ -969,6 +1492,8 @@ const Hotel = () => {
                         </p>
                       )}
                     </div>
+
+                    {/* CARD HOLDER */}
 
                     <div className="form-group">
                       <label>Name on Card *</label>
@@ -991,6 +1516,8 @@ const Hotel = () => {
                   </div>
 
                   <div className="billing-grid">
+                    {/* EXPIRY */}
+
                     <div className="form-group">
                       <label>Valid To (MM/YY) *</label>
 
@@ -1001,8 +1528,10 @@ const Hotel = () => {
                         maxLength={5}
                         {...register("expiryDate", {
                           required: "Expiry Date is required",
+
                           pattern: {
                             value: /^(0[1-9]|1[0-2])\/\d{2}$/,
+
                             message: "Use MM/YY format",
                           },
                         })}
@@ -1016,6 +1545,8 @@ const Hotel = () => {
                       )}
                     </div>
 
+                    {/* CVV */}
+
                     <div className="form-group">
                       <label>CVV *</label>
 
@@ -1026,10 +1557,12 @@ const Hotel = () => {
                         maxLength={4}
                         {...register("cvv", {
                           required: "CVV is required",
+
                           minLength: {
                             value: 3,
                             message: "Invalid CVV",
                           },
+
                           maxLength: {
                             value: 4,
                             message: "Invalid CVV",
@@ -1044,17 +1577,28 @@ const Hotel = () => {
                   </div>
                 </div>
 
+                {/* =================================================
+                    PAYMENT BUTTON
+                ================================================= */}
+
                 <button
                   type="button"
                   className="payment-btn"
-                  onClick={handleSubmit(handleAddOrder)}
+                  onClick={handleSubmit(onSubmit)}
+                  disabled={hotelLoader}
                 >
-                  Proceed To Payment
+                  {hotelLoader ? "Processing..." : "Proceed To Payment"}
                 </button>
               </div>
             </div>
 
+            {/* =====================================================
+                RIGHT SIDE
+            ===================================================== */}
+
             <div className="hotel-booking-right">
+              {/* HOTEL SUMMARY */}
+
               <div className="booking-summary-card">
                 <img
                   src={heroImageMain}
@@ -1107,6 +1651,8 @@ const Hotel = () => {
                 </div>
               </div>
 
+              {/* PRICE */}
+
               <div className="booking-price-card">
                 <h3>
                   <FaMoneyBillWave />
@@ -1129,6 +1675,7 @@ const Hotel = () => {
                 {selectedTaxes > 0 && (
                   <div className="price-row">
                     <span>Taxes and fees</span>
+
                     <span>${selectedTaxes.toFixed(2)}</span>
                   </div>
                 )}
@@ -1136,6 +1683,7 @@ const Hotel = () => {
                 {selectedFees > 0 && (
                   <div className="price-row">
                     <span>Fees</span>
+
                     <span>${selectedFees.toFixed(2)}</span>
                   </div>
                 )}
@@ -1144,6 +1692,7 @@ const Hotel = () => {
 
                 <div className="total-price">
                   <span>Total</span>
+
                   <h2>${selectedOurPrice.toFixed(2)}</h2>
                 </div>
               </div>
