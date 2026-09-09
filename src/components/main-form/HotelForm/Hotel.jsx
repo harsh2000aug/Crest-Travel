@@ -273,11 +273,6 @@ const Hotel = () => {
   const totalChildren =
     localStorage.getItem("childCountToStore") || childFinalCount;
 
-  /* =========================================================
-     BOOKING API
-     THIS IS CALLED AFTER SUCCESSFUL PAYMENT
-  ========================================================= */
-
   const handleBookingHotel = async (itemId, data) => {
     try {
       console.log("BOOKING WITH PAYNOW ITEM ID:", itemId);
@@ -435,10 +430,6 @@ const Hotel = () => {
       throw error;
     }
   };
-
-  /* =========================================================
-     PAYNOW API
-  ========================================================= */
 
   const onSubmit = async (data) => {
     try {
@@ -599,6 +590,24 @@ const Hotel = () => {
       setShowFailurePopup(true);
     }
   };
+
+  useEffect(() => {
+    const requiredTravellers = Math.max(Number(totalAdults) - 1, 0);
+
+    if (travellerFields.length < requiredTravellers) {
+      const travellersToAdd = requiredTravellers - travellerFields.length;
+
+      for (let i = 0; i < travellersToAdd; i++) {
+        appendTraveller({
+          title: "Mr",
+          firstName: "",
+          lastName: "",
+          age: "",
+          gender: "",
+        });
+      }
+    }
+  }, [totalAdults, travellerFields.length, appendTraveller]);
 
   useEffect(() => {
     const paymentStatus = searchParams.get("payment");
@@ -1078,26 +1087,6 @@ const Hotel = () => {
                       </div>
                     </div>
                   </form>
-
-                  {/* ADD TRAVELLER */}
-
-                  {Number(totalAdults) > 1 && (
-                    <button
-                      type="button"
-                      className="add-traveller-btn-custom"
-                      onClick={() =>
-                        appendTraveller({
-                          title: "Mr",
-                          firstName: "",
-                          lastName: "",
-                          age: "",
-                          gender: "",
-                        })
-                      }
-                    >
-                      + Add Traveller
-                    </button>
-                  )}
                 </div>
 
                 {/* =================================================
@@ -1111,14 +1100,6 @@ const Hotel = () => {
                   >
                     <div className="traveller-card-header added-traveller-header-custom">
                       <h3>Traveller {index + 1}</h3>
-
-                      <button
-                        type="button"
-                        className="remove-traveller-btn-custom"
-                        onClick={() => removeTraveller(index)}
-                      >
-                        Remove
-                      </button>
                     </div>
 
                     <div className="traveller-form-grid">
