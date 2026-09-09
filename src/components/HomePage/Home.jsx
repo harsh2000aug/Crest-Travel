@@ -21,7 +21,7 @@ import Footer from "../../reuseable-components/Footer";
 import "./Home.css";
 import { sessionCreate } from "../../store/Services/AllApi";
 import { Helmet } from "react-helmet-async";
-import OGImg from "../../assets/images/og-home-img.png";
+import OGImg from "../../assets/images/og-home-img.webp";
 
 const Home = () => {
   useEffect(() => {
