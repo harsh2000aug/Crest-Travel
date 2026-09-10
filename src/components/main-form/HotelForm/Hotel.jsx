@@ -457,9 +457,9 @@ const Hotel = () => {
 
         end_date: checkOut,
 
-        // success: `${window.location.origin}/hotel?payment=success`,
+        success: `${window.location.origin}/hotel-payment?payment=success`,
 
-        // fail: `${window.location.origin}/hotel?payment=failed`,
+        fail: `${window.location.origin}/hotel-payment?payment=failed`,
 
         mode: "CARD",
 
@@ -554,10 +554,24 @@ const Hotel = () => {
 
         console.log("Redirecting to 3DS:", paymentUrl);
 
+        // Redirect user to 3D Secure authentication page
+        localStorage.setItem(
+          "hotelPaymentBookingInfo",
+          JSON.stringify({
+            hotelId,
+            roomId: selectedRoom?.roomId || roomId,
+            rateid: localStorage.getItem("rateid") || rateid,
+            ourprice: selectedOurPrice,
+            correlationId,
+            recommendationId,
+            checkIn,
+            checkOut,
+            token,
+          }),
+        );
         // Stop loader before redirect
         setHotelLoader(false);
 
-        // Redirect user to 3D Secure authentication page
         window.location.href = paymentUrl;
 
         return;
