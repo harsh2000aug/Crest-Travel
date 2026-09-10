@@ -31,6 +31,11 @@ export const getHotelDetails = ({ body }: any) =>
     uriEndPoint: allApi.getHotelDetails.v1,
     body,
   });
+export const hotelNextPull = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.hotelNextPull.v1,
+    body,
+  });
 export const getFilters = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.getFilters.v1,
@@ -286,5 +291,10 @@ export const vacationAddOrder = ({ body }: any) =>
 export const vacvationPay = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.vacationPay.v1,
+    body,
+  });
+export const crestBenefits = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.crestBenefits.v1,
     body,
   });

@@ -152,6 +152,13 @@ export const allApi = {
       uri: "/alphahotel/hotel-listings",
     },
   },
+  hotelNextPull: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphahotel/hotel-listings-next-pull",
+    },
+  },
   hotelAddOrder: {
     v1: {
       ...defaults.methods.POST,
@@ -411,6 +418,13 @@ export const allApi = {
       ...defaults.versions.v1,
       uri: "/alphavr/pay-now",
       vacationResortFinal: true,
+    },
+  },
+  crestBenefits: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphamember/content",
     },
   },
 };

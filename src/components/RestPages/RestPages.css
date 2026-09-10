@@ -465,9 +465,6 @@
   border-color: #0b84ff;
 }
 
-
-
-
 /* =========================================
    CREST INCLUDED SECTION
 ========================================= */
@@ -511,7 +508,6 @@
   margin: 0 auto;
 }
 
-
 /* =========================================
    INTRODUCTION
 ========================================= */
@@ -552,7 +548,6 @@
   font-size: 16px;
   line-height: 1.8;
 }
-
 
 /* =========================================
    MAIN BENEFIT SECTIONS
@@ -615,7 +610,6 @@
   line-height: 1.2;
 }
 
-
 /* =========================================
    BENEFIT GRID
 ========================================= */
@@ -631,7 +625,9 @@
   border: 1px solid #eceef2;
   border-radius: 17px;
   background: #fafbfc;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .crestIncluded__item:hover {
@@ -659,7 +655,6 @@
   font-size: 14px;
   line-height: 1.75;
 }
-
 
 /* =========================================
    DARK TRAVEL PROTECTION
@@ -702,7 +697,6 @@
   color: #d4ae62;
 }
 
-
 /* =========================================
    EXCLUSIVE ACCESS
 ========================================= */
@@ -715,18 +709,13 @@
   grid-template-columns: repeat(2, 1fr);
 }
 
-
 /* =========================================
    GOLD SUPPORT SECTION
 ========================================= */
 
 .crestIncluded__section--gold {
   border-color: #eadbb9;
-  background: linear-gradient(
-    135deg,
-    #fffdf8 0%,
-    #f8f0df 100%
-  );
+  background: linear-gradient(135deg, #fffdf8 0%, #f8f0df 100%);
 }
 
 .crestIncluded__section--gold::before {
@@ -763,7 +752,6 @@
   font-size: 15px;
   line-height: 1.8;
 }
-
 
 /* =========================================
    TESTIMONIALS
@@ -802,7 +790,6 @@
   line-height: 1.7;
 }
 
-
 /* =========================================
    TESTIMONIAL PLAN
 ========================================= */
@@ -818,20 +805,12 @@
 
 .crestTestimonials__plan--elite {
   border-color: #dfc47f;
-  background: linear-gradient(
-    135deg,
-    #fffdf8 0%,
-    #f8f1e1 100%
-  );
+  background: linear-gradient(135deg, #fffdf8 0%, #f8f1e1 100%);
 }
 
 .crestTestimonials__plan--prestige {
   border-color: #d9dce2;
-  background: linear-gradient(
-    135deg,
-    #f8f9fb 0%,
-    #ffffff 100%
-  );
+  background: linear-gradient(135deg, #f8f9fb 0%, #ffffff 100%);
 }
 
 .crestTestimonials__planTitle {
@@ -852,7 +831,6 @@
   color: #182536;
   font-size: 28px;
 }
-
 
 /* =========================================
    TESTIMONIAL GRID
@@ -920,13 +898,11 @@
   line-height: 1.6;
 }
 
-
 /* =========================================
    TABLET
 ========================================= */
 
 @media (max-width: 992px) {
-
   .crestIncluded {
     padding: 80px 20px;
   }
@@ -950,16 +926,13 @@
   .crestTestimonials__grid .crestTestimonials__card:last-child {
     grid-column: 1 / -1;
   }
-
 }
-
 
 /* =========================================
    MOBILE
 ========================================= */
 
 @media (max-width: 768px) {
-
   .crestIncluded {
     padding: 65px 15px;
   }
@@ -1039,16 +1012,13 @@
   .crestTestimonials__grid .crestTestimonials__card:last-child {
     grid-column: auto;
   }
-
 }
-
 
 /* =========================================
    SMALL MOBILE
 ========================================= */
 
 @media (max-width: 480px) {
-
   .crestIncluded {
     padding: 50px 12px;
   }
@@ -1110,7 +1080,6 @@
   .crestTestimonials__card p {
     font-size: 13px;
   }
-
 }
 /* ===========================
    SIMPLE ANIMATION
@@ -2752,9 +2721,10 @@
 
 .voyage-image img {
   width: 100%;
-  height: 240px;
+  height: 250px;
   object-fit: cover;
   transition: 0.6s;
+  display: block;
 }
 
 .voyage-card:hover img {
@@ -2762,7 +2732,18 @@
 }
 
 .voyage-content {
-  padding: 22px;
+  padding: 15px;
+}
+
+.voyage-content h2 {
+  font-size: 16px;
+  color: #061d39;
+  margin-bottom: 8px;
+}
+
+.voyage-content p {
+  font-size: 14px;
+  margin-bottom: 8px;
 }
 
 .story-tag {
@@ -2794,7 +2775,7 @@
 
 .voyage-content button {
   border: none;
-  background: linear-gradient(135deg, #0d6efd, #4f8cff);
+  background: #061d39;
   color: white;
   padding: 12px 22px;
   border-radius: 40px;
@@ -3612,4 +3593,173 @@
 
 .editProfileSaveBtn:hover {
   opacity: 0.9;
+}
+
+/* benefits updated css */
+
+.crest-benefit-action-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.crest-benefit-video-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, 0.75);
+}
+
+/* ========================================
+   VIDEO MODAL
+======================================== */
+
+.crest-benefit-video-modal {
+  position: relative;
+
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+
+  overflow: hidden;
+
+  background: #ffffff;
+  border-radius: 12px;
+
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.35);
+}
+
+/* ========================================
+   MODAL HEADER
+======================================== */
+
+.crest-benefit-video-header {
+  padding: 20px 60px 15px 20px;
+
+  border-bottom: 1px solid #eeeeee;
+}
+
+.crest-benefit-video-header h2 {
+  margin: 0;
+
+  font-size: 24px;
+  line-height: 1.3;
+
+  color: #222222;
+}
+
+/* ========================================
+   CLOSE BUTTON
+======================================== */
+
+.crest-benefit-video-close {
+  position: absolute;
+
+  top: 10px;
+  right: 15px;
+
+  z-index: 10;
+
+  width: 38px;
+  height: 38px;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #ffffff;
+  color: #222222;
+
+  font-size: 30px;
+  line-height: 35px;
+
+  cursor: pointer;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  transition: 0.2s ease;
+}
+
+.crest-benefit-video-close:hover {
+  background: #eeeeee;
+  transform: scale(1.05);
+}
+
+/* ========================================
+   VIDEO CONTAINER
+======================================== */
+
+.crest-benefit-video-wrapper {
+  width: 100%;
+
+  background: #000000;
+}
+
+.crest-benefit-video-player {
+  display: block;
+  width: 100%;
+  height: 70vh;
+  background: #000000;
+}
+
+/* ========================================
+   TUTORIAL BUTTON
+======================================== */
+
+.crest-benefit-tutorial-btn {
+  cursor: pointer;
+}
+
+.crest-benefit-tutorial-btn-disabled {
+  cursor: not-allowed;
+
+  opacity: 0.5;
+}
+
+/* ========================================
+   MOBILE RESPONSIVE
+======================================== */
+
+@media (max-width: 767px) {
+  .crest-benefit-video-overlay {
+    padding: 10px;
+  }
+
+  .crest-benefit-video-modal {
+    max-width: 100%;
+
+    border-radius: 8px;
+  }
+
+  .crest-benefit-video-header {
+    padding: 15px 50px 15px 15px;
+  }
+
+  .crest-benefit-video-header h2 {
+    font-size: 18px;
+  }
+
+  .crest-benefit-video-close {
+    top: 8px;
+    right: 8px;
+
+    width: 34px;
+    height: 34px;
+
+    font-size: 26px;
+    line-height: 30px;
+  }
+
+  .crest-benefit-video-player {
+    max-height: 60vh;
+  }
 }

@@ -2008,7 +2008,11 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 18px;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
+}
+
+.traveller-form-grid .form-group.small-field {
+  margin-bottom: 0px;
 }
 
 .form-group {

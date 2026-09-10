@@ -1,14 +1,74 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
+import { crestBenefits } from "../../store/Services/AllApi";
 
 const Benefits = () => {
+  const [crestBenefitsData, setCrestBenefitsData] = useState([]);
+  const [selectedBenefit, setSelectedBenefit] = useState(null);
+
+  useEffect(() => {
+    const fetchCrestBenefits = async () => {
+      try {
+        const response = await crestBenefits({
+          body: {
+            clubid: 249402,
+            language: "EN",
+            tierid: localStorage.getItem("tierId"),
+          },
+        });
+
+        setCrestBenefitsData(response?.benefits);
+      } catch (error) {
+        console.error("Error fetching crest benefits:", error);
+      }
+    };
+
+    fetchCrestBenefits();
+  }, []);
+
+  const handleTutorialClick = (benefit) => {
+    if (!benefit?.video) {
+      return;
+    }
+
+    setSelectedBenefit(benefit);
+  };
+
+  const closeTutorialPopup = () => {
+    setSelectedBenefit(null);
+  };
+
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      closeTutorialPopup();
+    }
+  };
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") {
+        closeTutorialPopup();
+      }
+    };
+
+    if (selectedBenefit) {
+      document.addEventListener("keydown", handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [selectedBenefit]);
+
   return (
     <>
       <div className="head-banner2">
         <HeaderInner />
+
         <div className="banner-text">
           <h1>Member Benefit Details</h1>
+
           <p
             style={{
               maxWidth: "700px",
@@ -26,7 +86,9 @@ const Benefits = () => {
         <div className="container">
           <div className="voyage-heading">
             <span>TRAVEL INSPIRATION</span>
+
             <h2>Stories That Spark Wanderlust</h2>
+
             <p>
               Explore breathtaking destinations, travel guides, and
               unforgettable adventures from around the globe.
@@ -34,79 +96,83 @@ const Benefits = () => {
           </div>
 
           <div className="voyage-grid">
-            <div className="voyage-card">
-              <div className="voyage-image">
-                <img
-                  src="https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=1172&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                  alt=""
-                />
-              </div>
+            {crestBenefitsData?.map((itm) => (
+              <div className="voyage-card" key={itm?.id}>
+                <div className="voyage-image">
+                  <img src={itm?.thumbnail} alt={itm?.name || "Benefit"} />
+                </div>
 
-              <div className="voyage-content">
-                <h2>Travel Marketplace</h2>
-                <p>
-                  Get ready for your next adventure with deep discounts! Save
-                  25% or more on a curated collection of travel goods when you
-                  shop through Travel Marketplace.
-                </p>
-              </div>
-            </div>
+                <div className="voyage-content">
+                  <h2>{itm?.name}</h2>
 
-            <div className="voyage-card">
-              <div className="voyage-image">
-                <img
-                  src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267"
-                  alt=""
-                />
-              </div>
+                  <p>
+                    {itm?.description
+                      ? itm.description.split(" ").slice(0, 15).join(" ") +
+                        (itm.description.split(" ").length > 15 ? "..." : "")
+                      : ""}
+                  </p>
 
-              <div className="voyage-content">
-                <h2>StatusMax</h2>
-                <p>
-                  Unlock elite status instantly with your favorite airlines,
-                  hotels, and car rental brands - VIP treatment, upgrades and
-                  exclusive perks on every journey.
-                </p>
+                  <div className="crest-benefit-action-buttons">
+                    <button
+                      type="button"
+                      className="crest-benefit-know-more-btn"
+                      onClick={() => {
+                        console.log("Know More clicked:", itm);
+                      }}
+                    >
+                      Know More
+                    </button>
+                    <button
+                      type="button"
+                      className={`crest-benefit-tutorial-btn ${!itm?.video ? "crest-benefit-tutorial-btn-disabled" : ""}`}
+                      disabled={!itm?.video}
+                      onClick={() => handleTutorialClick(itm)}
+                    >
+                      Tutorial
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div className="voyage-card">
-              <div className="voyage-image">
-                <img
-                  src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a"
-                  alt=""
-                />
-              </div>
-
-              <div className="voyage-content">
-                <h2>Flight Insurance</h2>
-                <p>
-                  The insurance is provided to you at no additional cost by
-                  Insider Travel Club that issued your ticket. As the ticket
-                  holder, you are covered for accidental ...
-                </p>
-              </div>
-            </div>
-
-            <div className="voyage-card">
-              <div className="voyage-image">
-                <img
-                  src="https://images.unsplash.com/photo-1566073771259-6a8506099945"
-                  alt=""
-                />
-              </div>
-
-              <div className="voyage-content">
-                <h2>Room Coins</h2>
-                <p>
-                  Your Room Coins can be used on most pre-paid hotel bookings.
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
+
       <Footer />
+
+      {selectedBenefit && (
+        <div
+          className="crest-benefit-video-overlay"
+          onClick={handleOverlayClick}
+        >
+          <div className="crest-benefit-video-modal">
+            <button
+              type="button"
+              className="crest-benefit-video-close"
+              onClick={closeTutorialPopup}
+              aria-label="Close tutorial"
+            >
+              &times;
+            </button>
+
+            <div className="crest-benefit-video-header">
+              <h2>{selectedBenefit?.name}</h2>
+            </div>
+
+            <div className="crest-benefit-video-wrapper">
+              <video
+                className="crest-benefit-video-player"
+                controls
+                autoPlay
+                playsInline
+              >
+                <source src={selectedBenefit?.video} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -42,6 +42,7 @@ import BlogdetailPage from "./components/admin/BlogPage/BlogdetailPage";
 import BlogProtectedRoutes from "./BlogProtectedRoutes";
 import BlogPage from "./components/admin/BlogPage/BlogPage";
 import PaymentStatus from "./components/PaymentStatus/PaymentStatus";
+import HotelPaymentStatus from "./components/main-form/HotelForm/HotelPaymentStatus/HotelPaymentStatus";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -71,6 +72,7 @@ function App() {
           "personDetails",
           JSON.stringify(res?.data?.get?.result),
         );
+        localStorage.setItem("tierId", res?.data?.get?.result?.tierid);
       } catch (error) {
         console.error("Error fetching new member details:", error);
       }
@@ -94,6 +96,7 @@ function App() {
       <Routes>
         <Route path="/login-page" element={<Login />} />
         <Route path="/payment/status" element={<PaymentStatus />} />
+        <Route path="/hotel-payment" element={<HotelPaymentStatus />} />
         <Route element={<BlogProtectedRoutes />}>
           <Route path="/admin-dashboard" element={<AdminDash />} />
           <Route path="/admin-addpost" element={<AddPost />} />

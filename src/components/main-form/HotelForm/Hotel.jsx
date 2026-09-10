@@ -457,9 +457,9 @@ const Hotel = () => {
 
         end_date: checkOut,
 
-        success: `${window.location.origin}/hotel?payment=success`,
+        // success: `${window.location.origin}/hotel?payment=success`,
 
-        fail: `${window.location.origin}/hotel?payment=failed`,
+        // fail: `${window.location.origin}/hotel?payment=failed`,
 
         mode: "CARD",
 
@@ -499,14 +499,21 @@ const Hotel = () => {
       });
 
       const paymentSuccess = paymentRes?.success === true;
-
       const requiresAction = paymentRes?.requiresAction === true;
 
+      // Get itemId from response
       const itemId = paymentRes?.itemId || paymentRes?.data?.itemid;
 
-      const paymentUrl = paymentRes?.data?.url;
+      // IMPORTANT: redirectUrl is directly in the API response
+      const paymentUrl =
+        paymentRes?.redirectUrl ||
+        paymentRes?.data?.redirectUrl ||
+        paymentRes?.data?.url;
 
       const action3ds = paymentRes?.data?.action3ds === true;
+
+      console.log("PAYNOW RESPONSE:", paymentRes);
+      console.log("3DS REDIRECT URL:", paymentUrl);
 
       if (!paymentSuccess) {
         console.error("PAYMENT FAILED:", paymentRes);
@@ -526,9 +533,10 @@ const Hotel = () => {
         return;
       }
 
+      // 3D Secure authentication required
       if (requiresAction === true || action3ds === true) {
         if (!paymentUrl) {
-          console.error("3DS required but payment URL is missing");
+          console.error("3DS required but redirectUrl is missing:", paymentRes);
 
           setHotelLoader(false);
           setShowFailurePopup(true);
@@ -536,32 +544,26 @@ const Hotel = () => {
           return;
         }
 
+        // Save data before leaving the current page
+        localStorage.setItem("hotelPaymentItemId", itemId);
+        localStorage.setItem("hotelPaymentFormData", JSON.stringify(data));
+        localStorage.setItem(
+          "hotelPaymentLeadGuest",
+          JSON.stringify(leadGuest),
+        );
+
+        console.log("Redirecting to 3DS:", paymentUrl);
+
+        // Stop loader before redirect
         setHotelLoader(false);
 
-        setShowSuccessPopup(true);
-
-        let time = 5;
-
-        setCountdown(time);
-
-        const timer = setInterval(() => {
-          time--;
-
-          if (time > 0) {
-            setCountdown(time);
-          } else {
-            clearInterval(timer);
-
-            setShowSuccessPopup(false);
-
-            // Redirect to CTS 3DS page
-            window.location.href = paymentUrl;
-          }
-        }, 1000);
+        // Redirect user to 3D Secure authentication page
+        window.location.href = paymentUrl;
 
         return;
       }
 
+      // Normal payment - no 3DS required
       const bookingResponse = await handleBookingHotel(itemId, data);
 
       if (bookingResponse?.success === false) {
@@ -578,9 +580,7 @@ const Hotel = () => {
       setBookingCompleted(true);
 
       localStorage.removeItem("hotelPaymentItemId");
-
       localStorage.removeItem("hotelPaymentFormData");
-
       localStorage.removeItem("hotelPaymentLeadGuest");
     } catch (error) {
       console.error("PAYNOW / BOOKING ERROR:", error);
