@@ -29,6 +29,7 @@ function HotelCard({
   name,
   location,
   newPrice,
+  credit,
   starRating,
   facilities,
   options,
@@ -105,9 +106,15 @@ function HotelCard({
           </div>
 
           <div className="lux-price-box">
+            {Number(credit || 0) > 0 && (
+              <div className="lux-credit">
+                Using <b>{Number(credit).toFixed(2)}</b> room coins
+              </div>
+            )}
+
             <h2>${Number(newPrice || 0).toFixed(2)}</h2>
 
-            <small>Includes taxes & fees</small>
+            <small>Includes taxes</small>
 
             <button
               type="button"
@@ -164,17 +171,26 @@ const mergeHotels = (oldHotels = [], newHotels = []) => {
 
     const id = hotel?.id;
 
-    if (id !== undefined && id !== null) {
-      map.set(String(id), hotel);
+    if (id === undefined || id === null) return;
+
+    const key = String(id);
+    const existingHotel = map.get(key);
+
+    if (!existingHotel) {
+      map.set(key, hotel);
+      return;
+    }
+
+    const existingPrice = Number(existingHotel?.ourprice || Infinity);
+    const newPrice = Number(hotel?.ourprice || Infinity);
+
+    if (newPrice < existingPrice) {
+      map.set(key, hotel);
     }
   });
 
   return Array.from(map.values());
 };
-
-/* =========================================================
-   MAIN COMPONENT
-========================================================= */
 
 export default function HotelResults() {
   const navigate = useNavigate();
@@ -182,13 +198,11 @@ export default function HotelResults() {
 
   const params = useMemo(() => new URLSearchParams(search), [search]);
 
-  /* =======================================================
-     STATES
-  ======================================================= */
-
   const [hotelsGet, setHotelGet] = useState([]);
 
   const [hotelLoader, setHotelLoader] = useState(false);
+
+  const [isFetchingMoreHotels, setIsFetchingMoreHotels] = useState(false);
 
   const [showModifyForm, setShowModifyForm] = useState(false);
 
@@ -327,14 +341,6 @@ export default function HotelResults() {
 
   const totalRooms = rooms.length + 1;
 
-  /* =======================================================
-     HOTEL NEXT PULL
-     
-     IMPORTANT:
-     This function keeps calling hotelNextPull
-     until status becomes "Completed".
-  ======================================================= */
-
   const handleNextPull = async (
     requestBody,
     initialNextResultsKey,
@@ -345,52 +351,39 @@ export default function HotelResults() {
     let allHotels = [...initialHotels];
 
     let nextResultsKey = initialNextResultsKey;
-
     let correlationId = initialCorrelationId;
-
     let token = initialToken;
-
     let finalResult = null;
 
-    /*
-      Safety limit so that if the provider gets stuck,
-      we don't create an infinite request loop.
-    */
-    const MAX_PULLS = 60;
+    const MAX_PULLS = 30;
+    const MAX_POLLING_TIME = 30000;
+    const POLL_INTERVAL = 2500;
+    const pollingStartedAt = Date.now();
 
     for (let attempt = 0; attempt < MAX_PULLS; attempt++) {
-      /*
-        If there is no nextResultsKey,
-        there is nothing more to pull.
-      */
+      if (Date.now() - pollingStartedAt >= MAX_POLLING_TIME) {
+        console.warn("Hotel polling timed out.");
+        break;
+      }
+
       if (!nextResultsKey) {
         break;
       }
 
-      /*
-        Small delay between polling requests.
-      */
       if (attempt > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
       }
 
       const nextRequestBody = {
         ...requestBody,
-
         nextResultsKey,
-
         correlationId,
-
         token,
       };
-
-      console.log("hotelNextPull request:", nextRequestBody);
 
       const res = await hotelNextPull({
         body: nextRequestBody,
       });
-
-      console.log("hotelNextPull response:", res);
 
       const result = getHotelListingsResult(res);
 
@@ -400,102 +393,53 @@ export default function HotelResults() {
 
       finalResult = result;
 
-      /*
-        Get hotels returned from this pull.
-      */
+      // Get hotels from this polling response
       const pulledHotels = getHotelsFromResult(result);
 
-      /*
-        Merge old + newly received hotels.
-      */
+      // Add them to our collection.
+      // Duplicate hotel IDs will keep only the lowest price.
       allHotels = mergeHotels(allHotels, pulledHotels);
 
-      /*
-        Immediately update UI with whatever
-        results we have received so far.
-      */
-      setHotelGet(allHotels);
-
-      /*
-        IMPORTANT:
-        Update filters from latest response.
-      */
+      // Update filters
       const latestFilters = getFiltersFromResult(result);
 
       if (Object.keys(latestFilters).length > 0) {
         setApiFilters(latestFilters);
       }
 
-      /*
-        Keep latest metadata.
-      */
+      // Keep latest params
       setParamsData(result);
 
-      /*
-        Keep token in localStorage.
-      */
+      // Update token
       if (result?.token) {
         token = result.token;
-
         localStorage.setItem("hotelToken", result.token);
       }
 
-      /*
-        IMPORTANT:
-        Correlation ID can also change in the
-        next response.
-
-        Always use the latest one.
-      */
+      // Update correlation ID
       if (result?.correlationId) {
         correlationId = result.correlationId;
       }
 
-      /*
-        IMPORTANT:
-        Next request must use the NEW
-        nextResultsKey returned by this response.
-      */
+      // Update nextResultsKey
       if (result?.nextResultsKey) {
         nextResultsKey = result.nextResultsKey;
       } else {
         nextResultsKey = null;
       }
 
-      /*
-        Check status.
-        
-        New response:
-        
-        {
-          status: "Completed"
-        }
-      */
       const status = getStatus(result);
 
       console.log(`Hotel pull ${attempt + 1}:`, {
         status: result?.status,
-        nextResultsKey,
-        correlationId,
-        token,
         hotels: allHotels.length,
       });
 
-      /*
-        THIS IS THE MAIN CONDITION.
-        
-        Continue pulling while status is NOT
-        Completed.
-      */
+      // STOP ONLY when completed
       if (status === "completed") {
         break;
       }
 
-      /*
-        If provider returns another status but
-        does not give us a nextResultsKey,
-        we cannot continue.
-      */
       if (!nextResultsKey) {
         console.warn(
           "Hotel search is not completed but no nextResultsKey was returned.",
@@ -505,9 +449,7 @@ export default function HotelResults() {
       }
     }
 
-    /*
-      Final state update.
-    */
+    // ONLY NOW show the hotels
     setHotelGet(allHotels);
 
     if (finalResult) {
@@ -524,13 +466,9 @@ export default function HotelResults() {
 
     return {
       result: finalResult,
-
       hotels: allHotels,
-
       correlationId,
-
       token,
-
       nextResultsKey,
     };
   };
@@ -591,13 +529,18 @@ export default function HotelResults() {
          SEARCH LOCATION
       =================================================== */
 
-      const locationid = destinationData?.destinationId || hotelData.locationid;
+      const locationid =
+        destinationData?.destinationId || hotelData.locationid || "";
 
-      const lat = destinationData?.latitude ?? hotelData.lat;
+      const lat = destinationData?.latitude ?? hotelData.lat ?? 25.27063;
 
-      const long = destinationData?.longitude ?? hotelData.long;
+      const long = destinationData?.longitude ?? hotelData.long ?? 55.30037;
 
-      const destinationName = destinationData?.destination || destination;
+      const destinationName =
+        destinationData?.destination ||
+        destination ||
+        hotelData.destination ||
+        "";
 
       /* ===================================================
          DATES
@@ -649,37 +592,21 @@ export default function HotelResults() {
         throw new Error("Invalid hotel search response");
       }
 
-      /*
-        Get first batch.
-      */
       const initialHotels = getHotelsFromResult(result);
-
-      /*
-        Store first batch immediately.
-      */
+      const collectedHotels = mergeHotels([], initialHotels);
       setHotelGet(initialHotels);
 
-      /*
-        Store filters from initial response.
-      */
       const initialFilters = getFiltersFromResult(result);
 
       setApiFilters(initialFilters);
 
-      /*
-        Store complete response metadata.
-      */
       setParamsData(result);
 
-      /*
-        Store token.
-      */
       if (result?.token) {
         localStorage.setItem("hotelToken", result.token);
       }
 
-      let finalHotels = initialHotels;
-
+      let finalHotels = collectedHotels;
       let finalResult = result;
 
       /* ===================================================
@@ -688,32 +615,27 @@ export default function HotelResults() {
 
       const status = getStatus(result);
 
-      /*
-        If already Completed,
-        don't call hotelNextPull.
-      */
-      if (status !== "completed" && result?.nextResultsKey) {
+      if (status === "completed") {
+        finalHotels = collectedHotels;
+
+        setHotelGet(finalHotels);
+      } else if (result?.nextResultsKey) {
+        setIsFetchingMoreHotels(true);
+
         const pullResult = await handleNextPull(
           requestBody,
-
           result.nextResultsKey,
-
           result.correlationId,
-
           result.token,
-
-          initialHotels,
+          collectedHotels,
         );
 
-        finalHotels = pullResult.hotels;
+        setIsFetchingMoreHotels(false);
 
+        finalHotels = pullResult.hotels;
         finalResult = pullResult.result || result;
 
-        /*
-          Make sure final metadata is stored.
-        */
         setHotelGet(finalHotels);
-
         setParamsData(finalResult);
 
         if (finalResult?.filters) {
@@ -753,6 +675,24 @@ export default function HotelResults() {
         countryOfResidence: hotelData.countryOfResidence,
 
         roomDetails: roomData,
+      });
+
+      // Keep the modify-search form synchronized with the latest search.
+      setDestination(destinationName);
+      setDateRange([
+        formattedCheckIn ? new Date(formattedCheckIn) : null,
+        formattedCheckOut ? new Date(formattedCheckOut) : null,
+      ]);
+      setRoomDetails(roomData);
+      setAdults(roomData?.[0]?.adults || 1);
+      setChildren(roomData?.[0]?.children || 0);
+      setChildrenAges(roomData?.[0]?.childrenAges || []);
+      setRooms(roomData.slice(1));
+      setSelectedDestination({
+        destination: destinationName,
+        destinationId: locationid,
+        latitude: lat,
+        longitude: long,
       });
 
       /* ===================================================
@@ -809,6 +749,37 @@ export default function HotelResults() {
     handleSearchHotel();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /* =======================================================
+     SYNC MODIFY SEARCH WITH URL
+  ======================================================= */
+
+  useEffect(() => {
+    setSearchData(hotelData);
+    setDestination(hotelData.destination || "");
+
+    setDateRange([
+      hotelData.checkIn ? new Date(hotelData.checkIn) : null,
+      hotelData.checkOut ? new Date(hotelData.checkOut) : null,
+    ]);
+
+    const updatedRoomDetails = hotelData.roomDetails || [];
+
+    setRoomDetails(updatedRoomDetails);
+    setAdults(updatedRoomDetails?.[0]?.adults || 1);
+    setChildren(updatedRoomDetails?.[0]?.children || 0);
+    setChildrenAges(updatedRoomDetails?.[0]?.childrenAges || []);
+    setRooms(updatedRoomDetails.slice(1));
+
+    if (hotelData.destination) {
+      setSelectedDestination({
+        destination: hotelData.destination,
+        destinationId: hotelData.locationid,
+        latitude: hotelData.lat,
+        longitude: hotelData.long,
+      });
+    }
+  }, [hotelData]);
 
   /* =======================================================
      DATE FORMAT
@@ -2287,25 +2258,34 @@ export default function HotelResults() {
 
               {/* RESULTS */}
 
-              {hotelLoader ? (
+              {hotelLoader && filteredHotels.length === 0 ? (
                 <HotelLoader />
               ) : filteredHotels.length > 0 ? (
-                filteredHotels.map((hotel) => (
-                  <HotelCard
-                    key={hotel.id}
-                    image={hotel.heroImage}
-                    name={hotel.name}
-                    location={`${hotel.contact?.address?.city?.name || ""}, ${
-                      hotel.contact?.address?.country?.name || ""
-                    }`}
-                    newPrice={hotel.ourprice}
-                    starRating={hotel?.starRating}
-                    facilities={hotel?.facilities}
-                    options={hotel?.options}
-                    payAtHotel={hotel?.payAtHotel}
-                    onClick={() => handleHotelClick(hotel)}
-                  />
-                ))
+                <>
+                  {isFetchingMoreHotels && (
+                    <div className="loading-more-hotels">
+                      Finding more hotels...
+                    </div>
+                  )}
+
+                  {filteredHotels.map((hotel) => (
+                    <HotelCard
+                      key={hotel.id}
+                      image={hotel.heroImage}
+                      name={hotel.name}
+                      location={`${hotel.contact?.address?.city?.name || ""}, ${
+                        hotel.contact?.address?.country?.name || ""
+                      }`}
+                      newPrice={hotel.ourprice_before_credit}
+                      credit={hotel.credit}
+                      starRating={hotel?.starRating}
+                      facilities={hotel?.facilities}
+                      options={hotel?.options}
+                      payAtHotel={hotel?.payAtHotel}
+                      onClick={() => handleHotelClick(hotel)}
+                    />
+                  ))}
+                </>
               ) : (
                 <div className="no-hotels-found">
                   <h3>No Hotels Found</h3>

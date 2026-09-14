@@ -234,66 +234,6 @@ const HotelDetailPage = () => {
     }
   };
 
-  // =========================================================
-  // GET ROOMS / RATES
-  //
-  // NEW JSON:
-  //
-  // pricing.result.groups
-  //
-  // Each group contains:
-  // - name
-  // - facilities
-  // - area
-  // - beds
-  // - images
-  // - rooms
-  //
-  // Each rooms[] item contains:
-  // - name
-  // - recommendationId
-  // - rateid
-  // - occupancies
-  // - publishedRate
-  // - ourprice
-  // - taxes
-  // - fees
-  // - ratetype
-  // - refundability
-  // - refundable
-  // - boardBasis
-  // - cancellationPolicies
-  // etc.
-  // =========================================================
-
-  // const handleRoomDetails = async () => {
-  //   try {
-  //     const payload = {
-  //       hotelId: hotelId, // double-check this matches what getFilters expects
-  //       correlationId: correlationId,
-  //       checkIn: checkIn,
-  //       checkOut: checkOut,
-  //     };
-
-  //     const res = await getFilters({ body: payload });
-
-  //     const filterResult = getFilterResult(res);
-  //     const groups = Array.isArray(filterResult?.groups)
-  //       ? filterResult.groups
-  //       : [];
-
-  //     if (groups.length > 0) {
-  //       setRoomDetails(groups); // this is the authoritative source, safe to overwrite
-  //     }
-  //   } catch (error) {
-  //     console.error("getFilters error:", error);
-  //   }
-  // };
-
-  // =========================================================
-  // API CALL
-  // =========================================================
-
   useEffect(() => {
     if (!hotelId) {
       return;
@@ -454,12 +394,6 @@ const HotelDetailPage = () => {
     );
   };
 
-  // =========================================================
-  // GET BED DESCRIPTION
-  //
-  // Uses the new group.beds / room.beds data.
-  // =========================================================
-
   const getBedDescription = (room, groupBeds) => {
     const beds =
       Array.isArray(room?.beds) && room.beds.length > 0 ? room.beds : groupBeds;
@@ -476,13 +410,6 @@ const HotelDetailPage = () => {
       })
       .join(", ");
   };
-
-  // =========================================================
-  // GET ROOM AREA
-  //
-  // group.area is available in the new pricing JSON.
-  // Some room descriptions also contain square feet.
-  // =========================================================
 
   const getRoomArea = (room, groupArea) => {
     let squareMeters = null;
@@ -512,16 +439,24 @@ const HotelDetailPage = () => {
     };
   };
 
-  // =========================================================
-  // BOOK ROOM
-  // =========================================================
-
   const handleBookRoom = (room) => {
     const rateId = room?.rateid || "";
 
     if (rateId) {
       localStorage.setItem("rateid", rateId);
     }
+
+    const cancellationPolicy = room?.cancellationPolicies || [];
+
+    sessionStorage.setItem(
+      "cancellationPolicy",
+      JSON.stringify(cancellationPolicy),
+    );
+
+    const roomPolicy = room?.policies || [];
+
+    sessionStorage.setItem("roomPolicy", JSON.stringify(roomPolicy));
+
     const params = new URLSearchParams();
 
     const occupancy = room?.occupancies?.[0] || {};
@@ -533,10 +468,6 @@ const HotelDetailPage = () => {
     const boardBasis =
       room?.boardBasis?.displayText || room?.boardBasis?.description || "";
 
-    // ---------------------------------------------------------
-    // COMPLETE SELECTED ROOM DATA
-    // ---------------------------------------------------------
-
     const selectedRoom = {
       roomId: roomId,
       roomName: roomName,
@@ -545,6 +476,16 @@ const HotelDetailPage = () => {
       rateid: room?.rateid || "",
       publishedRate:
         room?.publishedRate != null ? Number(room.publishedRate) : 0,
+
+      show_saving_before_credit:
+        room?.show_saving_before_credit != null
+          ? Number(room.show_saving_before_credit)
+          : 0,
+
+      show_ourprice_before_credit:
+        room?.show_ourprice_before_credit != null
+          ? Number(room.show_ourprice_before_credit)
+          : 0,
 
       ourprice: room?.ourprice != null ? Number(room.ourprice) : 0,
 
@@ -619,78 +560,45 @@ const HotelDetailPage = () => {
       originalRate: room,
     };
 
-    // ---------------------------------------------------------
-    // ROOMS ARRAY
-    // ---------------------------------------------------------
-
     const rooms = [selectedRoom];
-
-    // ---------------------------------------------------------
-    // HOTEL / SEARCH INFORMATION
-    // ---------------------------------------------------------
 
     params.set("hotelId", hotelId || "");
     params.set("hotelName", hotelName || "");
     params.set("token", token || "");
-
     params.set("correlationId", correlationId || "");
-
     params.set("checkIn", checkIn || "");
-
     params.set("checkOut", checkOut || "");
-
     params.set("recommendationIdFinal", room?.recommendationId);
-
     const roomImageUrl = hotelImages?.heroImage || getImageUrl(images?.[0]);
-
     params.set("heroUrl", roomImageUrl || "");
-
-    // ---------------------------------------------------------
-    // SELECTED ROOM BASIC DATA
-    // ---------------------------------------------------------
-
     params.set("roomId", roomId);
-
     params.set("roomName", roomName);
-
-    // ---------------------------------------------------------
-    // PRICE DATA
-    // Keep these separately because your existing Hotel page
-    // already uses them.
-    // ---------------------------------------------------------
-
     params.set(
-      "ourprice",
-      room?.ourprice != null ? String(room.ourprice) : "0",
+      "publishedRate",
+      room?.publishedRate != null ? String(room.publishedRate) : "0",
     );
-
-    params.set("taxes", room?.taxes != null ? String(room.taxes) : "0");
-
-    params.set("fees", room?.fees != null ? String(room.fees) : "0");
-
+    params.set(
+      "show_saving_before_credit",
+      room?.show_saving_before_credit != null
+        ? String(room.show_saving_before_credit)
+        : "0",
+    );
+    params.set(
+      "ourprice_before_credit",
+      room?.ourprice_before_credit != null
+        ? String(room.ourprice_before_credit)
+        : "0",
+    );
     params.set(
       "payAtHotel",
       room?.payAtHotel != null ? String(room.payAtHotel) : "",
     );
-
-    // ---------------------------------------------------------
-    // COMPLETE ROOMS DATA
-    // ---------------------------------------------------------
-
-    // ---------------------------------------------------------
-    // OPTIONAL: TOTAL PERSON COUNTS
-    // These are convenient directly on Hotel page.
-    // ---------------------------------------------------------
-
     params.set("adults", String(Number(occupancy?.numOfAdults) || 0));
-
     params.set("children", String(Number(occupancy?.numOfChildren) || 0));
-
     params.set(
       "childAges",
       JSON.stringify(Array.isArray(childAges) ? childAges : []),
     );
-
     navigate(`/hotel?${params.toString()}`);
   };
 
@@ -991,7 +899,9 @@ const HotelDetailPage = () => {
 
                 const publishedRate = Number(room?.publishedRate) || 0;
 
-                const ourPrice = Number(room?.ourprice) || 0;
+                const credits = Number(room?.credit) || 0;
+
+                const ourPrice = Number(room?.ourprice_before_credit) || 0;
 
                 const taxes = Number(room?.taxes) || 0;
 
@@ -1171,15 +1081,60 @@ const HotelDetailPage = () => {
                           ================================================= */}
 
                         <div className="rate-right">
+                          <p className="tax-text">
+                            Using <strong>{formatPrice(credits)}</strong> room
+                            coins
+                          </p>
+
                           {ourPrice > 0 && (
-                            <p className="tax-text">
+                            <p>
                               <b>${formatPrice(ourPrice)}</b>
                             </p>
                           )}
 
                           <p style={{ fontSize: "12px", marginBottom: "15px" }}>
-                            including taxes and fees
+                            including taxes
                           </p>
+
+                          {room?.additionalCharges?.length > 0 && (
+                            <div className="additional-charges-wrapper">
+                              <div className="additional-charges-title">
+                                Additional Charges
+                                <span className="info-icon">ⓘ</span>
+                              </div>
+
+                              <div className="additional-charges-tooltip">
+                                <div className="tooltip-heading">
+                                  Additional Charges Not included
+                                </div>
+
+                                <div className="tooltip-subheading">
+                                  To be paid at property
+                                </div>
+
+                                {room.additionalCharges.map((item, index) => {
+                                  const charge = item?.charge;
+
+                                  return (
+                                    <div className="charge-row" key={index}>
+                                      <span>
+                                        {charge?.type === "Fee"
+                                          ? "Resort Fee"
+                                          : charge?.description ||
+                                            "Additional Charge"}
+                                      </span>
+
+                                      <span>
+                                        {charge?.amount != null
+                                          ? `${formatPrice(charge.amount)} ${charge.currency || ""}`
+                                          : item?.text || ""}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
 
                           <button
                             className="book-room-btn"

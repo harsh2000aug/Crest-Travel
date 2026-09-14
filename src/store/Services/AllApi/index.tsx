@@ -246,6 +246,21 @@ export const hotelBooking = ({ body }: any) =>
     uriEndPoint: allApi.hotelBooking.v1,
     body,
   });
+export const hotelBookingInfo = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.hotelBookingInfo.v1,
+    body,
+  });
+export const hotelBookingCancel = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.hotelBookingCancel.v1,
+    body,
+  });
+export const hotelPriceCheck = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.hotelPriceCheck.v1,
+    body,
+  });
 
 // vacation services
 export const searchVacationLocation = ({ body }: any) =>
@@ -296,5 +311,15 @@ export const vacvationPay = ({ body }: any) =>
 export const crestBenefits = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.crestBenefits.v1,
+    body,
+  });
+export const crestBenefitsDetails = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.crestBenefitsDetails.v1,
+    body,
+  });
+export const hotelUpcomingOrder = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.hotelUpcomingOrder.v1,
     body,
   });

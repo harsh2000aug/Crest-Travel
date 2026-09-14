@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
+
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
-import { crestBenefits } from "../../store/Services/AllApi";
+
+import {
+  crestBenefits,
+  crestBenefitsDetails,
+} from "../../store/Services/AllApi";
 
 const Benefits = () => {
   const [crestBenefitsData, setCrestBenefitsData] = useState([]);
   const [selectedBenefit, setSelectedBenefit] = useState(null);
 
+  // Fetch benefits
   useEffect(() => {
     const fetchCrestBenefits = async () => {
       try {
@@ -18,7 +24,11 @@ const Benefits = () => {
           },
         });
 
-        setCrestBenefitsData(response?.benefits);
+        const benefits = response?.benefits || [];
+
+        setCrestBenefitsData(benefits);
+
+        console.log("Relations:", relations);
       } catch (error) {
         console.error("Error fetching crest benefits:", error);
       }
@@ -26,6 +36,30 @@ const Benefits = () => {
 
     fetchCrestBenefits();
   }, []);
+
+  const handleKnowMore = async (benefit) => {
+    try {
+      console.log("Know More clicked:", benefit);
+      console.log("Relation:", benefit?.relation);
+
+      const response = await crestBenefitsDetails({
+        body: {
+          relation: benefit?.relation,
+          clubid: 249402,
+          language: "EN",
+          device: "web",
+        },
+      });
+
+      console.log("crestBenefitsDetails response:", response);
+
+      if (response?.success && response?.url) {
+        window.location.href = response.url;
+      }
+    } catch (error) {
+      console.error("Error fetching crest benefit details:", error);
+    }
+  };
 
   const handleTutorialClick = (benefit) => {
     if (!benefit?.video) {
@@ -116,15 +150,16 @@ const Benefits = () => {
                     <button
                       type="button"
                       className="crest-benefit-know-more-btn"
-                      onClick={() => {
-                        console.log("Know More clicked:", itm);
-                      }}
+                      onClick={() => handleKnowMore(itm)}
                     >
                       Know More
                     </button>
+
                     <button
                       type="button"
-                      className={`crest-benefit-tutorial-btn ${!itm?.video ? "crest-benefit-tutorial-btn-disabled" : ""}`}
+                      className={`crest-benefit-tutorial-btn ${
+                        !itm?.video ? "crest-benefit-tutorial-btn-disabled" : ""
+                      }`}
                       disabled={!itm?.video}
                       onClick={() => handleTutorialClick(itm)}
                     >

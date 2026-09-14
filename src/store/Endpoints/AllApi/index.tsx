@@ -175,6 +175,30 @@ export const allApi = {
       useHotelHeaders: true,
     },
   },
+  hotelBookingInfo: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphahotel/hotel-booking-info",
+      useHotelHeaders: true,
+    },
+  },
+  hotelBookingCancel: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphahotel/hotel-booking-cancel",
+      useHotelHeaders: true,
+    },
+  },
+  hotelPriceCheck: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphahotel/price-check",
+    },
+  },
+
   changePassword: {
     v1: {
       ...defaults.methods.POST,
@@ -425,6 +449,20 @@ export const allApi = {
       ...defaults.methods.POST,
       ...defaults.versions.v1,
       uri: "/alphamember/content",
+    },
+  },
+  crestBenefitsDetails: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphamember/content-detail",
+    },
+  },
+  hotelUpcomingOrder: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphahotel/hotel-order",
     },
   },
 };

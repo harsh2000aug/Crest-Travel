@@ -12,6 +12,8 @@ import {
   FaCalendarAlt,
   FaUserFriends,
   FaHotel,
+  FaChevronUp,
+  FaChevronDown,
   FaMoneyBillWave,
 } from "react-icons/fa";
 
@@ -37,10 +39,6 @@ const Hotel = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  /* =========================================================
-     URL PARAMETERS
-  ========================================================= */
-
   const hotelId = searchParams.get("hotelId") || "";
 
   const token =
@@ -63,43 +61,25 @@ const Hotel = () => {
 
   const roomName = searchParams.get("roomName") || "";
 
-  const roomDescription = searchParams.get("roomDescription") || "";
-
   const boardBasis = searchParams.get("boardBasis") || "";
 
   const rateid = searchParams.get("rateid") || "";
 
-  const ourprice = Number(searchParams.get("ourprice")) || 0;
-
   const publishedRate = Number(searchParams.get("publishedRate")) || 0;
 
-  const taxes = Number(searchParams.get("taxes")) || 0;
+  const ourprice_before_credit =
+    Number(searchParams.get("ourprice_before_credit")) || 0;
 
-  const fees = Number(searchParams.get("fees")) || 0;
-
-  const ratetype = searchParams.get("ratetype") || "";
-
-  const refundability = searchParams.get("refundability") || "";
-
-  const refundable = searchParams.get("refundable") === "true";
-
-  const payAtHotel = searchParams.get("payAtHotel") === "true";
+  const show_saving_before_credit =
+    Number(searchParams.get("show_saving_before_credit")) || 0;
 
   const heroImageMain = searchParams.get("heroUrl");
-
-  /* =========================================================
-     CORRELATION ID
-  ========================================================= */
 
   useEffect(() => {
     if (correlationId) {
       localStorage.setItem("correlationId", correlationId);
     }
   }, [correlationId]);
-
-  /* =========================================================
-     ROOMS
-  ========================================================= */
 
   let rooms = [];
 
@@ -123,10 +103,6 @@ const Hotel = () => {
 
   const selectedRoom = rooms?.[0] || {};
 
-  const adults = Number(searchParams.get("adults")) || 0;
-
-  const children = Number(searchParams.get("children")) || 0;
-
   let childAges = [];
 
   try {
@@ -135,26 +111,18 @@ const Hotel = () => {
     childAges = [];
   }
 
-  /* =========================================================
-     PRICE
-  ========================================================= */
+  // const selectedPublishedRate =
+  //   Number(selectedRoom?.publishedRate ?? publishedRate) || 0;
 
-  const selectedPublishedRate =
-    Number(selectedRoom?.publishedRate ?? publishedRate) || 0;
+  // const selectedOurPrice = Number(selectedRoom?.ourprice ?? ourprice) || 0;
 
-  const selectedOurPrice = Number(selectedRoom?.ourprice ?? ourprice) || 0;
+  // const selectedTaxes = Number(selectedRoom?.taxes ?? taxes) || 0;
 
-  const selectedTaxes = Number(selectedRoom?.taxes ?? taxes) || 0;
+  // const selectedFees = Number(selectedRoom?.fees ?? fees) || 0;
 
-  const selectedFees = Number(selectedRoom?.fees ?? fees) || 0;
+  // const selectedPriceBeforeTax = Math.max(0, selectedOurPrice - selectedTaxes);
 
-  const selectedPriceBeforeTax = Math.max(0, selectedOurPrice - selectedTaxes);
-
-  const savings = Math.max(0, selectedPublishedRate - selectedOurPrice);
-
-  /* =========================================================
-     STATE
-  ========================================================= */
+  // const savings = Math.max(0, selectedPublishedRate - selectedOurPrice);
 
   const [hotelLoader, setHotelLoader] = useState(false);
 
@@ -167,6 +135,12 @@ const Hotel = () => {
   const [showFailurePopup, setShowFailurePopup] = useState(false);
 
   const [bookingCompleted, setBookingCompleted] = useState(false);
+
+  const [cancellationPolicy, setCancellationPolicy] = useState([]);
+  const [showCancellationPolicy, setShowCancellationPolicy] = useState(false);
+
+  const [roomPolicy, setRoomPolicy] = useState([]);
+  const [showRoomPolicy, setShowRoomPolicy] = useState(false);
 
   const [leadGuest, setLeadGuest] = useState({
     title: "Mr",
@@ -316,7 +290,7 @@ const Hotel = () => {
 
         hotelId: hotelId,
 
-        ourprice: selectedOurPrice,
+        ourprice: ourprice_before_credit,
 
         rooms: [
           {
@@ -447,7 +421,7 @@ const Hotel = () => {
 
         correlationId,
 
-        paymentRemaining: selectedOurPrice,
+        paymentRemaining: ourprice_before_credit,
 
         recommendationId: recommendationId,
 
@@ -561,7 +535,7 @@ const Hotel = () => {
             hotelId,
             roomId: selectedRoom?.roomId || roomId,
             rateid: localStorage.getItem("rateid") || rateid,
-            ourprice: selectedOurPrice,
+            ourprice: ourprice_before_credit,
             correlationId,
             recommendationId,
             checkIn,
@@ -715,7 +689,7 @@ const Hotel = () => {
 
             hotelId: hotelId,
 
-            ourprice: selectedOurPrice,
+            ourprice: ourprice_before_credit,
 
             rooms: [
               {
@@ -879,11 +853,43 @@ const Hotel = () => {
     if (!bookingCompleted) return;
 
     const timer = setTimeout(() => {
-      navigate("/home");
+      navigate("/my-bookings");
     }, 5000);
 
     return () => clearTimeout(timer);
   }, [bookingCompleted, navigate]);
+
+  useEffect(() => {
+    try {
+      const storedPolicy = sessionStorage.getItem("cancellationPolicy");
+
+      if (storedPolicy) {
+        const parsedPolicy = JSON.parse(storedPolicy);
+
+        setCancellationPolicy(Array.isArray(parsedPolicy) ? parsedPolicy : []);
+      }
+    } catch (error) {
+      console.error("Error parsing cancellation policy:", error);
+      setCancellationPolicy([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const storedRoomPolicy = sessionStorage.getItem("roomPolicy");
+
+      if (storedRoomPolicy) {
+        const parsedRoomPolicy = JSON.parse(storedRoomPolicy);
+
+        setRoomPolicy(Array.isArray(parsedRoomPolicy) ? parsedRoomPolicy : []);
+      } else {
+        setRoomPolicy([]);
+      }
+    } catch (error) {
+      console.error("Error parsing room policy:", error);
+      setRoomPolicy([]);
+    }
+  }, []);
 
   useEffect(() => {
     window.scrollTo({
@@ -974,7 +980,6 @@ const Hotel = () => {
                 {/* =================================================
                     LEAD GUEST
                 ================================================= */}
-
                 <div className="traveller-card">
                   <div className="traveller-card-header lead-guest-header-custom">
                     <h3>Lead Guest</h3>
@@ -1102,11 +1107,9 @@ const Hotel = () => {
                     </div>
                   </form>
                 </div>
-
                 {/* =================================================
                     ADDITIONAL TRAVELLERS
                 ================================================= */}
-
                 {travellerFields.map((traveller, index) => (
                   <div
                     className="traveller-card added-traveller-card-custom"
@@ -1233,11 +1236,9 @@ const Hotel = () => {
                     </div>
                   </div>
                 ))}
-
                 {/* =================================================
                     CONTACT DETAILS
                 ================================================= */}
-
                 <div className="traveller-card">
                   <h3 className="booking-contact-title">
                     Booking details will be sent to
@@ -1311,11 +1312,9 @@ const Hotel = () => {
                     </div>
                   </div>
                 </div>
-
                 {/* =================================================
                     BILLING ADDRESS
                 ================================================= */}
-
                 <div className="traveller-card">
                   <h3 className="booking-contact-title">Billing Address</h3>
 
@@ -1451,11 +1450,9 @@ const Hotel = () => {
                     </div>
                   </div>
                 </div>
-
                 {/* =================================================
                     CARD DETAILS
                 ================================================= */}
-
                 <div className="traveller-card">
                   <h3 className="booking-contact-title">Card Details</h3>
 
@@ -1464,23 +1461,26 @@ const Hotel = () => {
 
                     <div className="form-group">
                       <label>Card Number *</label>
-
                       <input
                         type="text"
                         className="booking-input"
                         placeholder="1234 5678 9012 3456"
-                        maxLength={16}
+                        maxLength={19}
                         {...register("cardNumber", {
                           required: "Card Number is required",
-
                           pattern: {
                             value: /^[0-9 ]+$/,
-
                             message: "Invalid Card Number",
+                          },
+                          onChange: (e) => {
+                            let value = e.target.value.replace(/\s/g, "");
+                            value = value.replace(/\D/g, "");
+                            value = value.slice(0, 16);
+                            value = value.replace(/(.{4})/g, "$1 ").trim();
+                            e.target.value = value;
                           },
                         })}
                       />
-
                       {errors.cardNumber && (
                         <p className="booking-error">
                           {errors.cardNumber.message}
@@ -1572,10 +1572,154 @@ const Hotel = () => {
                   </div>
                 </div>
 
+                <div className="traveller-card cancellation-policy-card">
+                  <div
+                    className="cancellation-policy-header"
+                    onClick={() =>
+                      setShowCancellationPolicy(!showCancellationPolicy)
+                    }
+                  >
+                    <span className="cancellation-title">
+                      Cancellation Policy
+                    </span>
+                    <span className="cancellation-arrow">
+                      {showCancellationPolicy ? (
+                        <FaChevronUp />
+                      ) : (
+                        <FaChevronDown />
+                      )}
+                    </span>
+                  </div>
+                  {showCancellationPolicy && (
+                    <div className="cancellation-policy-content">
+                      {cancellationPolicy?.map((policy, policyIndex) => (
+                        <div key={policyIndex}>
+                          {policy?.rules?.map((rule, ruleIndex) => {
+                            const formatDate = (date) => {
+                              if (!date) return "";
+
+                              const d = new Date(date);
+
+                              const day = String(d.getDate()).padStart(2, "0");
+                              const month = String(d.getMonth() + 1).padStart(
+                                2,
+                                "0",
+                              );
+                              const year = d.getFullYear();
+
+                              return `${day}-${month}-${year}`;
+                            };
+
+                            const formatTime = (date) => {
+                              if (!date) return "";
+
+                              const d = new Date(date);
+
+                              let hours = d.getHours();
+                              const minutes = String(d.getMinutes()).padStart(
+                                2,
+                                "0",
+                              );
+
+                              const ampm = hours >= 12 ? "PM" : "AM";
+
+                              hours = hours % 12 || 12;
+
+                              return `${String(hours).padStart(2, "0")}:${minutes}:00 ${ampm}`;
+                            };
+
+                            return (
+                              <div
+                                className="cancellation-policy-rule"
+                                key={ruleIndex}
+                              >
+                                <span className="policy-bullet">•</span>
+
+                                <span>
+                                  From {formatDate(rule.start)},{" "}
+                                  {formatTime(rule.start)} to{" "}
+                                  {formatDate(rule.end)}, {formatTime(rule.end)}{" "}
+                                  <strong>
+                                    ${Number(rule.value || 0).toFixed(2)}
+                                  </strong>{" "}
+                                  penalty will be charged
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {roomPolicy?.length > 0 && (
+                  <div className="traveller-card cancellation-policy-card">
+                    <div
+                      className="cancellation-policy-header"
+                      onClick={() => setShowRoomPolicy(!showRoomPolicy)}
+                    >
+                      <span className="cancellation-title">Room Policy</span>
+
+                      <span className="cancellation-arrow">
+                        {showRoomPolicy ? <FaChevronUp /> : <FaChevronDown />}
+                      </span>
+                    </div>
+
+                    {showRoomPolicy && (
+                      <div className="cancellation-policy-content">
+                        {roomPolicy.map((policy, policyIndex) => (
+                          <div
+                            key={policyIndex}
+                            className="room-policy-item"
+                            style={{
+                              marginBottom:
+                                policyIndex === roomPolicy.length - 1
+                                  ? "0"
+                                  : "12px",
+                            }}
+                          >
+                            {policy?.type && (
+                              <div
+                                style={{
+                                  fontSize: "13px",
+                                  fontWeight: "600",
+                                  color: "#333",
+                                  marginBottom: "4px",
+                                }}
+                              >
+                                {policy.type}
+                              </div>
+                            )}
+
+                            {policy?.text && (
+                              <div
+                                className="cancellation-policy-rule"
+                                style={{
+                                  marginBottom: "0",
+                                }}
+                              >
+                                <span className="policy-bullet">•</span>
+
+                                <span
+                                  style={{
+                                    whiteSpace: "pre-line",
+                                  }}
+                                >
+                                  {policy.text.trim()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* =================================================
                     PAYMENT BUTTON
                 ================================================= */}
-
                 <button
                   type="button"
                   className="payment-btn"
@@ -1664,31 +1808,21 @@ const Hotel = () => {
                     Nights
                   </span>
 
-                  <span>${selectedPriceBeforeTax.toFixed(2)}</span>
+                  <span>${publishedRate.toFixed(2)}</span>
                 </div>
 
-                {selectedTaxes > 0 && (
-                  <div className="price-row">
-                    <span>Taxes and fees</span>
+                <div className="price-row">
+                  <span>Savings</span>
 
-                    <span>${selectedTaxes.toFixed(2)}</span>
-                  </div>
-                )}
-
-                {selectedFees > 0 && (
-                  <div className="price-row">
-                    <span>Fees</span>
-
-                    <span>${selectedFees.toFixed(2)}</span>
-                  </div>
-                )}
+                  <span>${show_saving_before_credit.toFixed(2)}</span>
+                </div>
 
                 <hr />
 
                 <div className="total-price">
                   <span>Total</span>
 
-                  <h2>${selectedOurPrice.toFixed(2)}</h2>
+                  <h2>${ourprice_before_credit.toFixed(2)}</h2>
                 </div>
               </div>
             </div>

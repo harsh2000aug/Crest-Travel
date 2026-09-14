@@ -3086,18 +3086,15 @@
   border-radius: 20px;
 }
 
-.voyage-booking-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 25px;
-}
-
 .voyage-booking-card {
   background: #fff;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   transition: 0.3s;
+  display: flex;
+  margin-bottom: 25px;
+  cursor: pointer;
 }
 
 .voyage-booking-card:hover {
@@ -3105,8 +3102,10 @@
 }
 
 .voyage-booking-image {
-  height: 220px;
+  width: 320px;
+  height: 250px;
   position: relative;
+  display: block;
 }
 
 .voyage-booking-image img {
@@ -3128,11 +3127,12 @@
 }
 
 .voyage-booking-body {
-  padding: 25px;
+  padding: 15px;
+  width: 100%;
 }
 
 .voyage-booking-body h3 {
-  font-size: 24px;
+  font-size: 16px;
   margin-bottom: 8px;
 }
 
@@ -3151,6 +3151,10 @@
 
 .voyage-booking-row span {
   color: #777;
+}
+
+.voyage-booking-row strong {
+  font-size: 14px;
 }
 
 .voyage-booking-footer {
@@ -3323,6 +3327,13 @@
   .voyage-empty-wrapper p {
     font-size: 15px;
   }
+  .voyage-booking-card {
+    flex-direction: column;
+  }
+  .voyage-booking-image {
+    width: 100%;
+    height: 250px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -3345,11 +3356,6 @@
 
   .voyage-sidebar-top {
     display: none;
-  }
-  .voyage-booking-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
   }
 }
 

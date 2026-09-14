@@ -1,0 +1,620 @@
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import {
+  FaCheck,
+  FaHotel,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaUser,
+  FaCalendarAlt,
+  FaBed,
+  FaReceipt,
+  FaInfoCircle,
+} from "react-icons/fa";
+import HeaderInner from "../../../../reuseable-components/HeaderInner";
+import Footer from "../../../../reuseable-components/Footer";
+import { hotelBookingInfo } from "../../../../store/Services/AllApi";
+import "./HotelBookingsDetails.css";
+
+const HotelBookingDetails = () => {
+  const [searchParams] = useSearchParams();
+
+  const id = searchParams.get("id");
+
+  const [booking, setBooking] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchBookingDetails = async () => {
+      if (!id) {
+        setError("Booking ID is missing.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError("");
+
+        const res = await hotelBookingInfo({
+          body: {
+            bookingid: id,
+          },
+        });
+
+        console.log("Hotel Booking Details Response:", res);
+
+        if (res?.success && res?.data) {
+          setBooking(res.data);
+        } else {
+          setError(res?.message || "Unable to fetch booking details.");
+        }
+      } catch (error) {
+        console.error("Error fetching hotel booking details:", error);
+
+        setError("Something went wrong while loading booking details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookingDetails();
+  }, [id]);
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+
+    return new Date(date).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const formatDateWithTime = (date) => {
+    if (!date) return "-";
+
+    return new Date(date).toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatPrice = (value) => {
+    const amount = Number(value || 0);
+
+    return `${booking?.currencysymbol || "$"}${amount.toFixed(2)}`;
+  };
+
+  const calculateNights = () => {
+    if (!booking?.tripStartDate || !booking?.tripEndDate) {
+      return 0;
+    }
+
+    const start = new Date(booking.tripStartDate);
+    const end = new Date(booking.tripEndDate);
+
+    const difference = end.getTime() - start.getTime();
+
+    return Math.ceil(difference / (1000 * 60 * 60 * 24));
+  };
+
+  const getGuestCount = () => {
+    if (booking?.adults) {
+      return booking.adults;
+    }
+
+    if (booking?.billingContact) {
+      return 1;
+    }
+
+    return 0;
+  };
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  });
+
+  if (loading) {
+    return (
+      <div className="hbd-page">
+        <HeaderInner />
+
+        <div className="hbd-loading-wrapper">
+          <div className="hbd-loader"></div>
+          <p>Loading booking details...</p>
+        </div>
+
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !booking) {
+    return (
+      <div className="hbd-page">
+        <HeaderInner />
+
+        <div className="hbd-error-wrapper">
+          <div className="hbd-error-icon">
+            <FaInfoCircle />
+          </div>
+
+          <h2>Booking Details Not Found</h2>
+
+          <p>{error || "Unable to find this booking."}</p>
+        </div>
+
+        <Footer />
+      </div>
+    );
+  }
+
+  const nights = calculateNights();
+
+  const city = booking?.contact?.address?.city?.name || "";
+
+  const state = booking?.contact?.address?.state?.name || "";
+
+  const country = booking?.contact?.address?.country?.name || "";
+
+  const fullLocation = [city, state, country].filter(Boolean).join(", ");
+
+  return (
+    <div className="hbd-page">
+      <HeaderInner />
+
+      <main className="hbd-main">
+        {/* =========================
+            BOOKING CONFIRMATION
+        ========================== */}
+        <div className="hbd-confirmation">
+          <div className="hbd-confirmation-left">
+            <div className="hbd-confirmation-icon">
+              <FaCheck />
+            </div>
+
+            <div className="hbd-confirmation-content">
+              <h1>Your Booking Is Confirmed</h1>
+
+              <p>
+                Your order ID is <strong>{booking.bookingId}</strong>
+                {booking.creationDate && (
+                  <>
+                    {" "}
+                    · Booked On{" "}
+                    <strong>{formatDate(booking.creationDate)}</strong>
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="hbd-confirmation-status">{booking.bookingStatus}</div>
+        </div>
+
+        {/* =========================
+            MAIN CONTENT
+        ========================== */}
+        <div className="hbd-layout">
+          {/* LEFT COLUMN */}
+          <div className="hbd-left-column">
+            {/* =========================
+                HOTEL SUMMARY
+            ========================== */}
+            <section className="hbd-card hbd-hotel-card">
+              <div className="hbd-section-accent"></div>
+
+              <div className="hbd-hotel-info">
+                <div className="hbd-hotel-heading">
+                  <div>
+                    <h2>{booking.name}</h2>
+
+                    {fullLocation && (
+                      <p className="hbd-location">
+                        <FaMapMarkerAlt />
+                        {fullLocation}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="hbd-hotel-icon">
+                    <FaHotel />
+                  </div>
+                </div>
+
+                <div className="hbd-stay-summary">
+                  {/* CHECK IN */}
+                  <div className="hbd-date-block">
+                    <span className="hbd-label">
+                      <FaCalendarAlt />
+                      Check In
+                    </span>
+
+                    <strong>{formatDate(booking.tripStartDate)}</strong>
+
+                    <small>Check-in time as per hotel policy</small>
+                  </div>
+
+                  {/* NIGHTS */}
+                  <div className="hbd-night-wrapper">
+                    <div className="hbd-night-line"></div>
+
+                    <span className="hbd-night-badge">
+                      {nights} {nights === 1 ? "NIGHT" : "NIGHTS"} STAY
+                    </span>
+
+                    <div className="hbd-night-line"></div>
+                  </div>
+
+                  {/* CHECK OUT */}
+                  <div className="hbd-date-block">
+                    <span className="hbd-label">
+                      <FaCalendarAlt />
+                      Check Out
+                    </span>
+
+                    <strong>{formatDate(booking.tripEndDate)}</strong>
+
+                    <small>Check-out time as per hotel policy</small>
+                  </div>
+                </div>
+              </div>
+
+              {/* HOTEL IMAGE */}
+              <div className="hbd-hotel-image-wrapper">
+                {booking.heroImage ? (
+                  <img
+                    src={booking.heroImage}
+                    alt={booking.name}
+                    className="hbd-hotel-image"
+                  />
+                ) : (
+                  <div className="hbd-no-image">
+                    <FaHotel />
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* =========================
+                ROOM DETAILS
+            ========================== */}
+            <section className="hbd-card hbd-room-card">
+              <div className="hbd-section-title">
+                <div className="hbd-title-accent"></div>
+
+                <div>
+                  <h2>
+                    {booking.rooms?.length || booking.occupancies?.length || 1}{" "}
+                    {(booking.rooms?.length ||
+                      booking.occupancies?.length ||
+                      1) === 1
+                      ? "ROOM"
+                      : "ROOMS"}
+                  </h2>
+
+                  <p>Room & stay information</p>
+                </div>
+              </div>
+
+              <div className="hbd-room-content">
+                <div className="hbd-room-main">
+                  <div className="hbd-room-icon">
+                    <FaBed />
+                  </div>
+
+                  <div className="hbd-room-information">
+                    <h3>{booking.roomname || "Hotel Room"}</h3>
+
+                    <p>
+                      {booking.boardBasis?.displayText ||
+                        booking.boardBasis?.description ||
+                        booking.boardBasis?.type ||
+                        "Room Only"}
+                    </p>
+
+                    <div className="hbd-room-meta">
+                      <span>
+                        <FaUser />
+                        {getGuestCount()}{" "}
+                        {getGuestCount() === 1 ? "Adult" : "Adults"}
+                      </span>
+
+                      <span>
+                        <FaCalendarAlt />
+                        {nights} {nights === 1 ? "Night" : "Nights"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="hbd-board-basis">
+                  <span>Board Basis</span>
+
+                  <strong>
+                    {booking.boardBasis?.displayText ||
+                      booking.boardBasis?.description ||
+                      booking.boardBasis?.type ||
+                      "-"}
+                  </strong>
+                </div>
+              </div>
+            </section>
+
+            {/* =========================
+                TRAVELER DETAILS
+            ========================== */}
+            <section className="hbd-card hbd-traveler-card">
+              <div className="hbd-section-title">
+                <div className="hbd-title-accent"></div>
+
+                <div>
+                  <h2>Traveler Details</h2>
+
+                  <p>Guest information for this reservation</p>
+                </div>
+              </div>
+
+              <div className="hbd-traveler-count">
+                <FaUser />
+
+                <strong>
+                  {getGuestCount()} {getGuestCount() === 1 ? "Adult" : "Adults"}
+                </strong>
+              </div>
+
+              <div className="hbd-traveler-details">
+                <div className="hbd-traveler-avatar">
+                  <FaUser />
+                </div>
+
+                <div className="hbd-traveler-info">
+                  <h3>
+                    {booking.billingContact?.firstName || ""}{" "}
+                    {booking.billingContact?.lastName || ""}
+                  </h3>
+
+                  <p>{booking.billingContact?.type || "ADULT"}</p>
+
+                  <div className="hbd-traveler-contact">
+                    {booking.billingContact?.contact?.email && (
+                      <span>{booking.billingContact.contact.email}</span>
+                    )}
+
+                    {booking.billingContact?.contact?.phone && (
+                      <span>{booking.billingContact.contact.phone}</span>
+                    )}
+                  </div>
+                </div>
+
+                <span className="hbd-primary-label">Primary</span>
+              </div>
+
+              {booking.guestNames && (
+                <div className="hbd-guest-names">
+                  <span>Guest Name(s)</span>
+
+                  <strong>{booking.guestNames}</strong>
+                </div>
+              )}
+            </section>
+
+            {/* =========================
+                HOTEL CONTACT
+            ========================== */}
+            <section className="hbd-card hbd-contact-card">
+              <div className="hbd-section-title">
+                <div className="hbd-title-accent"></div>
+
+                <div>
+                  <h2>Hotel Contact Details</h2>
+                  <p>Hotel address and contact information</p>
+                </div>
+              </div>
+
+              <div className="hbd-contact-grid">
+                <div className="hbd-contact-item">
+                  <div className="hbd-contact-icon">
+                    <FaMapMarkerAlt />
+                  </div>
+
+                  <div>
+                    <span>Address</span>
+
+                    <strong>{booking.contact?.address?.line1 || "-"}</strong>
+
+                    <p>{fullLocation}</p>
+
+                    {booking.contact?.address?.postalCode && (
+                      <p>{booking.contact.address.postalCode}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="hbd-contact-item">
+                  <div className="hbd-contact-icon">
+                    <FaPhone />
+                  </div>
+
+                  <div>
+                    <span>Hotel Phone</span>
+
+                    <strong>{booking.contact?.phone || "-"}</strong>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* =========================
+                CANCELLATION POLICY
+            ========================== */}
+            {booking.cancellationPolicies?.length > 0 && (
+              <section className="hbd-card hbd-cancellation-card">
+                <div className="hbd-section-title">
+                  <div className="hbd-title-accent"></div>
+
+                  <div>
+                    <h2>Cancellation Policy</h2>
+
+                    <p>Cancellation terms for this booking</p>
+                  </div>
+                </div>
+
+                {booking.cancellationPolicies.map((policy, policyIndex) => (
+                  <div className="hbd-policy-block" key={policyIndex}>
+                    {policy.text && (
+                      <p className="hbd-policy-text">{policy.text}</p>
+                    )}
+
+                    {policy.rules?.map((rule, ruleIndex) => (
+                      <div className="hbd-policy-rule" key={ruleIndex}>
+                        <div>
+                          <span>Start</span>
+                          <strong>{formatDateWithTime(rule.start)}</strong>
+                        </div>
+
+                        <div>
+                          <span>End</span>
+                          <strong>{formatDateWithTime(rule.end)}</strong>
+                        </div>
+
+                        <div>
+                          <span>Cancellation Charge</span>
+                          <strong>{formatPrice(rule.value)}</strong>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </section>
+            )}
+          </div>
+
+          {/* =========================
+              RIGHT COLUMN
+          ========================== */}
+          <aside className="hbd-right-column">
+            {/* =========================
+                PRICE DETAILS
+            ========================== */}
+            <section className="hbd-card hbd-price-card">
+              <div className="hbd-price-title">
+                <FaReceipt />
+
+                <h2>Price Details</h2>
+              </div>
+
+              <div className="hbd-price-description">
+                <span>
+                  {booking.rooms?.length || booking.occupancies?.length || 1}{" "}
+                  Room × {nights} {nights === 1 ? "Night" : "Nights"}
+                </span>
+
+                <strong>{formatPrice(booking.roomCost)}</strong>
+              </div>
+
+              <div className="hbd-price-row">
+                <span>Room Cost</span>
+
+                <strong>{formatPrice(booking.roomCost)}</strong>
+              </div>
+
+              <div className="hbd-price-row">
+                <span>Taxes</span>
+
+                <strong>{formatPrice(booking.taxes)}</strong>
+              </div>
+
+              {booking.additional_charges && (
+                <div className="hbd-price-row">
+                  <span>Additional Charges</span>
+
+                  <strong>{formatPrice(booking.additional_charges)}</strong>
+                </div>
+              )}
+
+              <div className="hbd-price-divider"></div>
+
+              <div className="hbd-total-row">
+                <span>Total Amount</span>
+
+                <strong>{formatPrice(booking.payable)}</strong>
+              </div>
+            </section>
+
+            {/* =========================
+                BOOKING SUMMARY
+            ========================== */}
+            <section className="hbd-card hbd-summary-card">
+              <div className="hbd-price-title">
+                <FaInfoCircle />
+
+                <h2>Booking Summary</h2>
+              </div>
+
+              <div className="hbd-summary-row">
+                <span>Booking ID</span>
+
+                <strong>{booking.bookingId}</strong>
+              </div>
+
+              <div className="hbd-summary-row">
+                <span>Status</span>
+
+                <strong className="hbd-summary-status">
+                  {booking.bookingStatus}
+                </strong>
+              </div>
+
+              <div className="hbd-summary-row">
+                <span>Confirmation No.</span>
+
+                <strong>{booking.providerConfirmationNumber || "-"}</strong>
+              </div>
+
+              <div className="hbd-summary-row">
+                <span>Booked On</span>
+
+                <strong>{formatDate(booking.creationDate)}</strong>
+              </div>
+            </section>
+
+            {/* =========================
+                BILLING DETAILS
+            ========================== */}
+            <section className="hbd-card hbd-billing-card">
+              <div className="hbd-price-title">
+                <FaUser />
+
+                <h2>Billing Contact</h2>
+              </div>
+
+              <h3>
+                {booking.billingContact?.firstName || ""}{" "}
+                {booking.billingContact?.lastName || ""}
+              </h3>
+
+              <p>{booking.billingContact?.contact?.email || "-"}</p>
+
+              <p>{booking.billingContact?.contact?.phone || "-"}</p>
+
+              <p>{booking.billingContact?.contact?.address?.line1 || "-"}</p>
+            </section>
+          </aside>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default HotelBookingDetails;

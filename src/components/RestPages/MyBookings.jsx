@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
 import hotel1 from "../../assets/images/hotel1.webp";
@@ -14,9 +14,13 @@ import {
   FaTicketAlt,
   FaChevronLeft,
   FaChevronRight,
-  FaCalendarAlt,
   FaRegSadTear,
 } from "react-icons/fa";
+import {
+  hotelBookingInfo,
+  hotelUpcomingOrder,
+} from "../../store/Services/AllApi";
+import { useNavigate } from "react-router-dom";
 
 const sidebarItems = [
   {
@@ -56,58 +60,76 @@ const sidebarItems = [
   },
 ];
 
-const bookingData = [
-  {
-    id: 1,
-    type: "hotels",
-    status: "Upcoming",
-    hotelName: "Grand Palace Hotel",
-    city: "Dubai, UAE",
-    checkIn: "20 Jul 2026",
-    checkOut: "23 Jul 2026",
-    guests: "2 Adults",
-    bookingId: "BK458921",
-    amount: "$420",
-    image: hotel1,
-  },
-  {
-    id: 2,
-    type: "hotels",
-    status: "Cancelled",
-    hotelName: "Taj Palace",
-    city: "Mumbai",
-    checkIn: "10 Jun 2026",
-    checkOut: "12 Jun 2026",
-    guests: "2 Adults",
-    bookingId: "BK145263",
-    amount: "$260",
-    image: hotel2,
-  },
-  {
-    id: 3,
-    type: "hotels",
-    status: "Completed",
-    hotelName: "Marriott",
-    city: "Singapore",
-    checkIn: "15 Apr 2026",
-    checkOut: "18 Apr 2026",
-    guests: "2 Adults",
-    bookingId: "BK852147",
-    amount: "$620",
-    image: hotel3,
-  },
-];
-
 const bookingTabs = ["Upcoming", "Cancelled", "Completed"];
 
 const MyBookings = () => {
+  const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState("hotels");
   const [activeTab, setActiveTab] = useState("Upcoming");
   const [collapse, setCollapse] = useState(false);
+  const [upcomingBookings, setUpcomingBookings] = useState([]);
 
-  const filteredBookings = bookingData.filter(
+  const filteredBookings = upcomingBookings.filter(
     (item) => item.type === activeMenu && item.status === activeTab,
   );
+
+  useEffect(() => {
+    const fetchUpcomingBookings = async () => {
+      try {
+        const res = await hotelUpcomingOrder({
+          body: {
+            memberid: localStorage.getItem("bookingId"),
+            status: "UPCOMING",
+            travelDate: {
+              start: "2026-09-01",
+              end: "2028-09-14",
+            },
+          },
+        });
+
+        const mappedBookings = (res?.orders || []).map((order) => ({
+          id: order.orderid,
+          type: "hotels",
+          status: "Upcoming",
+          hotelName: order.property_name,
+          city: "",
+          checkIn: new Date(order.start_date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          checkOut: new Date(order.end_date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          guests: order?.adults,
+          bookingId: order.confirmation_number,
+          amount: `$${Number(order.our_price || 0).toFixed(2)}`,
+          image: order?.image,
+          orderStatus: order.orderstatus,
+        }));
+
+        setUpcomingBookings(mappedBookings);
+      } catch (error) {
+        console.error("Error fetching upcoming bookings:", error);
+        setUpcomingBookings([]);
+      }
+    };
+
+    fetchUpcomingBookings();
+  }, []);
+
+  const handleParticularBookingClick = (id) => {
+    navigate(`/hotel-booking-details?id=${encodeURIComponent(id)}`);
+  };
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  });
   return (
     <div>
       <HeaderInner />
@@ -165,7 +187,11 @@ const MyBookings = () => {
             {filteredBookings.length > 0 ? (
               <div className="voyage-booking-list">
                 {filteredBookings.map((booking) => (
-                  <div className="voyage-booking-card" key={booking.id}>
+                  <div
+                    className="voyage-booking-card"
+                    key={booking.id}
+                    onClick={() => handleParticularBookingClick(booking.id)}
+                  >
                     <div className="voyage-booking-image">
                       <img src={booking.image} alt={booking.hotelName} />
 
@@ -192,11 +218,6 @@ const MyBookings = () => {
                       <div className="voyage-booking-row">
                         <span>Guests</span>
                         <strong>{booking.guests}</strong>
-                      </div>
-
-                      <div className="voyage-booking-row">
-                        <span>Booking ID</span>
-                        <strong>{booking.bookingId}</strong>
                       </div>
 
                       <div className="voyage-booking-footer">

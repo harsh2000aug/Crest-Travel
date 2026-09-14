@@ -43,6 +43,7 @@ import BlogProtectedRoutes from "./BlogProtectedRoutes";
 import BlogPage from "./components/admin/BlogPage/BlogPage";
 import PaymentStatus from "./components/PaymentStatus/PaymentStatus";
 import HotelPaymentStatus from "./components/main-form/HotelForm/HotelPaymentStatus/HotelPaymentStatus";
+import HotelBookingsDetails from "./components/main-form/HotelForm/HotelBookingsDetails/HotelBookingsDetails";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -55,7 +56,6 @@ function App() {
       const email = localStorage.getItem("Email");
       const accessToken = localStorage.getItem("accessToken");
 
-      // Don't call API if user is not logged in
       if (!email || !accessToken) {
         return;
       }
@@ -73,6 +73,7 @@ function App() {
           JSON.stringify(res?.data?.get?.result),
         );
         localStorage.setItem("tierId", res?.data?.get?.result?.tierid);
+        localStorage.setItem("bookingId", res?.data?.get?.result?.id);
       } catch (error) {
         console.error("Error fetching new member details:", error);
       }
@@ -139,6 +140,10 @@ function App() {
           <Route path="/vacation-list" element={<VacationList />} />
           <Route path="/vacation-details" element={<VacationDetail />} />
           <Route path="/vacation-billing" element={<VacationBilling />} />
+          <Route
+            path="/hotel-booking-details"
+            element={<HotelBookingsDetails />}
+          />
         </Route>
 
         <Route

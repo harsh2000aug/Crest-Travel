@@ -592,6 +592,15 @@
   text-align: right;
 }
 
+.lux-credit {
+  background: #0b2443;
+  color: #d8a437;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 30px;
+  margin-bottom: 8px;
+}
+
 .old-price {
   text-decoration: line-through;
   color: #94a3b8;
@@ -1811,14 +1820,15 @@
   width: 100%;
   height: 230px;
   object-fit: cover;
+  display: block;
 }
 
 .booking-summary-content {
-  padding: 20px;
+  padding: 15px;
 }
 
 .booking-summary-content h3 {
-  font-size: 22px;
+  font-size: 18 px;
   color: #222;
   margin-bottom: 18px;
   line-height: 1.4;
@@ -1934,11 +1944,11 @@
 }
 
 .tax-text {
-  font-size: 16px;
+  font-size: 13px;
   color: #777;
 }
 
-.tax-text b {
+.rate-right p b {
   font-size: 22px;
   color: #000;
 }
@@ -2894,4 +2904,150 @@ select.booking-input {
   .remove-traveller-btn-custom {
     width: 100%;
   }
+}
+
+.loading-more-hotels {
+  padding: 10px 16px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  background: #ffffff;
+  border: 1px solid #e4e8ee;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(20, 35, 60, 0.04);
+}
+
+.additional-charges-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.additional-charges-title {
+  font-size: 12px;
+  color: #555;
+  text-align: right;
+  cursor: pointer;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+
+.info-icon {
+  font-size: 13px;
+  color: #777;
+}
+
+/* Popup */
+.additional-charges-tooltip {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 22px;
+  width: 285px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 14px;
+  z-index: 1000;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+  border: 1px solid #eee;
+  text-align: left;
+}
+
+/* Show popup on hover */
+.additional-charges-wrapper:hover .additional-charges-tooltip {
+  display: block;
+}
+
+.tooltip-heading {
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 3px;
+}
+
+.tooltip-subheading {
+  font-size: 11px;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.charge-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  font-size: 12px;
+  color: #444;
+}
+
+.charge-row span:last-child {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.cancellation-policy-card {
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 0;
+  overflow: hidden;
+  margin-top: 20px;
+  background: #fff;
+}
+
+.cancellation-policy-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  cursor: pointer;
+  user-select: none;
+  justify-content: space-between;
+}
+
+.cancellation-arrow {
+  color: #b27a20;
+  font-size: 14px;
+  font-weight: 600;
+  width: 16px;
+  line-height: 1;
+}
+
+.cancellation-title {
+  font-size: 14px;
+  color: #555;
+  font-weight: 400;
+}
+
+.cancellation-policy-content {
+  padding: 0 22px 18px 22px;
+}
+
+.cancellation-policy-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.8;
+  margin-bottom: 4px;
+}
+
+.cancellation-policy-rule:last-child {
+  margin-bottom: 0;
+}
+
+.policy-bullet {
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.cancellation-policy-rule strong {
+  color: #111;
+  font-weight: 700;
 }
