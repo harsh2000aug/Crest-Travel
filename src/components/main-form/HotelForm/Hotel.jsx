@@ -120,6 +120,7 @@ const Hotel = () => {
   const [showRoomPolicy, setShowRoomPolicy] = useState(false);
   const [allGuestsInfoRequired, setAllGuestsInfoRequired] = useState(false);
   const [priceCheckResult, setPriceCheckResult] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [leadGuest, setLeadGuest] = useState({
     title: "Mr",
     firstName: "",
@@ -871,6 +872,7 @@ const Hotel = () => {
 
   useEffect(() => {
     const fetchPriceCheck = async () => {
+      setLoading(true);
       try {
         const res = await hotelPriceCheck({
           body: {
@@ -896,9 +898,9 @@ const Hotel = () => {
         setAllGuestsInfoRequired(guestsRequired === true);
       } catch (error) {
         console.error("Error fetching price check:", error);
-
-        // Safe fallback
         setAllGuestsInfoRequired(false);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -948,7 +950,49 @@ const Hotel = () => {
 
   return (
     <>
-      {hotelLoader && <HotelLoader />}
+      {hotelLoader && (
+        <div className="simple-hotel-loader">
+          <div className="simple-hotel-loader__box">
+            <div className="simple-hotel-loader__icon-wrap">
+              <div className="simple-hotel-loader__icon">
+                <div className="simple-hotel-loader__roof"></div>
+
+                <div className="simple-hotel-loader__building">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+
+                <div className="simple-hotel-loader__door"></div>
+              </div>
+
+              <div className="simple-hotel-loader__circle"></div>
+            </div>
+
+            <h2 className="simple-hotel-loader__title">Almost There!</h2>
+
+            <p className="simple-hotel-loader__text">
+              We’re confirming your payment and finalizing your booking.
+            </p>
+
+            <div className="simple-hotel-loader__loading">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <div className="simple-hotel-loader__line">
+              <div className="simple-hotel-loader__line-fill"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {loading && <HotelLoader />}
 
       <HeaderInner />
 

@@ -2880,13 +2880,13 @@
   border-radius: 50%;
   cursor: pointer;
   background: #edf2ff;
-  color: #4361ee;
+  color: #061d39;
   transition: 0.3s;
 }
 
 .voyage-collapse-btn:hover {
   transform: rotate(180deg);
-  background: #4361ee;
+  background: #061d39;
   color: white;
 }
 
@@ -2915,12 +2915,12 @@
 
 .voyage-sidebar-item:hover {
   background: #edf4ff;
-  color: #4361ee;
+  color: #061d39;
   transform: translateX(5px);
 }
 
 .voyage-sidebar-item-active {
-  background: linear-gradient(135deg, #4361ee, #6d5dfc);
+  background: #061d39;
   color: white;
   box-shadow: 0 15px 30px rgba(67, 97, 238, 0.25);
 }
@@ -2932,7 +2932,7 @@
   width: 6px;
   height: 55%;
   border-radius: 20px;
-  background: #4361ee;
+  background: #061d39;
 }
 
 .voyage-sidebar-collapse p {
@@ -2981,7 +2981,7 @@
 }
 
 .voyage-tab-active {
-  background: linear-gradient(135deg, #4361ee, #6d5dfc);
+  background: #061d39;
   color: white;
   box-shadow: 0 12px 25px rgba(67, 97, 238, 0.25);
 }
@@ -3118,7 +3118,7 @@
   position: absolute;
   top: 18px;
   right: 18px;
-  background: #4361ee;
+  background: #061d39;
   color: #fff;
   padding: 8px 16px;
   border-radius: 30px;
@@ -3165,12 +3165,12 @@
 }
 
 .voyage-booking-footer h2 {
-  color: #4361ee;
+  color: #061d39;
 }
 
 .voyage-booking-footer button {
   border: none;
-  background: #4361ee;
+  background: #061d39;
   color: #fff;
   padding: 12px 22px;
   border-radius: 10px;
@@ -3818,9 +3818,9 @@
 }
 
 .voyage-pagination-number-active {
-  background: #111 !important;
+  background: #061d39 !important;
   color: #fff !important;
-  border-color: #111 !important;
+  border-color: #061d39 !important;
 }
 
 .voyage-pagination-btn:disabled,
@@ -3851,5 +3851,162 @@
     min-width: 36px;
     height: 36px;
     padding: 0 8px;
+  }
+}
+
+/* =========================================
+   CREST BENEFITS LOADING POPUP
+========================================= */
+
+.crest-benefits-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(5px);
+}
+
+.crest-benefits-loading-popup {
+  width: 100%;
+  max-width: 420px;
+  padding: 38px 32px;
+  background: #ffffff;
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  animation: crestBenefitsPopupShow 0.25s ease-out;
+}
+
+@keyframes crestBenefitsPopupShow {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* =========================================
+   LOADING ICON
+========================================= */
+
+.crest-benefits-loading-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f3f5f7;
+}
+
+.crest-benefits-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid #e1e4e8;
+  border-top-color: #222222;
+  border-radius: 50%;
+  animation: crestBenefitsSpinner 0.8s linear infinite;
+}
+
+@keyframes crestBenefitsSpinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   TEXT
+========================================= */
+
+.crest-benefits-loading-popup h2 {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #222222;
+}
+
+.crest-benefits-loading-popup p {
+  max-width: 330px;
+  margin: 0 auto;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #707070;
+}
+
+/* =========================================
+   PROGRESS BAR
+========================================= */
+
+.crest-benefits-loading-progress {
+  width: 100%;
+  height: 4px;
+  margin-top: 24px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #eeeeee;
+}
+
+.crest-benefits-loading-progress-bar {
+  width: 40%;
+  height: 100%;
+  border-radius: 10px;
+  background: #222222;
+  animation: crestBenefitsProgress 1.3s ease-in-out infinite;
+}
+
+@keyframes crestBenefitsProgress {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  50% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(280%);
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .crest-benefits-loading-overlay {
+    padding: 16px;
+  }
+
+  .crest-benefits-loading-popup {
+    max-width: 100%;
+    padding: 32px 22px;
+    border-radius: 16px;
+  }
+
+  .crest-benefits-loading-popup h2 {
+    font-size: 20px;
+  }
+
+  .crest-benefits-loading-popup p {
+    font-size: 13px;
+  }
+
+  .crest-benefits-loading-icon {
+    width: 58px;
+    height: 58px;
+  }
+
+  .crest-benefits-loading-spinner {
+    width: 28px;
+    height: 28px;
   }
 }

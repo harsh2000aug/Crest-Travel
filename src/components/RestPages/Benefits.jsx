@@ -11,10 +11,11 @@ import {
 const Benefits = () => {
   const [crestBenefitsData, setCrestBenefitsData] = useState([]);
   const [selectedBenefit, setSelectedBenefit] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch benefits
   useEffect(() => {
     const fetchCrestBenefits = async () => {
+      setLoading(true);
       try {
         const response = await crestBenefits({
           body: {
@@ -31,6 +32,8 @@ const Benefits = () => {
         console.log("Relations:", relations);
       } catch (error) {
         console.error("Error fetching crest benefits:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -97,6 +100,24 @@ const Benefits = () => {
 
   return (
     <>
+      {loading && (
+        <div className="crest-benefits-loading-overlay">
+          <div className="crest-benefits-loading-popup">
+            <div className="crest-benefits-loading-icon">
+              <div className="crest-benefits-loading-spinner"></div>
+            </div>
+
+            <h2>Loading Benefits</h2>
+
+            <p>Please wait while we fetch your exclusive member benefits.</p>
+
+            <div className="crest-benefits-loading-progress">
+              <div className="crest-benefits-loading-progress-bar"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="head-banner2">
         <HeaderInner />
 

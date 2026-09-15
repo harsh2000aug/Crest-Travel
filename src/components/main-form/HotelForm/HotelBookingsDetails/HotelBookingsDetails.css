@@ -1134,7 +1134,7 @@
 }
 
 .hbd-cancel-popup-actions button {
-  min-width: 120px;
+  width: 50%;
   height: 44px;
   border-radius: 7px;
   padding: 0 18px;
@@ -1201,5 +1201,191 @@
 
   .hbd-cancel-popup-actions button {
     width: 100%;
+  }
+}
+
+/* =========================================
+   SECOND POPUP - CANCELLATION CHARGES
+========================================= */
+
+.hbd-refund-details {
+  width: 100%;
+  margin: 22px 0 18px;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.hbd-refund-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 11px 0;
+  font-size: 14px;
+  color: #5f6368;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.hbd-refund-row:last-child {
+  border-bottom: none;
+}
+
+.hbd-refund-row span {
+  font-weight: 500;
+}
+
+.hbd-refund-row strong {
+  color: #222;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Total refund row */
+.hbd-refund-total {
+  margin-top: 3px;
+  padding-top: 14px;
+}
+
+.hbd-refund-total span {
+  color: #222;
+  font-weight: 600;
+}
+
+.hbd-refund-total strong {
+  font-size: 17px;
+}
+
+/* Warning / confirmation text */
+.hbd-refund-warning {
+  margin: 8px 0 20px !important;
+  font-size: 14px !important;
+  line-height: 1.5;
+  color: #555 !important;
+}
+
+/* =========================================
+   SECOND POPUP TEXT
+========================================= */
+
+.hbd-cancel-popup h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #222;
+}
+
+.hbd-cancel-popup > p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #666;
+}
+
+.hbd-cancel-popup > p strong {
+  color: #d64545;
+  font-weight: 700;
+}
+
+/* =========================================
+   POPUP ACTION BUTTONS
+========================================= */
+
+.hbd-cancel-popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.hbd-cancel-popup-actions button {
+  min-width: 120px;
+  padding: 11px 20px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hbd-cancel-popup-no {
+  background: #f1f3f5;
+  color: #444;
+}
+
+.hbd-cancel-popup-no:hover {
+  background: #e2e5e8;
+}
+
+.hbd-cancel-popup-yes {
+  background: #d64545;
+  color: #fff;
+}
+
+.hbd-cancel-popup-yes:hover {
+  background: #bd3535;
+}
+
+.hbd-cancel-popup-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   RESPONSIVE - MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .hbd-cancel-overlay {
+    padding: 16px;
+  }
+
+  .hbd-cancel-popup {
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 18px;
+    border-radius: 14px;
+  }
+
+  .hbd-cancel-popup h2 {
+    font-size: 20px;
+  }
+
+  .hbd-cancel-popup > p {
+    font-size: 14px;
+  }
+
+  .hbd-refund-details {
+    margin: 18px 0;
+    padding: 12px;
+  }
+
+  .hbd-refund-row {
+    gap: 12px;
+    font-size: 13px;
+  }
+
+  .hbd-refund-row strong {
+    font-size: 14px;
+  }
+
+  .hbd-refund-total strong {
+    font-size: 16px;
+  }
+
+  .hbd-cancel-popup-actions {
+    flex-direction: column-reverse;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .hbd-cancel-popup-actions button {
+    width: 100%;
+    min-width: 0;
   }
 }

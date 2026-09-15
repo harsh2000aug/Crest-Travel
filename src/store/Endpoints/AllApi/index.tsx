@@ -198,6 +198,13 @@ export const allApi = {
       uri: "/alphahotel/price-check",
     },
   },
+  hotelPriceRefund: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphahotel/hotel-checkRefundEligibility",
+    },
+  },
 
   changePassword: {
     v1: {

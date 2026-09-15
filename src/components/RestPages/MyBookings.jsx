@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
-import hotel1 from "../../assets/images/hotel1.webp";
-import hotel2 from "../../assets/images/hotel2.webp";
-import hotel3 from "../../assets/images/hotel3.webp";
+import dummy from "../../assets/images/dummy-hotel.png";
 import {
   FaHotel,
   FaPlane,
@@ -49,8 +47,8 @@ const sidebarItems = [
     icon: <FaCar />,
   },
   {
-    id: "transfers",
-    title: "Transfers",
+    id: "activities",
+    title: "Activities",
     icon: <FaBus />,
   },
   {
@@ -125,12 +123,10 @@ const MyBookings = () => {
 
         setUpcomingBookings(mappedBookings);
 
-        // If we received 10 records, another page may exist
         const nextPageAvailable = orders.length === PAGE_LIMIT;
 
         setHasNextPage(nextPageAvailable);
 
-        // Keep track of highest page reached
         if (nextPageAvailable) {
           setTotalPages((prev) => Math.max(prev, currentPage + 2));
         } else {
@@ -260,7 +256,10 @@ const MyBookings = () => {
                     onClick={() => handleParticularBookingClick(booking.id)}
                   >
                     <div className="voyage-booking-image">
-                      <img src={booking.image} alt={booking.hotelName} />
+                      <img
+                        src={booking.image || dummy}
+                        alt={booking.hotelName}
+                      />
 
                       <span className="voyage-booking-status">
                         {booking.status}

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FaMapMarkerAlt, FaStar, FaWifi } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
+import dummy from "../../../assets/images/dummy-hotel.png";
 
 import {
   hotelNextPull,
@@ -26,6 +27,7 @@ function HotelCard({
   location,
   newPrice,
   publishedRate,
+  brandSupplierRates,
   discountPercentage,
   credit,
   starRating,
@@ -51,10 +53,7 @@ function HotelCard({
   return (
     <div className="lux-hotel-card" onClick={onClick}>
       <div className="lux-hotel-img-wrap">
-        <img
-          src={image || "/images/hotel-placeholder.jpg"}
-          alt={name || "Hotel"}
-        />
+        <img src={image || dummy} alt={name || "Hotel"} />
         {calculatedDiscount > 0 && (
           <div className="hotel-discount-badge">{calculatedDiscount}% OFF</div>
         )}
@@ -70,32 +69,28 @@ function HotelCard({
               {location}
             </p>
           </div>
-        </div>
+          <div className="lux-hotel-options">
+            {Object.entries(options || {})
+              .filter(([_, value]) => value === true)
+              .map(([key]) => (
+                <span className="hotel-option green" key={key}>
+                  ✓{" "}
+                  {key
+                    .replace(/([A-Z])/g, " $1")
+                    .replace(/^./, (str) => str.toUpperCase())}
+                </span>
+              ))}
 
-        <div className="lux-hotel-options">
-          {Object.entries(options || {})
-            .filter(([_, value]) => value === true)
-            .map(([key]) => (
-              <span className="hotel-option green" key={key}>
-                ✓{" "}
-                {key
-                  .replace(/([A-Z])/g, " $1")
-                  .replace(/^./, (str) => str.toUpperCase())}
+            {payAtHotel && (
+              <span className="hotel-option green">✓ Pay At Hotel</span>
+            )}
+
+            {hasFreeWifi && (
+              <span className="hotel-option green">
+                <FaWifi /> Free WiFi
               </span>
-            ))}
-
-          {payAtHotel && (
-            <span className="hotel-option green">✓ Pay At Hotel</span>
-          )}
-
-          {hasFreeWifi && (
-            <span className="hotel-option green">
-              <FaWifi /> Free WiFi
-            </span>
-          )}
-        </div>
-
-        <div className="lux-bottom-row">
+            )}
+          </div>
           <div className="lux-rating-box">
             <span
               style={{
@@ -113,14 +108,50 @@ function HotelCard({
               </span>
             </span>
           </div>
-
+        </div>
+        <div className="lux-bottom-row">
           <div className="lux-price-box">
             {Number(credit || 0) > 0 && (
               <div className="lux-credit">
                 Using <b>{Number(credit).toFixed(2)}</b> room coins
               </div>
             )}
+            {Array.isArray(brandSupplierRates) &&
+              brandSupplierRates.length > 0 && (
+                <div className="hotel-supplier-comparison">
+                  <div className="hotel-supplier-comparison__title">
+                    Compare prices
+                  </div>
 
+                  <div className="hotel-supplier-comparison__list">
+                    {brandSupplierRates.map((supplier, index) => {
+                      const supplierPrice = Number(supplier?.totalRate || 0);
+                      const ourPriceValue = Number(newPrice || 0);
+
+                      if (!supplier?.providerName || supplierPrice <= 0) {
+                        return null;
+                      }
+
+                      const difference = supplierPrice - ourPriceValue;
+
+                      return (
+                        <div
+                          className="hotel-supplier-comparison__row"
+                          key={`${supplier.providerName}-${index}`}
+                        >
+                          <span className="hotel-supplier-comparison__name">
+                            {supplier.providerName}
+                          </span>
+
+                          <span className="hotel-supplier-comparison__price">
+                            ${supplierPrice.toFixed(2)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             <h2>${Number(newPrice || 0).toFixed(2)}</h2>
 
             <small>Includes taxes</small>
@@ -210,6 +241,10 @@ export default function HotelResults() {
   const [isFetchingMoreHotels, setIsFetchingMoreHotels] = useState(false);
 
   const [showModifyForm, setShowModifyForm] = useState(false);
+
+  const [showMobileModifyModal, setShowMobileModifyModal] = useState(false);
+
+  const [showMobileFilterModal, setShowMobileFilterModal] = useState(false);
 
   const [hotelResults, setHotelResults] = useState([]);
 
@@ -1017,6 +1052,28 @@ export default function HotelResults() {
 
   today.setHours(0, 0, 0, 0);
 
+  const getActiveFilterCount = () => {
+    let count = 0;
+
+    count += filters.starRatings.length;
+    count += filters.propertyTypes.length;
+    count += filters.chains.length;
+
+    if (filters.freeCancellation) count++;
+    if (filters.freeBreakfast) count++;
+    if (filters.refundable) count++;
+    if (filters.freeWifi) count++;
+    if (filters.payAtHotel) count++;
+
+    const priceChanged =
+      Number(filters.minPrice) !== Number(apiPriceMin) ||
+      Number(filters.maxPrice) !== Number(apiPriceMax || maxHotelPrice);
+
+    if (priceChanged) count++;
+
+    return count;
+  };
+
   return (
     <>
       {hotelLoader && (
@@ -1067,7 +1124,10 @@ export default function HotelResults() {
 
       <div className="lux-results-page">
         <div className="container">
-          <div className="lux-search-bar">
+          <div
+            className="lux-search-bar desktop-modify-search-btn"
+            onClick={() => setShowModifyForm((prev) => !prev)}
+          >
             <div>
               <h2>{searchData.destination}</h2>
 
@@ -1079,11 +1139,7 @@ export default function HotelResults() {
               </p>
             </div>
 
-            <button
-              className="lux-change-btn"
-              type="button"
-              onClick={() => setShowModifyForm((prev) => !prev)}
-            >
+            <button className="lux-change-btn " type="button">
               Modify Search
             </button>
           </div>
@@ -1093,682 +1149,759 @@ export default function HotelResults() {
           ================================================= */}
 
           {showModifyForm && (
-            <form
-              className="hotel-form"
-              onSubmit={(e) => {
-                e.preventDefault();
+            <div className="desktop-modify-search-wrapper">
+              <form
+                className="hotel-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
 
-                const updatedRoomData = [
-                  {
-                    adults,
+                  const updatedRoomData = [
+                    {
+                      adults,
 
-                    children,
+                      children,
 
-                    childrenAges,
-                  },
+                      childrenAges,
+                    },
 
-                  ...rooms,
-                ];
+                    ...rooms,
+                  ];
 
-                localStorage.setItem("roomCountToStore", totalRooms);
+                  localStorage.setItem("roomCountToStore", totalRooms);
 
-                localStorage.setItem("adultCountToStore", totalAdults);
+                  localStorage.setItem("adultCountToStore", totalAdults);
 
-                localStorage.setItem("childCountToStore", totalChildren);
+                  localStorage.setItem("childCountToStore", totalChildren);
 
-                setRoomCountToStore(totalRooms);
+                  setRoomCountToStore(totalRooms);
 
-                setAdultCountToStore(totalAdults);
+                  setAdultCountToStore(totalAdults);
 
-                setChildCountToStore(totalChildren);
+                  setChildCountToStore(totalChildren);
 
-                setRoomDetails(updatedRoomData);
+                  setRoomDetails(updatedRoomData);
 
-                handleSearchHotel({
-                  destinationData: selectedDestination,
+                  handleSearchHotel({
+                    destinationData: selectedDestination,
 
-                  checkIn: dateRange[0],
+                    checkIn: dateRange[0],
 
-                  checkOut: dateRange[1],
+                    checkOut: dateRange[1],
 
-                  roomData: updatedRoomData,
-                });
+                    roomData: updatedRoomData,
+                  });
 
-                setShowModifyForm(false);
-              }}
-            >
-              {/* DESTINATION */}
-
-              <div
-                className="input-group"
-                style={{
-                  position: "relative",
+                  setShowModifyForm(false);
                 }}
               >
-                <label>Destination</label>
+                {/* DESTINATION */}
 
-                <input
-                  type="text"
-                  value={destination}
-                  onChange={handleDestinationChange}
-                  autoComplete="off"
-                />
+                <div
+                  className="input-group"
+                  style={{
+                    position: "relative",
+                  }}
+                >
+                  <label>Destination</label>
 
-                {showDropdown && hotelResults.length > 0 && (
-                  <div className="destination-dropdown">
-                    {hotelResults.map((item) => (
-                      <div
-                        key={item.id}
-                        className="destination-item"
-                        onClick={() => {
-                          setDestination(item.fullName);
+                  <input
+                    type="text"
+                    value={destination}
+                    onChange={handleDestinationChange}
+                    autoComplete="off"
+                  />
 
-                          setSelectedDestination({
-                            destination: item.fullName,
-
-                            destinationId: item.id,
-
-                            destinationType: item.type,
-
-                            latitude: item.coordinates?.lat,
-
-                            longitude: item.coordinates?.long,
-                          });
-
-                          setHotelResults([]);
-
-                          setShowDropdown(false);
-                        }}
-                      >
-                        <strong
-                          style={{
-                            display: "block",
-
-                            marginBottom: "10px",
-                          }}
-                        >
-                          {item.fullName}
-                        </strong>
-
-                        <div>{item.country}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* DATE */}
-
-              <div className="input-group">
-                <label>Check In - Check Out</label>
-
-                <DatePicker
-                  selected={dateRange[0]}
-                  startDate={dateRange[0]}
-                  endDate={dateRange[1]}
-                  onChange={(update) => setDateRange(update)}
-                  selectsRange
-                  minDate={today}
-                  dateFormat="dd/MM/yyyy"
-                />
-              </div>
-
-              {/* GUESTS */}
-
-              <div className="input-group">
-                <label>Guests and Rooms</label>
-
-                <input
-                  type="text"
-                  readOnly
-                  onClick={() => setShowPopup(true)}
-                  value={`${totalAdults} Adult${totalAdults > 1 ? "s" : ""}${
-                    totalChildren > 0
-                      ? `, ${totalChildren} Child${
-                          totalChildren > 1 ? "ren" : ""
-                        }`
-                      : ""
-                  }, ${totalRooms} Room${totalRooms > 1 ? "s" : ""}`}
-                />
-
-                {showPopup && (
-                  <div
-                    className="travel-guest-popup"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {/* ROOM 1 */}
-
-                    <div className="travel-room-title">Room 1</div>
-
-                    {/* ADULTS */}
-
-                    <div className="travel-guest-row">
-                      <div className="travel-guest-info">
-                        <h4>Adults</h4>
-                      </div>
-
-                      <div className="travel-counter">
-                        <button
-                          type="button"
-                          onClick={() => setAdults(adults > 1 ? adults - 1 : 1)}
-                        >
-                          −
-                        </button>
-
-                        <span>{adults}</span>
-
-                        <button
-                          type="button"
-                          onClick={() => setAdults(adults + 1)}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* CHILDREN */}
-
-                    <div className="travel-guest-row">
-                      <div className="travel-guest-info">
-                        <h4>Children</h4>
-
-                        <p>Age 1-17</p>
-                      </div>
-
-                      <div className="travel-counter">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (children > 0) {
-                              setChildren(children - 1);
-
-                              setChildrenAges((prev) => prev.slice(0, -1));
-                            }
-                          }}
-                        >
-                          −
-                        </button>
-
-                        <span>{children}</span>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setChildren((prev) => prev + 1);
-
-                            setChildrenAges((prev) => [...prev, ""]);
-                          }}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* CHILD AGES */}
-
-                    {children > 0 && (
-                      <div className="children-age-container">
-                        {childrenAges.map((age, childIndex) => (
-                          <div className="child-age-row" key={childIndex}>
-                            <label>Child {childIndex + 1} Age</label>
-
-                            <select
-                              value={age || ""}
-                              onChange={(e) => {
-                                const updated = [...childrenAges];
-
-                                updated[childIndex] = e.target.value;
-
-                                setChildrenAges(updated);
-                              }}
-                            >
-                              <option value="">Select age</option>
-
-                              {Array.from(
-                                {
-                                  length: 17,
-                                },
-                                (_, i) => i + 1,
-                              ).map((ageValue) => (
-                                <option key={ageValue} value={ageValue}>
-                                  {ageValue} {ageValue === 1 ? "year" : "years"}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* OTHER ROOMS */}
-
-                    {rooms.map((room, index) => (
-                      <React.Fragment key={index}>
+                  {showDropdown && hotelResults.length > 0 && (
+                    <div className="destination-dropdown">
+                      {hotelResults.map((item) => (
                         <div
-                          className="travel-room-header"
-                          style={{
-                            display: "flex",
+                          key={item.id}
+                          className="destination-item"
+                          onClick={() => {
+                            setDestination(item.fullName);
 
-                            justifyContent: "space-between",
+                            setSelectedDestination({
+                              destination: item.fullName,
 
-                            alignItems: "center",
+                              destinationId: item.id,
+
+                              destinationType: item.type,
+
+                              latitude: item.coordinates?.lat,
+
+                              longitude: item.coordinates?.long,
+                            });
+
+                            setHotelResults([]);
+
+                            setShowDropdown(false);
                           }}
                         >
-                          <div className="travel-room-title">
-                            Room {index + 2}
-                          </div>
+                          <strong
+                            style={{
+                              display: "block",
+
+                              marginBottom: "10px",
+                            }}
+                          >
+                            {item.fullName}
+                          </strong>
+
+                          <div>{item.country}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* DATE */}
+
+                <div className="input-group">
+                  <label>Check In - Check Out</label>
+
+                  <DatePicker
+                    selected={dateRange[0]}
+                    startDate={dateRange[0]}
+                    endDate={dateRange[1]}
+                    onChange={(update) => setDateRange(update)}
+                    selectsRange
+                    minDate={today}
+                    dateFormat="dd/MM/yyyy"
+                  />
+                </div>
+
+                {/* GUESTS */}
+
+                <div className="input-group">
+                  <label>Guests and Rooms</label>
+
+                  <input
+                    type="text"
+                    readOnly
+                    onClick={() => setShowPopup(true)}
+                    value={`${totalAdults} Adult${totalAdults > 1 ? "s" : ""}${
+                      totalChildren > 0
+                        ? `, ${totalChildren} Child${
+                            totalChildren > 1 ? "ren" : ""
+                          }`
+                        : ""
+                    }, ${totalRooms} Room${totalRooms > 1 ? "s" : ""}`}
+                  />
+
+                  {showPopup && (
+                    <div
+                      className="travel-guest-popup"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {/* ROOM 1 */}
+
+                      <div className="travel-room-title">Room 1</div>
+
+                      {/* ADULTS */}
+
+                      <div className="travel-guest-row">
+                        <div className="travel-guest-info">
+                          <h4>Adults</h4>
+                        </div>
+
+                        <div className="travel-counter">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setAdults(adults > 1 ? adults - 1 : 1)
+                            }
+                          >
+                            −
+                          </button>
+
+                          <span>{adults}</span>
 
                           <button
                             type="button"
-                            className="travel-remove-room-btn"
-                            onClick={() => {
-                              const updated = [...rooms];
-
-                              updated.splice(index, 1);
-
-                              setRooms(updated);
-                            }}
+                            onClick={() => setAdults(adults + 1)}
                           >
-                            ✕
+                            +
                           </button>
                         </div>
+                      </div>
 
-                        {/* ROOM ADULTS */}
+                      {/* CHILDREN */}
 
-                        <div className="travel-guest-row">
-                          <div className="travel-guest-info">
-                            <h4>Adults</h4>
-                          </div>
+                      <div className="travel-guest-row">
+                        <div className="travel-guest-info">
+                          <h4>Children</h4>
 
-                          <div className="travel-counter">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const updated = [...rooms];
-
-                                updated[index] = {
-                                  ...updated[index],
-
-                                  adults:
-                                    Number(updated[index]?.adults || 1) > 1
-                                      ? Number(updated[index]?.adults || 1) - 1
-                                      : 1,
-                                };
-
-                                setRooms(updated);
-                              }}
-                            >
-                              −
-                            </button>
-
-                            <span>{room.adults}</span>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const updated = [...rooms];
-
-                                updated[index] = {
-                                  ...updated[index],
-
-                                  adults:
-                                    Number(updated[index]?.adults || 1) + 1,
-                                };
-
-                                setRooms(updated);
-                              }}
-                            >
-                              +
-                            </button>
-                          </div>
+                          <p>Age 1-17</p>
                         </div>
 
-                        {/* ROOM CHILDREN */}
+                        <div className="travel-counter">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (children > 0) {
+                                setChildren(children - 1);
 
-                        <div className="travel-guest-row">
-                          <div className="travel-guest-info">
-                            <h4>Children</h4>
+                                setChildrenAges((prev) => prev.slice(0, -1));
+                              }
+                            }}
+                          >
+                            −
+                          </button>
 
-                            <p>Age 1-17</p>
-                          </div>
+                          <span>{children}</span>
 
-                          <div className="travel-counter">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setChildren((prev) => prev + 1);
+
+                              setChildrenAges((prev) => [...prev, ""]);
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* CHILD AGES */}
+
+                      {children > 0 && (
+                        <div className="children-age-container">
+                          {childrenAges.map((age, childIndex) => (
+                            <div className="child-age-row" key={childIndex}>
+                              <label>Child {childIndex + 1} Age</label>
+
+                              <select
+                                value={age || ""}
+                                onChange={(e) => {
+                                  const updated = [...childrenAges];
+
+                                  updated[childIndex] = e.target.value;
+
+                                  setChildrenAges(updated);
+                                }}
+                              >
+                                <option value="">Select age</option>
+
+                                {Array.from(
+                                  {
+                                    length: 17,
+                                  },
+                                  (_, i) => i + 1,
+                                ).map((ageValue) => (
+                                  <option key={ageValue} value={ageValue}>
+                                    {ageValue}{" "}
+                                    {ageValue === 1 ? "year" : "years"}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* OTHER ROOMS */}
+
+                      {rooms.map((room, index) => (
+                        <React.Fragment key={index}>
+                          <div
+                            className="travel-room-header"
+                            style={{
+                              display: "flex",
+
+                              justifyContent: "space-between",
+
+                              alignItems: "center",
+                            }}
+                          >
+                            <div className="travel-room-title">
+                              Room {index + 2}
+                            </div>
+
                             <button
                               type="button"
+                              className="travel-remove-room-btn"
                               onClick={() => {
                                 const updated = [...rooms];
 
-                                if (Number(updated[index]?.children || 0) > 0) {
+                                updated.splice(index, 1);
+
+                                setRooms(updated);
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+
+                          {/* ROOM ADULTS */}
+
+                          <div className="travel-guest-row">
+                            <div className="travel-guest-info">
+                              <h4>Adults</h4>
+                            </div>
+
+                            <div className="travel-counter">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = [...rooms];
+
+                                  updated[index] = {
+                                    ...updated[index],
+
+                                    adults:
+                                      Number(updated[index]?.adults || 1) > 1
+                                        ? Number(updated[index]?.adults || 1) -
+                                          1
+                                        : 1,
+                                  };
+
+                                  setRooms(updated);
+                                }}
+                              >
+                                −
+                              </button>
+
+                              <span>{room.adults}</span>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = [...rooms];
+
+                                  updated[index] = {
+                                    ...updated[index],
+
+                                    adults:
+                                      Number(updated[index]?.adults || 1) + 1,
+                                  };
+
+                                  setRooms(updated);
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* ROOM CHILDREN */}
+
+                          <div className="travel-guest-row">
+                            <div className="travel-guest-info">
+                              <h4>Children</h4>
+
+                              <p>Age 1-17</p>
+                            </div>
+
+                            <div className="travel-counter">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = [...rooms];
+
+                                  if (
+                                    Number(updated[index]?.children || 0) > 0
+                                  ) {
+                                    updated[index] = {
+                                      ...updated[index],
+
+                                      children:
+                                        Number(updated[index]?.children || 0) -
+                                        1,
+
+                                      childrenAges: (
+                                        updated[index]?.childrenAges || []
+                                      ).slice(0, -1),
+                                    };
+
+                                    setRooms(updated);
+                                  }
+                                }}
+                              >
+                                −
+                              </button>
+
+                              <span>{room.children}</span>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = [...rooms];
+
                                   updated[index] = {
                                     ...updated[index],
 
                                     children:
-                                      Number(updated[index]?.children || 0) - 1,
+                                      Number(updated[index]?.children || 0) + 1,
 
-                                    childrenAges: (
-                                      updated[index]?.childrenAges || []
-                                    ).slice(0, -1),
+                                    childrenAges: [
+                                      ...(updated[index]?.childrenAges || []),
+
+                                      "",
+                                    ],
                                   };
 
                                   setRooms(updated);
-                                }
-                              }}
-                            >
-                              −
-                            </button>
-
-                            <span>{room.children}</span>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const updated = [...rooms];
-
-                                updated[index] = {
-                                  ...updated[index],
-
-                                  children:
-                                    Number(updated[index]?.children || 0) + 1,
-
-                                  childrenAges: [
-                                    ...(updated[index]?.childrenAges || []),
-
-                                    "",
-                                  ],
-                                };
-
-                                setRooms(updated);
-                              }}
-                            >
-                              +
-                            </button>
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* ROOM CHILD AGES */}
+                          {/* ROOM CHILD AGES */}
 
-                        {Number(room.children || 0) > 0 && (
-                          <div className="children-age-container">
-                            {(room.childrenAges || []).map(
-                              (age, childIndex) => (
-                                <div className="child-age-row" key={childIndex}>
-                                  <label>Child {childIndex + 1} Age</label>
-
-                                  <select
-                                    value={age || ""}
-                                    onChange={(e) => {
-                                      const updated = [...rooms];
-
-                                      const updatedAges = [
-                                        ...(updated[index]?.childrenAges || []),
-                                      ];
-
-                                      updatedAges[childIndex] = e.target.value;
-
-                                      updated[index] = {
-                                        ...updated[index],
-
-                                        childrenAges: updatedAges,
-                                      };
-
-                                      setRooms(updated);
-                                    }}
+                          {Number(room.children || 0) > 0 && (
+                            <div className="children-age-container">
+                              {(room.childrenAges || []).map(
+                                (age, childIndex) => (
+                                  <div
+                                    className="child-age-row"
+                                    key={childIndex}
                                   >
-                                    <option value="">Select age</option>
+                                    <label>Child {childIndex + 1} Age</label>
 
-                                    {Array.from(
-                                      {
-                                        length: 17,
-                                      },
-                                      (_, i) => i + 1,
-                                    ).map((ageValue) => (
-                                      <option key={ageValue} value={ageValue}>
-                                        {ageValue}{" "}
-                                        {ageValue === 1 ? "year" : "years"}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                              ),
-                            )}
-                          </div>
-                        )}
-                      </React.Fragment>
-                    ))}
+                                    <select
+                                      value={age || ""}
+                                      onChange={(e) => {
+                                        const updated = [...rooms];
 
-                    {/* POPUP FOOTER */}
+                                        const updatedAges = [
+                                          ...(updated[index]?.childrenAges ||
+                                            []),
+                                        ];
 
-                    <div className="travel-popup-footer">
-                      <button
-                        className="travel-add-room-btn"
-                        type="button"
-                        onClick={() =>
-                          setRooms((prev) => [
-                            ...prev,
+                                        updatedAges[childIndex] =
+                                          e.target.value;
 
-                            {
-                              adults: 1,
+                                        updated[index] = {
+                                          ...updated[index],
 
-                              children: 0,
+                                          childrenAges: updatedAges,
+                                        };
 
-                              childrenAges: [],
-                            },
-                          ])
-                        }
-                      >
-                        + Add Room
-                      </button>
+                                        setRooms(updated);
+                                      }}
+                                    >
+                                      <option value="">Select age</option>
 
-                      <button
-                        className="travel-apply-btn"
-                        type="button"
-                        onClick={() => setShowPopup(false)}
-                      >
-                        Apply
-                      </button>
+                                      {Array.from(
+                                        {
+                                          length: 17,
+                                        },
+                                        (_, i) => i + 1,
+                                      ).map((ageValue) => (
+                                        <option key={ageValue} value={ageValue}>
+                                          {ageValue}{" "}
+                                          {ageValue === 1 ? "year" : "years"}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                ),
+                              )}
+                            </div>
+                          )}
+                        </React.Fragment>
+                      ))}
+
+                      {/* POPUP FOOTER */}
+
+                      <div className="travel-popup-footer">
+                        <button
+                          className="travel-add-room-btn"
+                          type="button"
+                          onClick={() =>
+                            setRooms((prev) => [
+                              ...prev,
+
+                              {
+                                adults: 1,
+
+                                children: 0,
+
+                                childrenAges: [],
+                              },
+                            ])
+                          }
+                        >
+                          + Add Room
+                        </button>
+
+                        <button
+                          className="travel-apply-btn"
+                          type="button"
+                          onClick={() => setShowPopup(false)}
+                        >
+                          Apply
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              <div className="input-gang">
-                <button className="search-btn" type="submit">
-                  Search Hotels
-                </button>
-              </div>
-            </form>
+                <div className="input-gang">
+                  <button className="search-btn" type="submit">
+                    Search Hotels
+                  </button>
+                </div>
+              </form>
+            </div>
           )}
 
           {/* =================================================
               SIDEBAR
           ================================================= */}
 
+          {/* MOBILE SEARCH + FILTER PILLS */}
+          <div className="mobile-search-filter-pills">
+            <button
+              type="button"
+              className="mobile-search-filter-pill mobile-search-filter-pill--modify"
+              onClick={() => setShowMobileModifyModal(true)}
+            >
+              <span>⚙</span>
+              Modify Search
+            </button>
+
+            <button
+              type="button"
+              className="mobile-search-filter-pill mobile-search-filter-pill--filter"
+              onClick={() => setShowMobileFilterModal(true)}
+            >
+              <span>☰</span>
+              Filters
+              {getActiveFilterCount() > 0 && (
+                <b className="mobile-filter-count">{getActiveFilterCount()}</b>
+              )}
+            </button>
+          </div>
+
           <div className="hotel-sidebar">
-            <div className="sidebar-right">
-              <div className="hotel-filter-card">
-                <div
-                  className="hotel-filter-header"
-                  style={{
-                    display: "flex",
+            <div className="desktop-hotel-filters">
+              <div className="sidebar-right">
+                <div className="hotel-filter-card">
+                  <div
+                    className="hotel-filter-header"
+                    style={{
+                      display: "flex",
 
-                    justifyContent: "space-between",
+                      justifyContent: "space-between",
 
-                    alignItems: "center",
+                      alignItems: "center",
 
-                    gap: "10px",
-                  }}
-                >
-                  <h3 className="hotel-filter-title">Filter By</h3>
-
-                  <button
-                    type="button"
-                    className="hotel-clear-filter-btn"
-                    onClick={clearAllFilters}
+                      gap: "10px",
+                    }}
                   >
-                    Clear All
-                  </button>
-                </div>
+                    <h3 className="hotel-filter-title">Filter By</h3>
 
-                {/* =========================================
+                    <button
+                      type="button"
+                      className="hotel-clear-filter-btn"
+                      onClick={clearAllFilters}
+                    >
+                      Clear All
+                    </button>
+                  </div>
+
+                  {/* =========================================
                     PRICE
                 ========================================= */}
 
-                <div className="hotel-filter-section">
-                  <h4 className="hotel-filter-heading">Price Range</h4>
+                  <div className="hotel-filter-section">
+                    <h4 className="hotel-filter-heading">Price Range</h4>
 
-                  <div className="price-filter">
-                    <label>Min Price: ${filters.minPrice}</label>
+                    <div className="price-filter">
+                      <label>Min Price: ${filters.minPrice}</label>
 
-                    <input
-                      type="range"
-                      min={apiPriceMin}
-                      max={maxHotelPrice}
-                      step={1}
-                      value={filters.minPrice}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
+                      <input
+                        type="range"
+                        min={apiPriceMin}
+                        max={maxHotelPrice}
+                        step={1}
+                        value={filters.minPrice}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
 
-                        setFilters((prev) => ({
-                          ...prev,
+                          setFilters((prev) => ({
+                            ...prev,
 
-                          minPrice: Math.min(value, prev.maxPrice),
-                        }));
-                      }}
-                    />
+                            minPrice: Math.min(value, prev.maxPrice),
+                          }));
+                        }}
+                      />
+                    </div>
+
+                    <div className="price-filter">
+                      <label>Max Price: ${filters.maxPrice}</label>
+
+                      <input
+                        type="range"
+                        min={apiPriceMin}
+                        max={maxHotelPrice}
+                        step={1}
+                        value={filters.maxPrice}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+
+                          setFilters((prev) => ({
+                            ...prev,
+
+                            maxPrice: Math.max(value, prev.minPrice),
+                          }));
+                        }}
+                      />
+                    </div>
                   </div>
 
-                  <div className="price-filter">
-                    <label>Max Price: ${filters.maxPrice}</label>
-
-                    <input
-                      type="range"
-                      min={apiPriceMin}
-                      max={maxHotelPrice}
-                      step={1}
-                      value={filters.maxPrice}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
-
-                        setFilters((prev) => ({
-                          ...prev,
-
-                          maxPrice: Math.max(value, prev.minPrice),
-                        }));
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* =========================================
+                  {/* =========================================
                     STAR RATING
                 ========================================= */}
 
-                <div className="hotel-filter-section">
-                  <h4 className="hotel-filter-heading">Star Rating</h4>
+                  <div className="hotel-filter-section">
+                    <h4 className="hotel-filter-heading">Star Rating</h4>
 
-                  {[5, 4, 3, 2, 1].map((star) => {
-                    const count = Number(starRatingCounts?.[String(star)] || 0);
+                    {[5, 4, 3, 2, 1].map((star) => {
+                      const count = Number(
+                        starRatingCounts?.[String(star)] || 0,
+                      );
 
-                    /*
+                      /*
                         Don't show star filters
                         which API says have no hotels.
                       */
-                    if (count === 0) {
-                      return null;
-                    }
+                      if (count === 0) {
+                        return null;
+                      }
 
-                    return (
-                      <label
-                        className="hotel-filter-checkbox"
-                        key={star}
-                        style={{
-                          display: "flex",
-
-                          alignItems: "center",
-
-                          gap: "8px",
-
-                          marginBottom: "8px",
-
-                          cursor: "pointer",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={filters.starRatings.includes(star)}
-                          onChange={() => handleStarFilter(star)}
-                        />
-
-                        <span
+                      return (
+                        <label
+                          className="hotel-filter-checkbox"
+                          key={star}
                           style={{
                             display: "flex",
 
                             alignItems: "center",
 
-                            gap: "4px",
+                            gap: "8px",
+
+                            marginBottom: "8px",
+
+                            cursor: "pointer",
                           }}
                         >
-                          {star}
+                          <input
+                            type="checkbox"
+                            checked={filters.starRatings.includes(star)}
+                            onChange={() => handleStarFilter(star)}
+                          />
 
-                          <FaStar />
+                          <span
+                            style={{
+                              display: "flex",
 
-                          <span>Star</span>
+                              alignItems: "center",
 
-                          <span>({count})</span>
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
+                              gap: "4px",
+                            }}
+                          >
+                            {star}
 
-                {/* =========================================
+                            <FaStar />
+
+                            <span>Star</span>
+
+                            <span>({count})</span>
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  {/* =========================================
                     PROPERTY TYPE
                 ========================================= */}
 
-                {propertyTypes.length > 0 && (
-                  <div className="hotel-filter-section">
-                    <h4 className="hotel-filter-heading">Property Type</h4>
+                  {propertyTypes.length > 0 && (
+                    <div className="hotel-filter-section">
+                      <h4 className="hotel-filter-heading">Property Type</h4>
 
-                    {propertyTypes.map((type) => (
-                      <label
-                        className="hotel-filter-checkbox"
-                        key={type}
-                        style={{
-                          display: "flex",
+                      {propertyTypes.map((type) => (
+                        <label
+                          className="hotel-filter-checkbox"
+                          key={type}
+                          style={{
+                            display: "flex",
 
-                          alignItems: "center",
+                            alignItems: "center",
 
-                          gap: "8px",
+                            gap: "8px",
 
-                          marginBottom: "8px",
+                            marginBottom: "8px",
 
-                          cursor: "pointer",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={filters.propertyTypes.includes(type)}
-                          onChange={() => handlePropertyFilter(type)}
-                        />
+                            cursor: "pointer",
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={filters.propertyTypes.includes(type)}
+                            onChange={() => handlePropertyFilter(type)}
+                          />
 
-                        <span>{type}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
+                          <span>{type}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
 
-                {/* =========================================
+                  {/* =========================================
                     HOTEL CHAIN
                 ========================================= */}
 
-                {hotelChains.length > 0 && (
-                  <div className="hotel-filter-section">
-                    <h4 className="hotel-filter-heading">Hotel Chain</h4>
+                  {hotelChains.length > 0 && (
+                    <div className="hotel-filter-section">
+                      <h4 className="hotel-filter-heading">Hotel Chain</h4>
 
-                    {hotelChains.map((chain) => (
+                      {hotelChains.map((chain) => (
+                        <label
+                          className="hotel-filter-checkbox"
+                          key={chain}
+                          style={{
+                            display: "flex",
+
+                            alignItems: "center",
+
+                            gap: "8px",
+
+                            marginBottom: "8px",
+
+                            cursor: "pointer",
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={filters.chains.includes(chain)}
+                            onChange={() => handleChainFilter(chain)}
+                          />
+
+                          <span>{chain}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* =========================================
+                    BOOKING OPTIONS
+                ========================================= */}
+
+                  <div className="hotel-filter-section">
+                    <h4 className="hotel-filter-heading">Booking Options</h4>
+
+                    {/* FREE CANCELLATION */}
+
+                    {hasFreeCancellationFilter && (
                       <label
                         className="hotel-filter-checkbox"
-                        key={chain}
                         style={{
                           display: "flex",
 
@@ -1783,181 +1916,146 @@ export default function HotelResults() {
                       >
                         <input
                           type="checkbox"
-                          checked={filters.chains.includes(chain)}
-                          onChange={() => handleChainFilter(chain)}
+                          checked={filters.freeCancellation}
+                          onChange={(e) =>
+                            setFilters((prev) => ({
+                              ...prev,
+
+                              freeCancellation: e.target.checked,
+                            }))
+                          }
                         />
 
-                        <span>{chain}</span>
+                        <span>Free Cancellation</span>
                       </label>
-                    ))}
+                    )}
+
+                    {/* FREE BREAKFAST */}
+
+                    {hasFreeBreakfastFilter && (
+                      <label
+                        className="hotel-filter-checkbox"
+                        style={{
+                          display: "flex",
+
+                          alignItems: "center",
+
+                          gap: "8px",
+
+                          marginBottom: "8px",
+
+                          cursor: "pointer",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={filters.freeBreakfast}
+                          onChange={(e) =>
+                            setFilters((prev) => ({
+                              ...prev,
+
+                              freeBreakfast: e.target.checked,
+                            }))
+                          }
+                        />
+
+                        <span>Free Breakfast</span>
+                      </label>
+                    )}
+
+                    {/* REFUNDABLE */}
+
+                    <label
+                      className="hotel-filter-checkbox"
+                      style={{
+                        display: "flex",
+
+                        alignItems: "center",
+
+                        gap: "8px",
+
+                        marginBottom: "8px",
+
+                        cursor: "pointer",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={filters.refundable}
+                        onChange={(e) =>
+                          setFilters((prev) => ({
+                            ...prev,
+
+                            refundable: e.target.checked,
+                          }))
+                        }
+                      />
+
+                      <span>Refundable</span>
+                    </label>
+
+                    {/* FREE WIFI */}
+
+                    <label
+                      className="hotel-filter-checkbox"
+                      style={{
+                        display: "flex",
+
+                        alignItems: "center",
+
+                        gap: "8px",
+
+                        marginBottom: "8px",
+
+                        cursor: "pointer",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={filters.freeWifi}
+                        onChange={(e) =>
+                          setFilters((prev) => ({
+                            ...prev,
+
+                            freeWifi: e.target.checked,
+                          }))
+                        }
+                      />
+
+                      <span>Free WiFi</span>
+                    </label>
+
+                    {/* PAY AT HOTEL */}
+
+                    <label
+                      className="hotel-filter-checkbox"
+                      style={{
+                        display: "flex",
+
+                        alignItems: "center",
+
+                        gap: "8px",
+
+                        marginBottom: "8px",
+
+                        cursor: "pointer",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={filters.payAtHotel}
+                        onChange={(e) =>
+                          setFilters((prev) => ({
+                            ...prev,
+
+                            payAtHotel: e.target.checked,
+                          }))
+                        }
+                      />
+
+                      <span>Pay At Hotel</span>
+                    </label>
                   </div>
-                )}
-
-                {/* =========================================
-                    BOOKING OPTIONS
-                ========================================= */}
-
-                <div className="hotel-filter-section">
-                  <h4 className="hotel-filter-heading">Booking Options</h4>
-
-                  {/* FREE CANCELLATION */}
-
-                  {hasFreeCancellationFilter && (
-                    <label
-                      className="hotel-filter-checkbox"
-                      style={{
-                        display: "flex",
-
-                        alignItems: "center",
-
-                        gap: "8px",
-
-                        marginBottom: "8px",
-
-                        cursor: "pointer",
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={filters.freeCancellation}
-                        onChange={(e) =>
-                          setFilters((prev) => ({
-                            ...prev,
-
-                            freeCancellation: e.target.checked,
-                          }))
-                        }
-                      />
-
-                      <span>Free Cancellation</span>
-                    </label>
-                  )}
-
-                  {/* FREE BREAKFAST */}
-
-                  {hasFreeBreakfastFilter && (
-                    <label
-                      className="hotel-filter-checkbox"
-                      style={{
-                        display: "flex",
-
-                        alignItems: "center",
-
-                        gap: "8px",
-
-                        marginBottom: "8px",
-
-                        cursor: "pointer",
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={filters.freeBreakfast}
-                        onChange={(e) =>
-                          setFilters((prev) => ({
-                            ...prev,
-
-                            freeBreakfast: e.target.checked,
-                          }))
-                        }
-                      />
-
-                      <span>Free Breakfast</span>
-                    </label>
-                  )}
-
-                  {/* REFUNDABLE */}
-
-                  <label
-                    className="hotel-filter-checkbox"
-                    style={{
-                      display: "flex",
-
-                      alignItems: "center",
-
-                      gap: "8px",
-
-                      marginBottom: "8px",
-
-                      cursor: "pointer",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={filters.refundable}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-
-                          refundable: e.target.checked,
-                        }))
-                      }
-                    />
-
-                    <span>Refundable</span>
-                  </label>
-
-                  {/* FREE WIFI */}
-
-                  <label
-                    className="hotel-filter-checkbox"
-                    style={{
-                      display: "flex",
-
-                      alignItems: "center",
-
-                      gap: "8px",
-
-                      marginBottom: "8px",
-
-                      cursor: "pointer",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={filters.freeWifi}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-
-                          freeWifi: e.target.checked,
-                        }))
-                      }
-                    />
-
-                    <span>Free WiFi</span>
-                  </label>
-
-                  {/* PAY AT HOTEL */}
-
-                  <label
-                    className="hotel-filter-checkbox"
-                    style={{
-                      display: "flex",
-
-                      alignItems: "center",
-
-                      gap: "8px",
-
-                      marginBottom: "8px",
-
-                      cursor: "pointer",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={filters.payAtHotel}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-
-                          payAtHotel: e.target.checked,
-                        }))
-                      }
-                    />
-
-                    <span>Pay At Hotel</span>
-                  </label>
                 </div>
               </div>
             </div>
@@ -2034,6 +2132,7 @@ export default function HotelResults() {
                       }`}
                       newPrice={hotel.ourprice_before_credit}
                       publishedRate={hotel.publishedRate}
+                      brandSupplierRates={hotel?.brandSupplierRates || []}
                       credit={hotel.credit}
                       starRating={hotel?.starRating}
                       facilities={hotel?.facilities}
@@ -2060,6 +2159,389 @@ export default function HotelResults() {
           </div>
         </div>
       </div>
+
+      {showMobileModifyModal && (
+        <div
+          className="mobile-modify-modal-overlay"
+          onClick={() => setShowMobileModifyModal(false)}
+        >
+          <div
+            className="mobile-modify-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mobile-modify-modal__header">
+              <h3>Modify Search</h3>
+
+              <button
+                type="button"
+                className="mobile-modify-modal__close"
+                onClick={() => setShowMobileModifyModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form
+              className="mobile-modify-modal__form"
+              onSubmit={(e) => {
+                e.preventDefault();
+
+                const updatedRoomData = [
+                  {
+                    adults,
+                    children,
+                    childrenAges,
+                  },
+                  ...rooms,
+                ];
+
+                localStorage.setItem("roomCountToStore", totalRooms);
+                localStorage.setItem("adultCountToStore", totalAdults);
+                localStorage.setItem("childCountToStore", totalChildren);
+
+                setRoomCountToStore(totalRooms);
+                setAdultCountToStore(totalAdults);
+                setChildCountToStore(totalChildren);
+
+                setRoomDetails(updatedRoomData);
+
+                handleSearchHotel({
+                  destinationData: selectedDestination,
+                  checkIn: dateRange[0],
+                  checkOut: dateRange[1],
+                  roomData: updatedRoomData,
+                });
+
+                setShowMobileModifyModal(false);
+              }}
+            >
+              {/* DESTINATION */}
+
+              <div
+                className="mobile-modify-field"
+                style={{ position: "relative" }}
+              >
+                <label>Destination</label>
+
+                <input
+                  type="text"
+                  value={destination}
+                  onChange={handleDestinationChange}
+                  autoComplete="off"
+                />
+
+                {showDropdown && hotelResults.length > 0 && (
+                  <div className="destination-dropdown">
+                    {hotelResults.map((item) => (
+                      <div
+                        key={item.id}
+                        className="destination-item"
+                        onClick={() => {
+                          setDestination(item.fullName);
+
+                          setSelectedDestination({
+                            destination: item.fullName,
+                            destinationId: item.id,
+                            destinationType: item.type,
+                            latitude: item.coordinates?.lat,
+                            longitude: item.coordinates?.long,
+                          });
+
+                          setHotelResults([]);
+                          setShowDropdown(false);
+                        }}
+                      >
+                        <strong>{item.fullName}</strong>
+                        <div>{item.country}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* DATE */}
+
+              <div className="mobile-modify-field">
+                <label>Check In - Check Out</label>
+
+                <DatePicker
+                  selected={dateRange[0]}
+                  startDate={dateRange[0]}
+                  endDate={dateRange[1]}
+                  onChange={(update) => setDateRange(update)}
+                  selectsRange
+                  minDate={today}
+                  dateFormat="dd/MM/yyyy"
+                />
+              </div>
+
+              {/* GUESTS */}
+
+              <div className="mobile-modify-field">
+                <label>Guests and Rooms</label>
+
+                <input
+                  type="text"
+                  readOnly
+                  onClick={() => setShowPopup(true)}
+                  value={`${totalAdults} Adult${totalAdults > 1 ? "s" : ""}${
+                    totalChildren > 0
+                      ? `, ${totalChildren} Child${
+                          totalChildren > 1 ? "ren" : ""
+                        }`
+                      : ""
+                  }, ${totalRooms} Room${totalRooms > 1 ? "s" : ""}`}
+                />
+              </div>
+
+              <button type="submit" className="mobile-modify-submit">
+                Search Hotels
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showMobileFilterModal && (
+        <div
+          className="mobile-filter-modal-overlay"
+          onClick={() => setShowMobileFilterModal(false)}
+        >
+          <div
+            className="mobile-filter-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mobile-filter-modal__header">
+              <div>
+                <h3>Filters</h3>
+
+                {getActiveFilterCount() > 0 && (
+                  <span className="mobile-filter-modal__active">
+                    {getActiveFilterCount()} applied
+                  </span>
+                )}
+              </div>
+
+              <button
+                type="button"
+                className="mobile-filter-modal__close"
+                onClick={() => setShowMobileFilterModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mobile-filter-modal__body">
+              {/* PRICE */}
+
+              <div className="mobile-filter-section">
+                <h4>Price Range</h4>
+
+                <div className="mobile-price-values">
+                  <span>${filters.minPrice}</span>
+                  <span>${filters.maxPrice}</span>
+                </div>
+
+                <input
+                  type="range"
+                  min={apiPriceMin}
+                  max={maxHotelPrice}
+                  step={1}
+                  value={filters.minPrice}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+
+                    setFilters((prev) => ({
+                      ...prev,
+                      minPrice: Math.min(value, prev.maxPrice),
+                    }));
+                  }}
+                />
+
+                <input
+                  type="range"
+                  min={apiPriceMin}
+                  max={maxHotelPrice}
+                  step={1}
+                  value={filters.maxPrice}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+
+                    setFilters((prev) => ({
+                      ...prev,
+                      maxPrice: Math.max(value, prev.minPrice),
+                    }));
+                  }}
+                />
+              </div>
+
+              {/* STAR RATING */}
+
+              <div className="mobile-filter-section">
+                <h4>Star Rating</h4>
+
+                {[5, 4, 3, 2, 1].map((star) => {
+                  const count = Number(starRatingCounts?.[String(star)] || 0);
+
+                  if (count === 0) return null;
+
+                  return (
+                    <label className="mobile-filter-option" key={star}>
+                      <input
+                        type="checkbox"
+                        checked={filters.starRatings.includes(star)}
+                        onChange={() => handleStarFilter(star)}
+                      />
+
+                      <span>
+                        {star} <FaStar /> Star ({count})
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              {/* PROPERTY TYPE */}
+
+              {propertyTypes.length > 0 && (
+                <div className="mobile-filter-section">
+                  <h4>Property Type</h4>
+
+                  {propertyTypes.map((type) => (
+                    <label className="mobile-filter-option" key={type}>
+                      <input
+                        type="checkbox"
+                        checked={filters.propertyTypes.includes(type)}
+                        onChange={() => handlePropertyFilter(type)}
+                      />
+
+                      <span>{type}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {/* HOTEL CHAIN */}
+
+              {hotelChains.length > 0 && (
+                <div className="mobile-filter-section">
+                  <h4>Hotel Chain</h4>
+
+                  {hotelChains.map((chain) => (
+                    <label className="mobile-filter-option" key={chain}>
+                      <input
+                        type="checkbox"
+                        checked={filters.chains.includes(chain)}
+                        onChange={() => handleChainFilter(chain)}
+                      />
+
+                      <span>{chain}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {/* BOOKING OPTIONS */}
+
+              <div className="mobile-filter-section">
+                <h4>Booking Options</h4>
+
+                {hasFreeCancellationFilter && (
+                  <label className="mobile-filter-option">
+                    <input
+                      type="checkbox"
+                      checked={filters.freeCancellation}
+                      onChange={(e) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          freeCancellation: e.target.checked,
+                        }))
+                      }
+                    />
+                    <span>Free Cancellation</span>
+                  </label>
+                )}
+
+                {hasFreeBreakfastFilter && (
+                  <label className="mobile-filter-option">
+                    <input
+                      type="checkbox"
+                      checked={filters.freeBreakfast}
+                      onChange={(e) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          freeBreakfast: e.target.checked,
+                        }))
+                      }
+                    />
+                    <span>Free Breakfast</span>
+                  </label>
+                )}
+
+                <label className="mobile-filter-option">
+                  <input
+                    type="checkbox"
+                    checked={filters.refundable}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        refundable: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Refundable</span>
+                </label>
+
+                <label className="mobile-filter-option">
+                  <input
+                    type="checkbox"
+                    checked={filters.freeWifi}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        freeWifi: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Free WiFi</span>
+                </label>
+
+                <label className="mobile-filter-option">
+                  <input
+                    type="checkbox"
+                    checked={filters.payAtHotel}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        payAtHotel: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Pay At Hotel</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="mobile-filter-modal__footer">
+              <button
+                type="button"
+                className="mobile-filter-clear-btn"
+                onClick={clearAllFilters}
+              >
+                Clear All
+              </button>
+
+              <button
+                type="button"
+                className="mobile-filter-apply-btn"
+                onClick={() => setShowMobileFilterModal(false)}
+              >
+                Show {filteredHotels.length} Hotels
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </>
