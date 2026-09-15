@@ -24,10 +24,33 @@ const HotelForm = () => {
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [locationId, setLocationId] = useState(null);
   const debounceRef = useRef(null);
+  const destinationRef = useRef(null);
+  const guestsRef = useRef(null);
   const navigate = useNavigate();
   const [roomCountToStore, setRoomCountToStore] = useAtom(TotalRooms);
   const [adultCountToStore, setAdultCountToStore] = useAtom(AdultCountToStore);
   const [childCountToStore, setChildCountToStore] = useAtom(ChildCountToStore);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        destinationRef.current &&
+        !destinationRef.current.contains(event.target)
+      ) {
+        setShowDropdown(false);
+      }
+
+      if (guestsRef.current && !guestsRef.current.contains(event.target)) {
+        setShowPopup(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const totalAdults =
     adults + rooms.reduce((sum, room) => sum + room.adults, 0);
@@ -185,7 +208,11 @@ const HotelForm = () => {
 
   return (
     <form className="hotel-form" onSubmit={handleSubmit(onSubmit)}>
-      <div className="input-group" style={{ position: "relative" }}>
+      <div
+        ref={destinationRef}
+        className="input-group"
+        style={{ position: "relative" }}
+      >
         <label>Destination</label>
         <input
           type="text"
@@ -256,7 +283,7 @@ const HotelForm = () => {
           <span className="error">{errors.dateRange.message}</span>
         )}
       </div>
-      <div className="input-group">
+      <div className="input-group" ref={guestsRef}>
         <label>Guests and Rooms</label>
 
         <input

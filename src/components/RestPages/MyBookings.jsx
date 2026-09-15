@@ -68,6 +68,13 @@ const MyBookings = () => {
   const [activeTab, setActiveTab] = useState("Upcoming");
   const [collapse, setCollapse] = useState(false);
   const [upcomingBookings, setUpcomingBookings] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const PAGE_LIMIT = 10;
 
   const filteredBookings = upcomingBookings.filter(
     (item) => item.type === activeMenu && item.status === activeTab,
@@ -75,6 +82,8 @@ const MyBookings = () => {
 
   useEffect(() => {
     const fetchUpcomingBookings = async () => {
+      setLoading(true);
+
       try {
         const res = await hotelUpcomingOrder({
           body: {
@@ -84,10 +93,14 @@ const MyBookings = () => {
               start: "2026-09-01",
               end: "2028-09-14",
             },
+            limit: PAGE_LIMIT,
+            offset: currentPage,
           },
         });
 
-        const mappedBookings = (res?.orders || []).map((order) => ({
+        const orders = res?.orders || [];
+
+        const mappedBookings = orders.map((order) => ({
           id: order.orderid,
           type: "hotels",
           status: "Upcoming",
@@ -111,14 +124,29 @@ const MyBookings = () => {
         }));
 
         setUpcomingBookings(mappedBookings);
+
+        // If we received 10 records, another page may exist
+        const nextPageAvailable = orders.length === PAGE_LIMIT;
+
+        setHasNextPage(nextPageAvailable);
+
+        // Keep track of highest page reached
+        if (nextPageAvailable) {
+          setTotalPages((prev) => Math.max(prev, currentPage + 2));
+        } else {
+          setTotalPages((prev) => Math.max(prev, currentPage + 1));
+        }
       } catch (error) {
         console.error("Error fetching upcoming bookings:", error);
         setUpcomingBookings([]);
+        setHasNextPage(false);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUpcomingBookings();
-  }, []);
+  }, [currentPage]);
 
   const handleParticularBookingClick = (id) => {
     navigate(`/hotel-booking-details?id=${encodeURIComponent(id)}`);
@@ -132,6 +160,45 @@ const MyBookings = () => {
   });
   return (
     <div>
+      {loading && (
+        <div className="simple-hotel-loader">
+          <div className="simple-hotel-loader__box">
+            <div className="simple-hotel-loader__icon-wrap">
+              <div className="simple-hotel-loader__icon">
+                <div className="simple-hotel-loader__roof"></div>
+
+                <div className="simple-hotel-loader__building">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+
+                <div className="simple-hotel-loader__door"></div>
+              </div>
+
+              <div className="simple-hotel-loader__circle"></div>
+            </div>
+
+            <h2 className="simple-hotel-loader__title">Please wait untill</h2>
+
+            <p className="simple-hotel-loader__text">we fetch your bookings</p>
+
+            <div className="simple-hotel-loader__loading">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <div className="simple-hotel-loader__line">
+              <div className="simple-hotel-loader__line-fill"></div>
+            </div>
+          </div>
+        </div>
+      )}
       <HeaderInner />
       <section className="my-bookings">
         <div className="voyage-dashboard">
@@ -239,6 +306,59 @@ const MyBookings = () => {
                   You don't have any <strong>{activeMenu}</strong> bookings
                   under <strong>{activeTab}</strong>.
                 </p>
+              </div>
+            )}
+            {(totalPages > 1 || currentPage > 0) && (
+              <div className="voyage-pagination">
+                <button
+                  type="button"
+                  className="voyage-pagination-btn voyage-pagination-prev"
+                  disabled={currentPage === 0 || loading}
+                  onClick={() => {
+                    if (currentPage > 0) {
+                      setCurrentPage((prev) => prev - 1);
+                    }
+                  }}
+                >
+                  <FaChevronLeft />
+                  <span>Prev</span>
+                </button>
+
+                <div className="voyage-pagination-numbers">
+                  {Array.from({ length: totalPages }, (_, index) => {
+                    const pageNumber = index;
+
+                    return (
+                      <button
+                        type="button"
+                        key={pageNumber}
+                        disabled={loading}
+                        onClick={() => setCurrentPage(pageNumber)}
+                        className={`voyage-pagination-number ${
+                          currentPage === pageNumber
+                            ? "voyage-pagination-number-active"
+                            : ""
+                        }`}
+                      >
+                        {pageNumber + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  className="voyage-pagination-btn voyage-pagination-next"
+                  disabled={!hasNextPage || loading}
+                  onClick={() => {
+                    if (hasNextPage) {
+                      setCurrentPage((prev) => prev + 1);
+                    }
+                  }}
+                >
+                  <span>Next</span>
+                  <FaChevronRight />
+                </button>
               </div>
             )}
           </div>

@@ -13,7 +13,10 @@ import {
 } from "react-icons/fa";
 import HeaderInner from "../../../../reuseable-components/HeaderInner";
 import Footer from "../../../../reuseable-components/Footer";
-import { hotelBookingInfo } from "../../../../store/Services/AllApi";
+import {
+  hotelBookingCancel,
+  hotelBookingInfo,
+} from "../../../../store/Services/AllApi";
 import "./HotelBookingsDetails.css";
 
 const HotelBookingDetails = () => {
@@ -24,6 +27,8 @@ const HotelBookingDetails = () => {
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showCancelPopup, setShowCancelPopup] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     const fetchBookingDetails = async () => {
@@ -113,6 +118,37 @@ const HotelBookingDetails = () => {
     }
 
     return 0;
+  };
+
+  const handleBookingCancel = async () => {
+    if (!booking?.bookingId) return;
+
+    try {
+      setCancelling(true);
+
+      const res = await hotelBookingCancel({
+        body: {
+          bookingid: booking.bookingId,
+        },
+      });
+
+      console.log("Booking Cancel Response:", res);
+
+      if (res?.success) {
+        setShowCancelPopup(false);
+
+        navigate("/my-booking");
+      } else {
+        console.error(
+          "Booking cancellation failed:",
+          res?.message || "Unable to cancel booking",
+        );
+      }
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+    } finally {
+      setCancelling(false);
+    }
   };
 
   useEffect(() => {
@@ -255,7 +291,7 @@ const HotelBookingDetails = () => {
                   </div>
 
                   {/* CHECK OUT */}
-                  <div className="hbd-date-block">
+                  <div className="hbd-date-block left-align">
                     <span className="hbd-label">
                       <FaCalendarAlt />
                       Check Out
@@ -496,6 +532,17 @@ const HotelBookingDetails = () => {
                 ))}
               </section>
             )}
+
+            <button
+              type="button"
+              className="hbd-cancel-booking-btn"
+              onClick={() => setShowCancelPopup(true)}
+              disabled={cancelling || booking?.bookingStatus === "Cancelled"}
+            >
+              {booking?.bookingStatus === "Cancelled"
+                ? "Booking Cancelled"
+                : "Cancel Booking"}
+            </button>
           </div>
 
           {/* =========================
@@ -611,6 +658,40 @@ const HotelBookingDetails = () => {
           </aside>
         </div>
       </main>
+
+      {showCancelPopup && (
+        <div className="hbd-cancel-overlay">
+          <div className="hbd-cancel-popup">
+            <div className="hbd-cancel-popup-icon">
+              <FaInfoCircle />
+            </div>
+
+            <h2>Cancel Booking?</h2>
+
+            <p>Are you sure you want to cancel this booking?</p>
+
+            <div className="hbd-cancel-popup-actions">
+              <button
+                type="button"
+                className="hbd-cancel-popup-no"
+                onClick={() => setShowCancelPopup(false)}
+                disabled={cancelling}
+              >
+                No
+              </button>
+
+              <button
+                type="button"
+                className="hbd-cancel-popup-yes"
+                onClick={handleBookingCancel}
+                disabled={cancelling}
+              >
+                {cancelling ? "Cancelling..." : "Yes, Cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

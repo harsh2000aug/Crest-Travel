@@ -18,12 +18,9 @@ import {
 } from "react-icons/fa";
 
 import {
-  getHotelDetails,
-  getHotelDetailsAndRates,
   hotelBooking,
-  hotelPayment,
+  hotelPriceCheck,
   payNow,
-  revalidate,
 } from "../../../store/Services/AllApi";
 
 import { useFieldArray, useForm } from "react-hook-form";
@@ -111,37 +108,18 @@ const Hotel = () => {
     childAges = [];
   }
 
-  // const selectedPublishedRate =
-  //   Number(selectedRoom?.publishedRate ?? publishedRate) || 0;
-
-  // const selectedOurPrice = Number(selectedRoom?.ourprice ?? ourprice) || 0;
-
-  // const selectedTaxes = Number(selectedRoom?.taxes ?? taxes) || 0;
-
-  // const selectedFees = Number(selectedRoom?.fees ?? fees) || 0;
-
-  // const selectedPriceBeforeTax = Math.max(0, selectedOurPrice - selectedTaxes);
-
-  // const savings = Math.max(0, selectedPublishedRate - selectedOurPrice);
-
   const [hotelLoader, setHotelLoader] = useState(false);
-
   const [hotelImages, setHotelImages] = useState({});
-
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-
   const [countdown, setCountdown] = useState(5);
-
   const [showFailurePopup, setShowFailurePopup] = useState(false);
-
   const [bookingCompleted, setBookingCompleted] = useState(false);
-
   const [cancellationPolicy, setCancellationPolicy] = useState([]);
   const [showCancellationPolicy, setShowCancellationPolicy] = useState(false);
-
   const [roomPolicy, setRoomPolicy] = useState([]);
   const [showRoomPolicy, setShowRoomPolicy] = useState(false);
-
+  const [allGuestsInfoRequired, setAllGuestsInfoRequired] = useState(false);
+  const [priceCheckResult, setPriceCheckResult] = useState([]);
   const [leadGuest, setLeadGuest] = useState({
     title: "Mr",
     firstName: "",
@@ -151,10 +129,6 @@ const Hotel = () => {
     countryCode: "+91",
     phone: "",
   });
-
-  /* =========================================================
-     REACT HOOK FORM
-  ========================================================= */
 
   const {
     register,
@@ -198,10 +172,6 @@ const Hotel = () => {
 
   const selectedCountry = watch("country");
 
-  /* =========================================================
-     HELPERS
-  ========================================================= */
-
   const encodeBase64 = (value) => {
     return btoa(String(value || ""));
   };
@@ -227,10 +197,6 @@ const Hotel = () => {
 
     return "";
   };
-
-  /* =========================================================
-     ROOM / GUEST COUNTS
-  ========================================================= */
 
   const roomCountToStore = useAtomValue(TotalRooms);
 
@@ -580,7 +546,13 @@ const Hotel = () => {
   };
 
   useEffect(() => {
-    const requiredTravellers = Math.max(Number(totalAdults) - 1, 0);
+    if (!allGuestsInfoRequired) {
+      return;
+    }
+
+    const totalGuests = Number(totalAdults || 0) + Number(totalChildren || 0);
+
+    const requiredTravellers = Math.max(totalGuests - 1, 0);
 
     if (travellerFields.length < requiredTravellers) {
       const travellersToAdd = requiredTravellers - travellerFields.length;
@@ -595,7 +567,13 @@ const Hotel = () => {
         });
       }
     }
-  }, [totalAdults, travellerFields.length, appendTraveller]);
+  }, [
+    allGuestsInfoRequired,
+    totalAdults,
+    totalChildren,
+    travellerFields.length,
+    appendTraveller,
+  ]);
 
   useEffect(() => {
     const paymentStatus = searchParams.get("payment");
@@ -892,6 +870,76 @@ const Hotel = () => {
   }, []);
 
   useEffect(() => {
+    const fetchPriceCheck = async () => {
+      try {
+        const res = await hotelPriceCheck({
+          body: {
+            hotelId,
+            recommendationId,
+            token,
+            correlationId,
+          },
+        });
+
+        setPriceCheckResult(res?.data?.pricecheck?.result);
+
+        console.log("Price Check Response:", res);
+
+        const priceCheckResult = res?.data?.pricecheck?.result;
+
+        const rate = priceCheckResult?.rate?.[0];
+
+        const guestsRequired = rate?.allGuestsInfoRequired;
+
+        console.log("allGuestsInfoRequired:", guestsRequired);
+
+        setAllGuestsInfoRequired(guestsRequired === true);
+      } catch (error) {
+        console.error("Error fetching price check:", error);
+
+        // Safe fallback
+        setAllGuestsInfoRequired(false);
+      }
+    };
+
+    if (hotelId && recommendationId && token && correlationId) {
+      fetchPriceCheck();
+    }
+  }, [hotelId, recommendationId, token, correlationId]);
+
+  const removeHtmlTags = (html = "") => {
+    if (!html) return "";
+
+    let text = String(html);
+
+    const decoder = document.createElement("textarea");
+    decoder.innerHTML = text;
+    text = decoder.value;
+
+    text = text
+      .replace(/<li[^>]*>/gi, "\n• ")
+      .replace(/<\/li>/gi, "")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<p[^>]*>/gi, "")
+      .replace(/<\/p>/gi, "\n")
+      .replace(/<ul[^>]*>/gi, "")
+      .replace(/<\/ul>/gi, "\n")
+      .replace(/<ol[^>]*>/gi, "")
+      .replace(/<\/ol>/gi, "\n");
+
+    text = text.replace(/<[^>]*>/g, "");
+
+    decoder.innerHTML = text;
+    text = decoder.value;
+
+    return text
+      .replace(/[ \t]+/g, " ")
+      .replace(/\n[ \t]+/g, "\n")
+      .replace(/\n{2,}/g, "\n")
+      .trim();
+  };
+
+  useEffect(() => {
     window.scrollTo({
       top: 0,
       left: 0,
@@ -962,29 +1010,17 @@ const Hotel = () => {
         </div>
       )}
 
-      {/* =====================================================
-          HOTEL BOOKING PAGE
-      ===================================================== */}
-
       <section className="hotel-booking-page">
         <div className="container">
           <div className="hotel-booking-wrapper">
-            {/* =================================================
-                LEFT
-            ================================================= */}
-
             <div className="hotel-booking-left">
               <h2 className="booking-page-title">Enter Traveller Details</h2>
 
               <div className="traveller-form-wrapper">
-                {/* =================================================
-                    LEAD GUEST
-                ================================================= */}
                 <div className="traveller-card">
                   <div className="traveller-card-header lead-guest-header-custom">
                     <h3>Lead Guest</h3>
                   </div>
-
                   <form>
                     <div className="traveller-form-grid">
                       {/* TITLE */}
@@ -1106,6 +1142,30 @@ const Hotel = () => {
                       </div>
                     </div>
                   </form>
+                  {!allGuestsInfoRequired &&
+                    travellerFields.length <
+                      Math.max(
+                        Number(totalAdults || 0) +
+                          Number(totalChildren || 0) -
+                          1,
+                        0,
+                      ) && (
+                      <button
+                        type="button"
+                        className="add-traveller-btn"
+                        onClick={() =>
+                          appendTraveller({
+                            title: "Mr",
+                            firstName: "",
+                            lastName: "",
+                            age: "",
+                            gender: "",
+                          })
+                        }
+                      >
+                        + Add Traveller
+                      </button>
+                    )}
                 </div>
                 {/* =================================================
                     ADDITIONAL TRAVELLERS
@@ -1116,12 +1176,20 @@ const Hotel = () => {
                     key={traveller.id}
                   >
                     <div className="traveller-card-header added-traveller-header-custom">
-                      <h3>Traveller {index + 1}</h3>
+                      <h3>Guest {index + 1}</h3>
+                      {!allGuestsInfoRequired && (
+                        <button
+                          type="button"
+                          className="remove-traveller-btn"
+                          onClick={() => removeTraveller(index)}
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
 
                     <div className="traveller-form-grid">
                       {/* TITLE */}
-
                       <div className="form-group small-field">
                         <label>Title</label>
 
@@ -1130,17 +1198,13 @@ const Hotel = () => {
                           {...register(`travellers.${index}.title`)}
                         >
                           <option value="Mr">Mr</option>
-
                           <option value="Mrs">Mrs</option>
-
                           <option value="Ms">Ms</option>
-
                           <option value="Miss">Miss</option>
                         </select>
                       </div>
 
                       {/* FIRST NAME */}
-
                       <div className="form-group">
                         <label>First Name *</label>
 
@@ -1161,7 +1225,6 @@ const Hotel = () => {
                       </div>
 
                       {/* LAST NAME */}
-
                       <div className="form-group">
                         <label>Last Name *</label>
 
@@ -1182,7 +1245,6 @@ const Hotel = () => {
                       </div>
 
                       {/* AGE */}
-
                       <div className="form-group small-field">
                         <label>Age</label>
 
@@ -1192,7 +1254,6 @@ const Hotel = () => {
                           placeholder="Age"
                           {...register(`travellers.${index}.age`, {
                             required: "Age is required",
-
                             min: {
                               value: 1,
                               message: "Invalid age",
@@ -1208,7 +1269,6 @@ const Hotel = () => {
                       </div>
 
                       {/* GENDER */}
-
                       <div className="form-group small-field">
                         <label>Gender *</label>
 
@@ -1219,11 +1279,8 @@ const Hotel = () => {
                           })}
                         >
                           <option value="">Select Gender</option>
-
                           <option value="MALE">Male</option>
-
                           <option value="FEMALE">Female</option>
-
                           <option value="OTHER">Other</option>
                         </select>
 
@@ -1236,9 +1293,7 @@ const Hotel = () => {
                     </div>
                   </div>
                 ))}
-                {/* =================================================
-                    CONTACT DETAILS
-                ================================================= */}
+
                 <div className="traveller-card">
                   <h3 className="booking-contact-title">
                     Booking details will be sent to
@@ -1699,14 +1754,12 @@ const Hotel = () => {
                                   marginBottom: "0",
                                 }}
                               >
-                                <span className="policy-bullet">•</span>
-
                                 <span
                                   style={{
                                     whiteSpace: "pre-line",
                                   }}
                                 >
-                                  {policy.text.trim()}
+                                  {removeHtmlTags(policy.text)}
                                 </span>
                               </div>
                             )}

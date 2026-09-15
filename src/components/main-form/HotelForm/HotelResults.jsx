@@ -20,15 +20,13 @@ import {
   TotalRooms,
 } from "../../../atoms/userAtom";
 
-/* =========================================================
-   HOTEL CARD
-========================================================= */
-
 function HotelCard({
   image,
   name,
   location,
   newPrice,
+  publishedRate,
+  discountPercentage,
   credit,
   starRating,
   facilities,
@@ -42,6 +40,14 @@ function HotelCard({
       .includes("free wifi"),
   );
 
+  const published = Number(publishedRate || 0);
+  const ourPrice = Number(newPrice || 0);
+
+  const calculatedDiscount =
+    published > 0 && ourPrice > 0 && published > ourPrice
+      ? Math.round(((published - ourPrice) / published) * 100)
+      : 0;
+
   return (
     <div className="lux-hotel-card" onClick={onClick}>
       <div className="lux-hotel-img-wrap">
@@ -49,6 +55,9 @@ function HotelCard({
           src={image || "/images/hotel-placeholder.jpg"}
           alt={name || "Hotel"}
         />
+        {calculatedDiscount > 0 && (
+          <div className="hotel-discount-badge">{calculatedDiscount}% OFF</div>
+        )}
       </div>
 
       <div className="lux-hotel-content">
@@ -133,10 +142,6 @@ function HotelCard({
   );
 }
 
-/* =========================================================
-   HELPERS
-========================================================= */
-
 const getHotelListingsResult = (response) => {
   return response?.data?.hotelListings?.result || null;
 };
@@ -214,19 +219,7 @@ export default function HotelResults() {
 
   const [paramsData, setParamsData] = useState(null);
 
-  /*
-    NEW:
-    Store API filters separately.
-
-    These come from:
-
-    hotelListings.result.filters
-  */
   const [apiFilters, setApiFilters] = useState({});
-
-  /* =======================================================
-     LOCAL FILTER STATE
-  ======================================================= */
 
   const [filters, setFilters] = useState({
     minPrice: 0,
@@ -250,10 +243,6 @@ export default function HotelResults() {
 
     sortBy: "",
   });
-
-  /* =======================================================
-     HOTEL SEARCH DATA
-  ======================================================= */
 
   const hotelData = useMemo(() => {
     let roomDetails = [];
@@ -317,19 +306,11 @@ export default function HotelResults() {
 
   const [rooms, setRooms] = useState(hotelData.roomDetails?.slice(1) || []);
 
-  /* =======================================================
-     ATOMS
-  ======================================================= */
-
   const [roomCountToStore, setRoomCountToStore] = useAtom(TotalRooms);
 
   const [adultCountToStore, setAdultCountToStore] = useAtom(AdultCountToStore);
 
   const [childCountToStore, setChildCountToStore] = useAtom(ChildCountToStore);
-
-  /* =======================================================
-     TOTALS
-  ======================================================= */
 
   const totalAdults =
     Number(adults || 0) +
@@ -393,35 +374,33 @@ export default function HotelResults() {
 
       finalResult = result;
 
-      // Get hotels from this polling response
       const pulledHotels = getHotelsFromResult(result);
 
-      // Add them to our collection.
-      // Duplicate hotel IDs will keep only the lowest price.
       allHotels = mergeHotels(allHotels, pulledHotels);
 
-      // Update filters
+      setHotelGet([...allHotels]);
+
+      if (allHotels.length > 0) {
+        setHotelLoader(false);
+      }
+
       const latestFilters = getFiltersFromResult(result);
 
       if (Object.keys(latestFilters).length > 0) {
         setApiFilters(latestFilters);
       }
 
-      // Keep latest params
       setParamsData(result);
 
-      // Update token
       if (result?.token) {
         token = result.token;
         localStorage.setItem("hotelToken", result.token);
       }
 
-      // Update correlation ID
       if (result?.correlationId) {
         correlationId = result.correlationId;
       }
 
-      // Update nextResultsKey
       if (result?.nextResultsKey) {
         nextResultsKey = result.nextResultsKey;
       } else {
@@ -435,7 +414,6 @@ export default function HotelResults() {
         hotels: allHotels.length,
       });
 
-      // STOP ONLY when completed
       if (status === "completed") {
         break;
       }
@@ -449,7 +427,6 @@ export default function HotelResults() {
       }
     }
 
-    // ONLY NOW show the hotels
     setHotelGet(allHotels);
 
     if (finalResult) {
@@ -473,10 +450,6 @@ export default function HotelResults() {
     };
   };
 
-  /* =======================================================
-     MAIN HOTEL SEARCH
-  ======================================================= */
-
   const handleSearchHotel = async ({
     destinationData = selectedDestination,
 
@@ -488,10 +461,6 @@ export default function HotelResults() {
   } = {}) => {
     setHotelLoader(true);
 
-    /*
-      Reset previous results/filters
-      before starting a fresh search.
-    */
     setHotelGet([]);
 
     setApiFilters({});
@@ -513,10 +482,6 @@ export default function HotelResults() {
     });
 
     try {
-      /* ===================================================
-         OCCUPANCIES
-      =================================================== */
-
       const occupancies = roomData.map((room) => ({
         numOfAdults: Number(room?.adults || 0),
 
@@ -524,10 +489,6 @@ export default function HotelResults() {
           .filter((age) => age !== "")
           .map((age) => Number(age)),
       }));
-
-      /* ===================================================
-         SEARCH LOCATION
-      =================================================== */
 
       const locationid =
         destinationData?.destinationId || hotelData.locationid || "";
@@ -542,10 +503,6 @@ export default function HotelResults() {
         hotelData.destination ||
         "";
 
-      /* ===================================================
-         DATES
-      =================================================== */
-
       const formattedCheckIn = checkIn
         ? new Date(checkIn).toISOString().split("T")[0]
         : hotelData.checkIn;
@@ -553,10 +510,6 @@ export default function HotelResults() {
       const formattedCheckOut = checkOut
         ? new Date(checkOut).toISOString().split("T")[0]
         : hotelData.checkOut;
-
-      /* ===================================================
-         REQUEST BODY
-      =================================================== */
 
       const requestBody = {
         locationid,
@@ -576,10 +529,6 @@ export default function HotelResults() {
 
       console.log("newHotelFetch request:", requestBody);
 
-      /* ===================================================
-         INITIAL API
-      =================================================== */
-
       const res = await newHotelFetch({
         body: requestBody,
       });
@@ -594,7 +543,12 @@ export default function HotelResults() {
 
       const initialHotels = getHotelsFromResult(result);
       const collectedHotels = mergeHotels([], initialHotels);
-      setHotelGet(initialHotels);
+
+      setHotelGet(collectedHotels);
+
+      if (collectedHotels.length > 0) {
+        setHotelLoader(false);
+      }
 
       const initialFilters = getFiltersFromResult(result);
 
@@ -608,10 +562,6 @@ export default function HotelResults() {
 
       let finalHotels = collectedHotels;
       let finalResult = result;
-
-      /* ===================================================
-         POLLING
-      =================================================== */
 
       const status = getStatus(result);
 
@@ -643,10 +593,6 @@ export default function HotelResults() {
         }
       }
 
-      /* ===================================================
-         SEARCH DATA
-      =================================================== */
-
       setSearchData({
         destination: destinationName,
 
@@ -677,7 +623,6 @@ export default function HotelResults() {
         roomDetails: roomData,
       });
 
-      // Keep the modify-search form synchronized with the latest search.
       setDestination(destinationName);
       setDateRange([
         formattedCheckIn ? new Date(formattedCheckIn) : null,
@@ -694,10 +639,6 @@ export default function HotelResults() {
         latitude: lat,
         longitude: long,
       });
-
-      /* ===================================================
-         URL
-      =================================================== */
 
       const urlParams = new URLSearchParams({
         destination: destinationName || "",
@@ -741,18 +682,9 @@ export default function HotelResults() {
     }
   };
 
-  /* =======================================================
-     INITIAL SEARCH
-  ======================================================= */
-
   useEffect(() => {
     handleSearchHotel();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  /* =======================================================
-     SYNC MODIFY SEARCH WITH URL
-  ======================================================= */
 
   useEffect(() => {
     setSearchData(hotelData);
@@ -781,10 +713,6 @@ export default function HotelResults() {
     }
   }, [hotelData]);
 
-  /* =======================================================
-     DATE FORMAT
-  ======================================================= */
-
   const formatDate = (date) => {
     if (!date) return "";
 
@@ -796,10 +724,6 @@ export default function HotelResults() {
 
   const totalGuests =
     Number(searchData.adults || 0) + Number(searchData.children || 0);
-
-  /* =======================================================
-     DESTINATION SEARCH
-  ======================================================= */
 
   const handleDestinationChange = async (e) => {
     const query = e.target.value;
@@ -837,10 +761,6 @@ export default function HotelResults() {
     }
   };
 
-  /* =======================================================
-     HOTEL CLICK
-  ======================================================= */
-
   const handleHotelClick = (hotel) => {
     const allChildAges = [
       ...childrenAges,
@@ -861,11 +781,6 @@ export default function HotelResults() {
 
       hotelName: hotel?.name || "",
 
-      /*
-            IMPORTANT:
-            Use correlationId from
-            final completed response.
-          */
       correlationId: String(paramsData?.correlationId || ""),
 
       adults: String(totalAdults),
@@ -878,30 +793,9 @@ export default function HotelResults() {
     navigate(`/hotel-details?${hotelParams.toString()}`);
   };
 
-  /* =======================================================
-     NEW API FILTER DATA
-     
-     Response:
-
-     filters.price
-     filters.startrating
-     filters.propertyType
-     filters.chain
-     filters.meals
-     filters.cancellation
-     filters.facilities
-  ======================================================= */
-
   const apiPriceMin = Number(apiFilters?.price?.min) || 0;
 
   const apiPriceMax = Number(apiFilters?.price?.max) || 1000;
-
-  /* =======================================================
-     MAX HOTEL PRICE
-     
-     Prefer API filter price.
-     Fallback to actual hotel prices.
-  ======================================================= */
 
   const maxHotelPrice = useMemo(() => {
     if (Number(apiPriceMax) > 0) {
@@ -919,46 +813,17 @@ export default function HotelResults() {
     return Math.max(1000, Math.ceil(Math.max(...prices)));
   }, [apiPriceMax, hotelsGet]);
 
-  /* =======================================================
-     API PROPERTY TYPES
-     
-     NEW RESPONSE:
-
-     propertyType: [
-       "Apartment",
-       "Hotel",
-       "Aparthotel",
-       ...
-     ]
-  ======================================================= */
-
   const propertyTypes = useMemo(() => {
     if (Array.isArray(apiFilters?.propertyType)) {
       return apiFilters.propertyType;
     }
 
-    /*
-        Fallback for safety.
-      */
     return [
       ...new Set(
         (hotelsGet || []).map((hotel) => hotel?.category).filter(Boolean),
       ),
     ];
   }, [apiFilters, hotelsGet]);
-
-  /* =======================================================
-     API HOTEL CHAINS
-     
-     NEW RESPONSE:
-
-     chain: [
-       "Independent",
-       "Accor",
-       "Marriott",
-       ...
-     ]
-  ======================================================= */
 
   const hotelChains = useMemo(() => {
     if (Array.isArray(apiFilters?.chain)) {
@@ -972,37 +837,7 @@ export default function HotelResults() {
     ];
   }, [apiFilters, hotelsGet]);
 
-  /* =======================================================
-     STAR RATINGS FROM API
-     
-     NEW RESPONSE:
-
-     startrating: {
-       "1": 9,
-       "2": 11,
-       "3": 51,
-       "4": 122,
-       "5": 94
-     }
-  ======================================================= */
-
   const starRatingCounts = apiFilters?.startrating || {};
-
-  /* =======================================================
-     AVAILABLE BOOKING OPTIONS
-     
-     NEW RESPONSE:
-
-     meals: [
-       "freeBreakfast",
-       "halfBoard",
-       "fullBoard"
-     ]
-
-     cancellation: [
-       "freeCancellation"
-     ]
-  ======================================================= */
 
   const availableMeals = Array.isArray(apiFilters?.meals)
     ? apiFilters.meals
@@ -1017,10 +852,6 @@ export default function HotelResults() {
   const hasFreeCancellationFilter =
     availableCancellation.includes("freeCancellation");
 
-  /* =======================================================
-     PRICE FILTER INITIALIZATION
-  ======================================================= */
-
   useEffect(() => {
     setFilters((prev) => ({
       ...prev,
@@ -1030,10 +861,6 @@ export default function HotelResults() {
       maxPrice: apiPriceMax > 0 ? apiPriceMax : maxHotelPrice,
     }));
   }, [apiPriceMin, apiPriceMax, maxHotelPrice]);
-
-  /* =======================================================
-     CHECK HOTEL FREE WIFI
-  ======================================================= */
 
   const hotelHasFacility = (hotel, searchText) => {
     const facilities = hotel?.facilities || [];
@@ -1045,29 +872,15 @@ export default function HotelResults() {
     );
   };
 
-  /* =======================================================
-     FILTERED HOTELS
-  ======================================================= */
-
   const filteredHotels = useMemo(() => {
     const filtered = (hotelsGet || []).filter((hotel) => {
       const price = Number(hotel?.ourprice || 0);
 
-      /*
-              Some hotels have starRating null
-              in the new response.
-
-              Convert safely.
-            */
       const starRating = Number(hotel?.starRating || 0);
 
       const options = hotel?.options || {};
 
       const hasWifi = hotelHasFacility(hotel, "free wifi");
-
-      /* =============================================
-               PRICE
-            ============================================= */
 
       if (price < Number(filters.minPrice)) {
         return false;
@@ -1077,19 +890,11 @@ export default function HotelResults() {
         return false;
       }
 
-      /* =============================================
-               STAR RATING
-            ============================================= */
-
       if (filters.starRatings.length > 0) {
         if (!filters.starRatings.includes(starRating)) {
           return false;
         }
       }
-
-      /* =============================================
-               PROPERTY TYPE
-            ============================================= */
 
       if (
         filters.propertyTypes.length > 0 &&
@@ -1098,49 +903,25 @@ export default function HotelResults() {
         return false;
       }
 
-      /* =============================================
-               CHAIN
-            ============================================= */
-
       if (filters.chains.length > 0 && !filters.chains.includes(hotel?.chain)) {
         return false;
       }
-
-      /* =============================================
-               FREE CANCELLATION
-            ============================================= */
 
       if (filters.freeCancellation && !options?.freeCancellation) {
         return false;
       }
 
-      /* =============================================
-               FREE BREAKFAST
-            ============================================= */
-
       if (filters.freeBreakfast && !options?.freeBreakfast) {
         return false;
       }
-
-      /* =============================================
-               REFUNDABLE
-            ============================================= */
 
       if (filters.refundable && !options?.refundable) {
         return false;
       }
 
-      /* =============================================
-               FREE WIFI
-            ============================================= */
-
       if (filters.freeWifi && !hasWifi) {
         return false;
       }
-
-      /* =============================================
-               PAY AT HOTEL
-            ============================================= */
 
       if (filters.payAtHotel && !hotel?.payAtHotel) {
         return false;
@@ -1149,11 +930,23 @@ export default function HotelResults() {
       return true;
     });
 
-    /* ===================================================
-         SORTING
-      =================================================== */
-
     return [...filtered].sort((a, b) => {
+      const getCalculatedDiscount = (hotel) => {
+        const published = Number(hotel?.publishedRate || 0);
+
+        const ourPrice = Number(hotel?.ourprice_before_credit || 0);
+
+        if (published > 0 && ourPrice > 0 && published > ourPrice) {
+          return Math.round(((published - ourPrice) / published) * 100);
+        }
+
+        return 0;
+      };
+
+      if (filters.sortBy === "discountHigh") {
+        return getCalculatedDiscount(b) - getCalculatedDiscount(a);
+      }
+
       if (filters.sortBy === "priceLow") {
         return Number(a?.ourprice || 0) - Number(b?.ourprice || 0);
       }
@@ -1170,43 +963,25 @@ export default function HotelResults() {
         return Number(a?.distancekm || 0) - Number(b?.distancekm || 0);
       }
 
-      return 0;
+      return getCalculatedDiscount(b) - getCalculatedDiscount(a);
     });
   }, [hotelsGet, filters]);
-
-  /* =======================================================
-     CLEAR FILTERS
-  ======================================================= */
 
   const clearAllFilters = () => {
     setFilters({
       minPrice: apiPriceMin,
-
       maxPrice: apiPriceMax || maxHotelPrice,
-
       starRatings: [],
-
       propertyTypes: [],
-
       chains: [],
-
       freeCancellation: false,
-
       freeBreakfast: false,
-
       refundable: false,
-
       freeWifi: false,
-
       payAtHotel: false,
-
       sortBy: "",
     });
   };
-
-  /* =======================================================
-     STAR FILTER
-  ======================================================= */
 
   const handleStarFilter = (star) => {
     setFilters((prev) => ({
@@ -1218,10 +993,6 @@ export default function HotelResults() {
     }));
   };
 
-  /* =======================================================
-     PROPERTY FILTER
-  ======================================================= */
-
   const handlePropertyFilter = (type) => {
     setFilters((prev) => ({
       ...prev,
@@ -1231,10 +1002,6 @@ export default function HotelResults() {
         : [...prev.propertyTypes, type],
     }));
   };
-
-  /* =======================================================
-     CHAIN FILTER
-  ======================================================= */
 
   const handleChainFilter = (chain) => {
     setFilters((prev) => ({
@@ -1246,17 +1013,9 @@ export default function HotelResults() {
     }));
   };
 
-  /* =======================================================
-     TODAY
-  ======================================================= */
-
   const today = new Date();
 
   today.setHours(0, 0, 0, 0);
-
-  /* =======================================================
-     RENDER
-  ======================================================= */
 
   return (
     <>
@@ -1308,10 +1067,6 @@ export default function HotelResults() {
 
       <div className="lux-results-page">
         <div className="container">
-          {/* =================================================
-              SEARCH SUMMARY
-          ================================================= */}
-
           <div className="lux-search-bar">
             <div>
               <h2>{searchData.destination}</h2>
@@ -2264,7 +2019,8 @@ export default function HotelResults() {
                 <>
                   {isFetchingMoreHotels && (
                     <div className="loading-more-hotels">
-                      Finding more hotels...
+                      <span className="loading-more-hotels__spinner"></span>
+                      <span>Finding more hotels...</span>
                     </div>
                   )}
 
@@ -2277,6 +2033,7 @@ export default function HotelResults() {
                         hotel.contact?.address?.country?.name || ""
                       }`}
                       newPrice={hotel.ourprice_before_credit}
+                      publishedRate={hotel.publishedRate}
                       credit={hotel.credit}
                       starRating={hotel?.starRating}
                       facilities={hotel?.facilities}

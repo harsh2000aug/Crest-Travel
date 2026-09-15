@@ -173,26 +173,6 @@ const Home = () => {
                 </div>
               </div>
             </SwiperSlide>
-
-            <SwiperSlide>
-              <div className="rental-card">
-                <img src={vac5} alt="" />
-                <div className="card-content">
-                  <h3>Ocean Breeze Villa</h3>
-                  <p>Beachfront Paradise</p>
-                </div>
-              </div>
-            </SwiperSlide>
-
-            <SwiperSlide>
-              <div className="rental-card">
-                <img src={vac6} alt="" />
-                <div className="card-content">
-                  <h3>Luxury Hillside Home</h3>
-                  <p>Panoramic Sunset Views</p>
-                </div>
-              </div>
-            </SwiperSlide>
           </Swiper>
         </div>
       </section>
@@ -263,26 +243,6 @@ const Home = () => {
                 <div className="card-content">
                   <h3>Avalon Chic Condo</h3>
                   <p>Modern Interior Design</p>
-                </div>
-              </div>
-            </SwiperSlide>
-
-            <SwiperSlide>
-              <div className="rental-card">
-                <img src={hotel5} alt="" />
-                <div className="card-content">
-                  <h3>Ocean Breeze Villa</h3>
-                  <p>Beachfront Paradise</p>
-                </div>
-              </div>
-            </SwiperSlide>
-
-            <SwiperSlide>
-              <div className="rental-card">
-                <img src={hotel6} alt="" />
-                <div className="card-content">
-                  <h3>Luxury Hillside Home</h3>
-                  <p>Panoramic Sunset Views</p>
                 </div>
               </div>
             </SwiperSlide>

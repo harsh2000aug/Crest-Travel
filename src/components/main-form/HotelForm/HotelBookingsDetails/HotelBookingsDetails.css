@@ -186,6 +186,10 @@
   gap: 3px;
 }
 
+.hbd-date-block.left-align {
+  align-items: flex-end;
+}
+
 .hbd-label {
   display: flex;
   align-items: center;
@@ -256,6 +260,18 @@
   justify-content: center;
   color: #aaa;
   font-size: 35px;
+}
+
+.hbd-left-column button {
+  width: 100%;
+  background: #d8a437;
+  color: #fff;
+  border: none;
+  padding: 15px 0;
+  outline: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
 }
 
 /* =========================================
@@ -1047,5 +1063,143 @@
     width: 40px;
     height: 40px;
     font-size: 17px;
+  }
+}
+
+.hbd-cancel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.hbd-cancel-popup {
+  width: 100%;
+  max-width: 430px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 28px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: hbdCancelPopupIn 0.2s ease-out;
+}
+
+@keyframes hbdCancelPopupIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hbd-cancel-popup-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff4e5;
+  color: #e58a00;
+  font-size: 24px;
+}
+
+.hbd-cancel-popup h2 {
+  margin: 0 0 10px;
+  font-size: 24px;
+  color: #222;
+}
+
+.hbd-cancel-popup p {
+  margin: 0;
+  color: #666;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.hbd-cancel-popup-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.hbd-cancel-popup-actions button {
+  min-width: 120px;
+  height: 44px;
+  border-radius: 7px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.hbd-cancel-popup-no {
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #333;
+}
+
+.hbd-cancel-popup-no:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.hbd-cancel-popup-yes {
+  border: 1px solid #d93025;
+  background: #d93025;
+  color: #fff;
+}
+
+.hbd-cancel-popup-yes:hover:not(:disabled) {
+  background: #b9231b;
+}
+
+.hbd-cancel-popup-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hbd-cancel-booking-btn {
+  border: none;
+  background: #d93025;
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.hbd-cancel-booking-btn:hover:not(:disabled) {
+  background: #b9231b;
+}
+
+.hbd-cancel-booking-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .hbd-cancel-popup {
+    padding: 26px 20px;
+  }
+
+  .hbd-cancel-popup-actions {
+    flex-direction: column-reverse;
+  }
+
+  .hbd-cancel-popup-actions button {
+    width: 100%;
   }
 }
