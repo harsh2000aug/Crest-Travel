@@ -161,6 +161,11 @@ export const flightPayment = ({ body }: any) =>
     uriEndPoint: allApi.flightPayment.v1,
     body,
   });
+export const flightBookPage = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.flightBookPage.v1,
+    body,
+  });
 export const carSearchLocation = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.carSearchLocation.v1,

@@ -1,25 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import "./FlightResultPage.css";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
 import { fligtsData, suggestionFlight } from "../../store/Services/AllApi";
-
-const STOP_OPTIONS = [
-  {
-    id: "nonstop",
-    label: "Non-stop",
-  },
-  {
-    id: "1stop",
-    label: "1 Stop",
-  },
-  {
-    id: "2stops",
-    label: "2+ Stops",
-  },
-];
 
 /* =========================================================
    CURRENCY
@@ -37,6 +22,11 @@ const getCurrencySymbol = (currency) => {
 
   return symbols[currency] || currency || "$";
 };
+
+const formatFilterPrice = (value, currency = "USD") =>
+  `${getCurrencySymbol(currency)}${Number(value).toLocaleString("en-US", {
+    maximumFractionDigits: 0,
+  })}`;
 
 const formatMoney = (value, currency = "USD") => {
   const amount = Number(value) || 0;
@@ -523,7 +513,7 @@ function DetailsPanel({ flight }) {
         )}
 
         {/* Amenities */}
-
+        {/* 
         <div className="amenities-row">
           <div className="amenity-chip unavailable">
             📶 Wi-Fi — Not provided
@@ -536,7 +526,7 @@ function DetailsPanel({ flight }) {
           <div className="amenity-chip unavailable">
             🔌 Power — Not provided
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* =========================
@@ -1207,21 +1197,111 @@ export default function FlightResultPage() {
   const flightsPerPage = 20;
   const totalPages = Math.ceil(totalResults / flightsPerPage);
 
-  const [maxPrice, setMaxPrice] = useState(Number.POSITIVE_INFINITY);
-
-  /*
-    Empty = all airlines
-  */
-
-  const [selectedAirlines, setSelectedAirlines] = useState([]);
-
-  /*
-    Empty = all stops
-  */
-
-  const [selectedStops, setSelectedStops] = useState([]);
-
+  const [filterOptions, setFilterOptions] = useState({});
+  const [findData, setFindData] = useState({});
   const [sortBy, setSortBy] = useState("price");
+  const [searchVersion, setSearchVersion] = useState(0);
+  const [searchError, setSearchError] = useState("");
+  const [durationDraft, setDurationDraft] = useState({
+    totalMin: "",
+    totalMax: "",
+    layoverMin: "",
+    layoverMax: "",
+  });
+  const [durationError, setDurationError] = useState("");
+  const requestIdRef = useRef(0);
+  const searchValuesRef = useRef(null);
+
+  const minPrice = Math.floor(Number(filterOptions.minprice));
+  const maxPrice = Math.ceil(Number(filterOptions.maxprice));
+  const hasPriceFilter =
+    filterOptions.minprice != null &&
+    filterOptions.maxprice != null &&
+    filterOptions.minprice !== "" &&
+    filterOptions.maxprice !== "" &&
+    Number.isFinite(minPrice) &&
+    Number.isFinite(maxPrice) &&
+    minPrice >= 0 &&
+    maxPrice >= minPrice;
+  const selectedPrice = findData.price || { low: minPrice, high: maxPrice };
+  const priceSpan = maxPrice - minPrice;
+  const priceLowPercent =
+    priceSpan > 0 ? ((selectedPrice.low - minPrice) / priceSpan) * 100 : 0;
+  const priceHighPercent =
+    priceSpan > 0 ? ((selectedPrice.high - minPrice) / priceSpan) * 100 : 100;
+  const durationOptions = filterOptions.duration;
+  const hasDurationFilter = Array.isArray(durationOptions)
+    ? durationOptions.length > 0
+    : durationOptions !== null && typeof durationOptions === "object"
+      ? Object.keys(durationOptions).length > 0
+      : false;
+
+  const updatePriceRange = (field, value) => {
+    if (!hasPriceFilter) return;
+    const amount = Math.round(Number(value));
+    if (!Number.isFinite(amount)) return;
+    setCurrentPage(1);
+    setFindData((previous) => {
+      const current = previous.price || { low: minPrice, high: maxPrice };
+      const clamped = Math.min(maxPrice, Math.max(minPrice, amount));
+      const price =
+        field === "low"
+          ? { low: Math.min(clamped, current.high), high: current.high }
+          : { low: current.low, high: Math.max(clamped, current.low) };
+      if (price.low === current.low && price.high === current.high)
+        return previous;
+      return { ...previous, price };
+    });
+  };
+
+  const toggleApiFilter = (key, value) => {
+    setCurrentPage(1);
+    setFindData((previous) => {
+      const selected = previous[key] || [];
+      const nextValues = selected.includes(value)
+        ? selected.filter((item) => item !== value)
+        : [...selected, value];
+      const next = { ...previous };
+      if (nextValues.length) next[key] = nextValues;
+      else delete next[key];
+      return next;
+    });
+  };
+
+  const applyDuration = () => {
+    const duration = {};
+    for (const [key, minField, maxField] of [
+      ["totalDuration", "totalMin", "totalMax"],
+      ["layoverDuration", "layoverMin", "layoverMax"],
+    ]) {
+      const minText = durationDraft[minField];
+      const maxText = durationDraft[maxField];
+      if (minText === "" && maxText === "") continue;
+      const min = minText === "" ? 0 : Number(minText);
+      const max = Number(maxText);
+      if (
+        maxText === "" ||
+        !Number.isInteger(min) ||
+        !Number.isInteger(max) ||
+        min < 0 ||
+        max < min
+      ) {
+        setDurationError(
+          "Enter a maximum for each active range, with whole minutes and 0 ≤ minimum ≤ maximum.",
+        );
+        return;
+      }
+      duration[key] = { min, max };
+    }
+    setDurationError("");
+    setCurrentPage(1);
+    setFindData((previous) => {
+      const next = { ...previous };
+      if (Object.keys(duration).length) next.duration = [duration];
+      else delete next.duration;
+      return next;
+    });
+  };
 
   /* =========================
      TRAVELER COUNTERS
@@ -1428,145 +1508,17 @@ export default function FlightResultPage() {
       tripType === "round" ||
       tripType === "RoundTrip");
 
-  /* =========================
-     STOP TOGGLE
-  ========================= */
-
-  function toggleStop(id) {
-    setSelectedStops((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
-    );
-  }
-
-  /* =========================
-     AIRLINE TOGGLE
-  ========================= */
-
-  function toggleAirline(code) {
-    setSelectedAirlines((prev) =>
-      prev.includes(code) ? prev.filter((a) => a !== code) : [...prev, code],
-    );
-  }
-
-  /* =========================
-     RESET FILTERS
-  ========================= */
-
   function resetFilters() {
-    setMaxPrice(Number.POSITIVE_INFINITY);
-
-    setSelectedStops([]);
-
-    setSelectedAirlines([]);
-  }
-
-  /* =========================
-     DYNAMIC AIRLINE FILTER
-  ========================= */
-
-  const airlineFilterList = apiFlights.reduce((acc, flight) => {
-    const code = flight.airlineCode;
-
-    if (!code) {
-      return acc;
-    }
-
-    const existing = acc.find((item) => item.code === code);
-
-    if (!existing || flight.price < existing.fromPrice) {
-      if (existing) {
-        existing.fromPrice = flight.price;
-
-        existing.name = flight.airlineName || code;
-      } else {
-        acc.push({
-          code,
-          name: flight.airlineName || code,
-          fromPrice: flight.price,
-        });
-      }
-    }
-
-    return acc;
-  }, []);
-
-  /* =========================
-     FILTER FLIGHTS
-  ========================= */
-
-  const filteredFlights = [...apiFlights]
-    .filter((flight) => {
-      /* Price */
-
-      if (flight.price > maxPrice) {
-        return false;
-      }
-
-      /* Airline */
-
-      if (
-        selectedAirlines.length > 0 &&
-        !selectedAirlines.includes(flight.airlineCode)
-      ) {
-        return false;
-      }
-
-      /* Stops */
-
-      if (selectedStops.length > 0) {
-        const stopKey =
-          flight.totalStops === 0
-            ? "nonstop"
-            : flight.totalStops === 1
-              ? "1stop"
-              : "2stops";
-
-        if (!selectedStops.includes(stopKey)) {
-          return false;
-        }
-      }
-
-      return true;
-    })
-    .sort((a, b) => {
-      /* PRICE */
-
-      if (sortBy === "price") {
-        return a.price - b.price;
-      }
-
-      /* DURATION */
-
-      if (sortBy === "duration") {
-        const parseDuration = (value) => {
-          if (!value) return 0;
-
-          const hourMatch = value.match(/(\d+)h/);
-
-          const minuteMatch = value.match(/(\d+)m/);
-
-          return (
-            Number(hourMatch?.[1] || 0) * 60 + Number(minuteMatch?.[1] || 0)
-          );
-        };
-
-        return parseDuration(a.duration) - parseDuration(b.duration);
-      }
-
-      /* DEPARTURE */
-
-      if (sortBy === "dep") {
-        return a.dep.time.localeCompare(b.dep.time);
-      }
-
-      /* ARRIVAL */
-
-      if (sortBy === "arr") {
-        return a.arr.time.localeCompare(b.arr.time);
-      }
-
-      return 0;
+    setFindData({});
+    setDurationDraft({
+      totalMin: "",
+      totalMax: "",
+      layoverMin: "",
+      layoverMax: "",
     });
+    setDurationError("");
+    setCurrentPage(1);
+  }
 
   /* =========================================================
      CORE SEARCH FUNCTION
@@ -1577,12 +1529,17 @@ export default function FlightResultPage() {
   ========================================================= */
 
   const runFlightSearch = async (page = 1) => {
+    const requestId = ++requestIdRef.current;
     try {
+      setSearchError("");
       setLoading(true);
 
       const sessionId = localStorage.getItem("sessionId");
 
-      const values = getValues();
+      if (!searchValuesRef.current) {
+        searchValuesRef.current = JSON.parse(JSON.stringify(getValues()));
+      }
+      const values = searchValuesRef.current;
 
       const isMultiCitySearch =
         values.tripType === "multicity" ||
@@ -1676,7 +1633,7 @@ export default function FlightResultPage() {
 
         page,
 
-        findData: {},
+        ...(Object.keys(findData).length ? { findData } : {}),
 
         sortBy: {
           price: "LOW",
@@ -1689,9 +1646,18 @@ export default function FlightResultPage() {
         body: requestBody,
       });
 
+      if (requestId !== requestIdRef.current) return;
+
       const responseData = res?.data ?? res;
 
       const searchData = responseData?.newsearch ?? responseData;
+
+      if (searchData?.success === false) {
+        throw new Error(searchData.message || "Unable to load flights.");
+      }
+      if (!Object.keys(findData).length) {
+        setFilterOptions(searchData?.filters || {});
+      }
 
       const results = Array.isArray(searchData?.result)
         ? searchData.result
@@ -1712,25 +1678,16 @@ export default function FlightResultPage() {
 
       setCurrency(responseCurrency);
 
-      setTotalResults(Number(searchData?.count) || mappedFlights.length);
-
-      if (mappedFlights.length) {
-        const highestPrice = Math.max(
-          ...mappedFlights.map((flight) => Number(flight.price) || 0),
-        );
-
-        setMaxPrice(highestPrice);
-      } else {
-        setMaxPrice(Number.POSITIVE_INFINITY);
-      }
+      const count = Number(searchData?.count);
+      setTotalResults(Number.isFinite(count) ? count : mappedFlights.length);
     } catch (error) {
+      if (requestId !== requestIdRef.current) return;
       console.error("Flight API Error:", error);
-
+      setSearchError(error?.message || "Unable to load flights.");
       setApiFlights([]);
-
       setTotalResults(0);
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   };
 
@@ -1739,9 +1696,14 @@ export default function FlightResultPage() {
   ========================================================= */
 
   useEffect(() => {
-    runFlightSearch(currentPage);
+    setLoading(true);
+    const timer = setTimeout(() => runFlightSearch(currentPage), 250);
+    return () => {
+      clearTimeout(timer);
+      requestIdRef.current += 1;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
+  }, [currentPage, findData, searchVersion]);
 
   /* =========================================================
      SEARCH SUBMIT HANDLER
@@ -1760,8 +1722,8 @@ export default function FlightResultPage() {
       items: [],
     });
 
-    setSelectedAirlines([]);
-    setSelectedStops([]);
+    resetFilters();
+    setFilterOptions({});
 
     const isMultiCitySubmit =
       data.tripType === "multicity" ||
@@ -1854,11 +1816,9 @@ export default function FlightResultPage() {
       replace: true,
     });
 
-    if (currentPage !== 1) {
-      setCurrentPage(1);
-    } else {
-      runFlightSearch(1);
-    }
+    searchValuesRef.current = JSON.parse(JSON.stringify(getValues()));
+    setCurrentPage(1);
+    setSearchVersion((version) => version + 1);
   };
 
   /* =========================================================
@@ -2776,8 +2736,8 @@ export default function FlightResultPage() {
         <div className="page-body">
           <div className="results-summary">
             <div className="results-count">
-              Showing <span>{filteredFlights.length}</span> of{" "}
-              {totalResults || apiFlights.length} flights &nbsp;·&nbsp;
+              Showing <span>{apiFlights.length}</span> of {totalResults} flights
+              &nbsp;·&nbsp;
               {isMultiCity ? (
                 (multiCitySegments || [])
                   .map(
@@ -2804,12 +2764,6 @@ export default function FlightResultPage() {
                 onChange={(e) => setSortBy(e.target.value)}
               >
                 <option value="price">Cheapest First</option>
-
-                <option value="duration">Shortest Duration</option>
-
-                <option value="dep">Earliest Departure</option>
-
-                <option value="arr">Earliest Arrival</option>
               </select>
             </div>
           </div>
@@ -2820,66 +2774,200 @@ export default function FlightResultPage() {
 
           <aside className="filter-sidebar">
             <div className="filter-header">
-              <div className="filter-title">
-                <span className="filter-title-icon">⚙</span> Filters
-              </div>
-
-              <button className="filter-reset" onClick={resetFilters}>
+              <div className="filter-title">Filters</div>
+              <button
+                type="button"
+                className="filter-reset"
+                onClick={resetFilters}
+              >
                 Reset All
               </button>
             </div>
 
-            {/* Stops */}
-
-            <div className="filter-section">
-              <div className="filter-section-title">Stops</div>
-
-              <div className="stop-options">
-                {STOP_OPTIONS.map((option) => (
+            {hasPriceFilter && (
+              <div className="filter-section flight-price-filter">
+                <div className="filter-section-title">Price</div>
+                <div className="flight-price-filter__slider">
+                  <div className="flight-price-filter__track" />
                   <div
-                    key={option.id}
-                    className={`stop-option ${
-                      selectedStops.includes(option.id) ? "selected" : ""
-                    }`}
-                    onClick={() => toggleStop(option.id)}
-                  >
-                    <div className="stop-option-left">
-                      <div className="stop-checkbox">
-                        {selectedStops.includes(option.id) ? "✓" : ""}
-                      </div>
+                    className="flight-price-filter__selection"
+                    style={{
+                      left: `${priceLowPercent}%`,
+                      right: `${100 - priceHighPercent}%`,
+                    }}
+                  />
+                  <input
+                    className="flight-price-filter__input flight-price-filter__input--low"
+                    type="range"
+                    min={minPrice}
+                    max={maxPrice}
+                    step="1"
+                    value={selectedPrice.low}
+                    disabled={priceSpan === 0}
+                    aria-label="Minimum price"
+                    aria-valuetext={formatFilterPrice(
+                      selectedPrice.low,
+                      currency,
+                    )}
+                    style={{ zIndex: priceLowPercent > 50 ? 4 : 2 }}
+                    onChange={(event) =>
+                      updatePriceRange("low", event.target.value)
+                    }
+                  />
+                  <input
+                    className="flight-price-filter__input flight-price-filter__input--high"
+                    type="range"
+                    min={minPrice}
+                    max={maxPrice}
+                    step="1"
+                    value={selectedPrice.high}
+                    disabled={priceSpan === 0}
+                    aria-label="Maximum price"
+                    aria-valuetext={formatFilterPrice(
+                      selectedPrice.high,
+                      currency,
+                    )}
+                    onChange={(event) =>
+                      updatePriceRange("high", event.target.value)
+                    }
+                  />
+                </div>
+                <div className="flight-price-filter__values">
+                  {formatFilterPrice(selectedPrice.low, currency)} -{" "}
+                  {formatFilterPrice(selectedPrice.high, currency)}
+                </div>
+              </div>
+            )}
 
-                      <span className="stop-label">{option.label}</span>
+            {[
+              { key: "airline", source: "airline", label: "Airlines" },
+              { key: "class", source: "classes", label: "Class" },
+              {
+                key: "refundability",
+                source: "refundability",
+                label: "Refundability",
+              },
+            ].map(({ key, source, label }) => (
+              <div className="filter-section" key={key}>
+                <div className="filter-section-title">{label}</div>
+                {(filterOptions[source] || []).length ? (
+                  <div style={{ display: "grid", gap: 12 }}>
+                    {filterOptions[source].map((value) => (
+                      <label
+                        key={value}
+                        style={{
+                          display: "flex",
+                          gap: 10,
+                          alignItems: "center",
+                          cursor: "pointer",
+                          fontSize: 13,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={(findData[key] || []).includes(value)}
+                          onChange={() => toggleApiFilter(key, value)}
+                        />
+                        <span>{value}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 13 }}>No options available.</p>
+                )}
+              </div>
+            ))}
+
+            {hasDurationFilter && (
+              <div className="filter-section">
+                <div className="filter-section-title">Duration (minutes)</div>
+                {[
+                  ["Total duration", "totalMin", "totalMax"],
+                  ["Layover duration", "layoverMin", "layoverMax"],
+                ].map(([label, minField, maxField]) => (
+                  <div key={minField} style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 13, marginBottom: 8 }}>{label}</div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {[minField, maxField].map((field, index) => (
+                        <input
+                          key={field}
+                          type="number"
+                          min="0"
+                          step="1"
+                          placeholder={index ? "Max" : "Min"}
+                          aria-label={`${label} ${index ? "maximum" : "minimum"} in minutes`}
+                          value={durationDraft[field]}
+                          onChange={(event) =>
+                            setDurationDraft((previous) => ({
+                              ...previous,
+                              [field]: event.target.value,
+                            }))
+                          }
+                          style={{
+                            width: "50%",
+                            minWidth: 0,
+                            padding: "9px 8px",
+                            border: "1px solid #d5dce5",
+                            borderRadius: 5,
+                          }}
+                        />
+                      ))}
                     </div>
                   </div>
                 ))}
+                {durationError && (
+                  <p role="alert" style={{ color: "#b91c1c", fontSize: 12 }}>
+                    {durationError}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={applyDuration}
+                  style={{
+                    width: "100%",
+                    padding: 10,
+                    border: 0,
+                    borderRadius: 5,
+                    background: "#172b4d",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  Apply Duration
+                </button>
               </div>
-            </div>
+            )}
 
-            <div className="filter-section">
-              <div className="filter-section-title">Airlines</div>
-
-              <div className="airline-options">
-                {airlineFilterList.map((airline) => (
-                  <label className="airline-option" key={airline.code}>
-                    <input
-                      type="checkbox"
-                      checked={selectedAirlines.includes(airline.code)}
-                      onChange={() => toggleAirline(airline.code)}
-                    />
-
-                    <AirlineLogo code={airline.code} />
-
-                    <div className="airline-info">
-                      <div className="airline-name">{airline.name}</div>
-
-                      <div className="airline-from">
-                        from {formatMoney(airline.fromPrice, currency)}
-                      </div>
-                    </div>
-                  </label>
-                ))}
+            {(filterOptions.stops || []).length > 0 && (
+              <div className="filter-section">
+                <div className="filter-section-title">Stops</div>
+                <div style={{ display: "grid", gap: 12 }}>
+                  {filterOptions.stops.map((stop) => (
+                    <label
+                      key={stop}
+                      style={{
+                        display: "flex",
+                        gap: 10,
+                        alignItems: "center",
+                        cursor: "pointer",
+                        fontSize: 13,
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={(findData.stops || []).includes(Number(stop))}
+                        onChange={() => toggleApiFilter("stops", Number(stop))}
+                      />
+                      <span>
+                        {Number(stop) === 0
+                          ? "Non-stop"
+                          : `${stop} ${Number(stop) === 1 ? "Stop" : "Stops"}`}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </aside>
 
           <div className="flight-list">
@@ -2899,16 +2987,16 @@ export default function FlightResultPage() {
 
             {/* No Results */}
 
-            {!loading && filteredFlights.length === 0 && (
+            {!loading && apiFlights.length === 0 && (
               <div className="no-flights">
                 <div className="no-flights-icon">✈️</div>
 
                 <div className="no-flights-title">
-                  No flights match your filters
+                  {searchError || "No flights match your filters"}
                 </div>
 
                 <div className="no-flights-sub">
-                  Try adjusting your stop or airline filters.
+                  Try adjusting your filters or searching again.
                 </div>
               </div>
             )}
@@ -2916,7 +3004,7 @@ export default function FlightResultPage() {
             {/* ALL API FLIGHTS */}
 
             {!loading &&
-              filteredFlights.map((flight) => (
+              apiFlights.map((flight) => (
                 <FlightCard key={flight.id} flight={flight} />
               ))}
             {!loading && totalPages > 1 && (

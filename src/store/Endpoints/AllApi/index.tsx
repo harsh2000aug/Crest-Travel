@@ -283,6 +283,13 @@ export const allApi = {
       uri: "/alphaflight/payment",
     },
   },
+  flightBookPage: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaflight/book",
+    },
+  },
   carSearchLocation: {
     v1: {
       ...defaults.methods.POST,

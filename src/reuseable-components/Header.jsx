@@ -469,8 +469,6 @@ const Header = ({ personDetails }) => {
 
         // CANONICAL
         addOrUpdateCanonical(blogUrl);
-
-        console.log("SEO tags added successfully");
       } catch (error) {
         console.error("SEO error:", error);
       }

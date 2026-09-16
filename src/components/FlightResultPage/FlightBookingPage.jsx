@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
+import { FiBriefcase, FiClock, FiX } from "react-icons/fi";
 import "./FlightBookingPage.css";
 
 import HeaderInner from "../../reuseable-components/HeaderInner";
@@ -18,6 +18,18 @@ import Loader from "../../reuseable-components/Loader/Loader";
 /* =========================================================
    HELPERS
 ========================================================= */
+
+const countryNames = new Intl.DisplayNames(["en"], { type: "region" });
+
+const COUNTRY_OPTIONS =
+  "AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW"
+    .split(" ")
+    .map((code) => ({ code, name: countryNames.of(code) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+const validateCountryCode = (value) =>
+  COUNTRY_OPTIONS.some((country) => country.code === value) ||
+  "Please select a country";
 
 const formatMoney = (value, currency = "USD") => {
   const amount = Number(value);
@@ -308,7 +320,7 @@ const createEmptyPassenger = (passenger) => ({
 
   nationality: "",
 
-  /* OPTIONAL */
+  passportCountry: "",
 
   documentType: "",
 
@@ -536,16 +548,19 @@ function PassengerForm({ passenger, index, register, control, errors }) {
               Nationality <span>*</span>
             </label>
 
-            <input
-              type="text"
-              placeholder="e.g. Indian"
+            <select
               {...register(`passengers.${index}.nationality`, {
                 required: "Nationality is required",
-
-                validate: (value) =>
-                  value.trim() !== "" || "Nationality is required",
+                validate: validateCountryCode,
               })}
-            />
+            >
+              <option value="">Select nationality</option>
+              {COUNTRY_OPTIONS.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name} ({country.code})
+                </option>
+              ))}
+            </select>
 
             {passengerErrors.nationality && (
               <small className="fb-error">
@@ -554,18 +569,29 @@ function PassengerForm({ passenger, index, register, control, errors }) {
             )}
           </div>
 
-          {/* DOCUMENT TYPE - OPTIONAL */}
+          {/* DOCUMENT TYPE */}
 
           <div className="fb-field">
-            <label>Document Type</label>
+            <label>
+              Document Type <span>*</span>
+            </label>
 
-            <select {...register(`passengers.${index}.documentType`)}>
+            <select
+              {...register(`passengers.${index}.documentType`, {
+                required: "Document type is required",
+              })}
+            >
               <option value="">Select</option>
 
               <option value="Passport">Passport</option>
 
               <option value="National ID">National ID</option>
             </select>
+            {passengerErrors.documentType && (
+              <small className="fb-error">
+                {passengerErrors.documentType.message}
+              </small>
+            )}
           </div>
         </div>
 
@@ -577,27 +603,69 @@ function PassengerForm({ passenger, index, register, control, errors }) {
         </div>
 
         <div className="fb-form-grid fb-form-grid-two">
-          {/* PASSPORT NUMBER - OPTIONAL */}
-
           <div className="fb-field">
-            <label>Passport Number</label>
-
+            <label>
+              Passport Number <span>*</span>
+            </label>
             <input
               type="text"
               placeholder="Enter passport number"
-              {...register(`passengers.${index}.documentNumber`)}
+              {...register(`passengers.${index}.documentNumber`, {
+                required: "Passport number is required",
+                setValueAs: (value) => value.trim(),
+                validate: (value) =>
+                  Boolean(value?.trim()) || "Passport number is required",
+              })}
             />
+            {passengerErrors.documentNumber && (
+              <small className="fb-error">
+                {passengerErrors.documentNumber.message}
+              </small>
+            )}
           </div>
 
-          {/* DOCUMENT EXPIRY - OPTIONAL */}
-
           <div className="fb-field">
-            <label>Document Expiry</label>
-
+            <label>
+              Document Expiry <span>*</span>
+            </label>
             <input
               type="date"
-              {...register(`passengers.${index}.documentExpiry`)}
+              {...register(`passengers.${index}.documentExpiry`, {
+                required: "Document expiry is required",
+                validate: (value) =>
+                  !Number.isNaN(new Date(`${value}T00:00:00`).getTime()) ||
+                  "Enter a valid document expiry date",
+              })}
             />
+            {passengerErrors.documentExpiry && (
+              <small className="fb-error">
+                {passengerErrors.documentExpiry.message}
+              </small>
+            )}
+          </div>
+
+          <div className="fb-field">
+            <label>
+              Passport Country <span>*</span>
+            </label>
+            <select
+              {...register(`passengers.${index}.passportCountry`, {
+                required: "Passport country is required",
+                validate: validateCountryCode,
+              })}
+            >
+              <option value="">Select passport country</option>
+              {COUNTRY_OPTIONS.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name} ({country.code})
+                </option>
+              ))}
+            </select>
+            {passengerErrors.passportCountry && (
+              <small className="fb-error">
+                {passengerErrors.passportCountry.message}
+              </small>
+            )}
           </div>
         </div>
 
@@ -1683,6 +1751,32 @@ export default function FlightBookingPage() {
   const [revalidateData, setRevalidateData] = useState([]);
   const [bookingData, setBookingData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [policyPopup, setPolicyPopup] = useState(null);
+  const policyDialogRef = useRef(null);
+
+  const baggageDetails = revalidateData?.rules?.baggage || [];
+  const fareRulesDetails = revalidateData?.rules?.fareRules || [];
+
+  useEffect(() => {
+    const dialog = policyDialogRef.current;
+
+    if (!dialog) return;
+
+    if (policyPopup && !dialog.open) {
+      dialog.showModal();
+    } else if (!policyPopup && dialog.open) {
+      dialog.close();
+    }
+
+    if (!policyPopup) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [policyPopup]);
 
   const {
     register,
@@ -2028,9 +2122,9 @@ export default function FlightBookingPage() {
         input: {
           orderid: orderId,
 
-          success: "https://cresttravelclub.com/payment/success",
+          success: `${window.location.origin}/flight-payment?status=success`,
 
-          fail: "https://cresttravelclub.com/payment/fail",
+          fail: `${window.location.origin}/flight-payment?status=fail`,
 
           mode: "CARD",
 
@@ -2070,6 +2164,48 @@ export default function FlightBookingPage() {
       const paymentUrl = res?.data?.paynow?.result?.url;
 
       if (paymentUrl) {
+        const nextPageData = {
+          sessionId: paymentPayload.sessionId,
+          input: {
+            fareSourceCode:
+              revalidateData?.fareSourceCode ||
+              bookingData?.selectedFlight?.fareSourceCode ||
+              "",
+            passengers: {
+              details: (formData?.passengers || []).map((passenger) => ({
+                title: passenger.title,
+                firstName: passenger.firstName,
+                lastName: passenger.lastName,
+                dateOfBirth: passenger.dateOfBirth,
+                gender: passenger.gender,
+                passportNumber: passenger.documentNumber.trim(),
+                passportExpiry: passenger.documentExpiry,
+                passportCountry: passenger.passportCountry,
+                nationality: passenger.nationality,
+                type:
+                  passenger.type === "child"
+                    ? "Child"
+                    : passenger.type === "infant"
+                      ? "Infants"
+                      : "Adult",
+                extraservice: [],
+              })),
+              primaryCountryCode: String(
+                contactData?.countryCode || "+91",
+              ).replace(/^\+/, ""),
+              primaryPhoneNumber:
+                contactData?.phone || billingData?.phone || "",
+              primaryEmail: contactData?.email || billingData?.email || "",
+              primaryPostCode: billingData?.postalcode || "",
+            },
+            orderid: orderId,
+          },
+        };
+
+        sessionStorage.setItem(
+          "flightPaymentData",
+          JSON.stringify(nextPageData),
+        );
         window.location.href = paymentUrl;
       } else {
         console.error("Payment URL not found in response:", res);
@@ -2785,17 +2921,156 @@ export default function FlightBookingPage() {
               HELP CARD
           ================================================= */}
 
-            <div className="fb-help-card">
-              <div className="fb-help-icon">?</div>
+            <div className="fb-policy-options">
+              <button
+                type="button"
+                className="fb-policy-option"
+                onClick={() => setPolicyPopup("baggage")}
+                aria-haspopup="dialog"
+              >
+                <FiBriefcase
+                  className="fb-policy-option-icon"
+                  aria-hidden="true"
+                />
 
-              <div>
-                <strong>Need help?</strong>
+                <span className="fb-policy-option-text">
+                  <strong>Baggage Policy</strong>
+                  <span>Show Details</span>
+                </span>
+              </button>
 
-                <p>
-                  Make sure every passenger name matches their travel document.
-                </p>
-              </div>
+              <button
+                type="button"
+                className="fb-policy-option"
+                onClick={() => setPolicyPopup("fare")}
+                aria-haspopup="dialog"
+              >
+                <FiClock className="fb-policy-option-icon" aria-hidden="true" />
+
+                <span className="fb-policy-option-text">
+                  <strong>Fare Rules</strong>
+                  <span>Show Details</span>
+                </span>
+              </button>
             </div>
+
+            <dialog
+              ref={policyDialogRef}
+              className="fb-policy-dialog"
+              aria-labelledby="fb-policy-dialog-title"
+              onCancel={() => setPolicyPopup(null)}
+              onClose={() => setPolicyPopup(null)}
+              onClick={(event) => {
+                if (event.target === event.currentTarget) {
+                  setPolicyPopup(null);
+                }
+              }}
+            >
+              <div className="fb-policy-modal">
+                <div className="fb-policy-modal-header">
+                  <h2 id="fb-policy-dialog-title">
+                    {policyPopup === "baggage"
+                      ? "Baggage Policy"
+                      : "Fare Rules"}
+                  </h2>
+
+                  <button
+                    type="button"
+                    className="fb-policy-close"
+                    onClick={() => setPolicyPopup(null)}
+                    aria-label="Close popup"
+                    autoFocus
+                  >
+                    <FiX aria-hidden="true" />
+                  </button>
+                </div>
+
+                <div className="fb-policy-modal-body">
+                  {policyPopup === "baggage" ? (
+                    baggageDetails.length > 0 ? (
+                      <div className="fb-policy-table-wrapper">
+                        <table className="fb-policy-table">
+                          <thead>
+                            <tr>
+                              <th scope="col">Flight</th>
+                              <th scope="col">Checked Bags</th>
+                              <th scope="col">Carry-on Bags</th>
+                              <th scope="col">Departure</th>
+                              <th scope="col">Arrival</th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {baggageDetails.map((item, index) => (
+                              <tr
+                                key={`${item.flightNo}-${item.departure}-${item.arrival}-${index}`}
+                              >
+                                <td>{item.flightNo || "—"}</td>
+                                <td>{item.checkedBaggage || "—"}</td>
+                                <td>{item.cabinBaggage || "—"}</td>
+                                <td>{item.departure || "—"}</td>
+                                <td>{item.arrival || "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="fb-policy-empty">
+                        Baggage information is currently unavailable.
+                      </p>
+                    )
+                  ) : (
+                    <div className="fb-policy-fare-list">
+                      {fareRulesDetails.length > 0 ? (
+                        fareRulesDetails.map((fare, index) => (
+                          <div
+                            className="fb-policy-fare-item"
+                            key={`${fare.airline}-${fare.cityPair}-${index}`}
+                          >
+                            <p>
+                              <span>Airline:</span> {fare.airline || "—"}
+                            </p>
+
+                            <p>
+                              <span>City Pair:</span> {fare.cityPair || "—"}
+                            </p>
+
+                            {fare.ruleDetails?.length > 0 ? (
+                              fare.ruleDetails.map((detail, ruleIndex) => (
+                                <div
+                                  className="fb-policy-rule"
+                                  key={`${detail.category}-${ruleIndex}`}
+                                >
+                                  <p>
+                                    <span>Category:</span>{" "}
+                                    {detail.category || "—"}
+                                  </p>
+
+                                  {detail.rules?.trim() && (
+                                    <div className="fb-policy-rule-description">
+                                      {detail.rules}
+                                    </div>
+                                  )}
+                                </div>
+                              ))
+                            ) : (
+                              <p className="fb-policy-empty">
+                                No additional fare rules available.
+                              </p>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="fb-policy-empty">
+                          Fare rules are currently unavailable.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </dialog>
 
             {/* =================================================
               TRUST CARD

@@ -162,6 +162,8 @@ const BlogPage = () => {
                   <img
                     src={blog.image}
                     alt={blog.imageAlt || blog.title}
+                    fetchPriority="high"
+                    decoding="async"
                     className="tripoFullBlogHeroImage"
                   />
                 </div>
@@ -262,6 +264,8 @@ const BlogPage = () => {
                               src={latestBlog.image}
                               alt={latestBlog.imageAlt || latestBlog.title}
                               className="tripoLatestBlogImage"
+                              loading="lazy"
+                              decoding="async"
                             />
                           </div>
                         )}
