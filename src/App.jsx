@@ -44,6 +44,7 @@ import BlogPage from "./components/admin/BlogPage/BlogPage";
 import PaymentStatus from "./components/PaymentStatus/PaymentStatus";
 import HotelPaymentStatus from "./components/main-form/HotelForm/HotelPaymentStatus/HotelPaymentStatus";
 import HotelBookingsDetails from "./components/main-form/HotelForm/HotelBookingsDetails/HotelBookingsDetails";
+import FlightPaymentStatus from "./components/FlightResultPage/FlightPaymentStatus/FlightPaymentStatus";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -98,6 +99,8 @@ function App() {
         <Route path="/login-page" element={<Login />} />
         <Route path="/payment/status" element={<PaymentStatus />} />
         <Route path="/hotel-payment" element={<HotelPaymentStatus />} />
+        <Route path="/flight-payment" element={<FlightPaymentStatus />} />
+
         <Route element={<BlogProtectedRoutes />}>
           <Route path="/admin-dashboard" element={<AdminDash />} />
           <Route path="/admin-addpost" element={<AddPost />} />

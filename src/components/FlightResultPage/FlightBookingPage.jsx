@@ -2028,9 +2028,9 @@ export default function FlightBookingPage() {
         input: {
           orderid: orderId,
 
-          success: "https://cresttravelclub.com/payment/success",
+          success: `${window.location.origin}/flight-payment?status=success`,
 
-          fail: "https://cresttravelclub.com/payment/fail",
+          fail: `${window.location.origin}/flight-payment?status=fail`,
 
           mode: "CARD",
 
