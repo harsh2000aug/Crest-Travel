@@ -306,6 +306,8 @@
   overflow: hidden;
   position: sticky;
   top: 20px;
+      height: 550px;
+    overflow-y: auto;
 }
 
 .filter-header {
@@ -406,6 +408,7 @@
 .price-slider::-webkit-slider-thumb:hover {
   transform: scale(1.2);
 }
+
 
 /* Stops filter */
 .stop-options {
@@ -1528,4 +1531,110 @@
 .flight-validation-input:focus {
   border-color: #dc2626 !important;
   box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.08);
+}
+.flight-price-filter__slider {
+  position: relative;
+  height: 24px;
+  margin: 10px 10px 0;
+}
+
+.flight-price-filter__track,
+.flight-price-filter__selection {
+  position: absolute;
+  top: 10px;
+  height: 3px;
+  border-radius: 999px;
+}
+
+.flight-price-filter__track {
+  width: 100%;
+  background: #e1e7eb;
+}
+
+.flight-price-filter__selection {
+  background: #0a1628;
+}
+
+.flight-price-filter__input {
+  position: absolute;
+  top: 0;
+  left: -10px;
+  width: calc(100% + 20px);
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+.flight-price-filter__input--high {
+  z-index: 3;
+}
+
+.flight-price-filter__input::-webkit-slider-runnable-track {
+  height: 3px;
+  background: transparent;
+}
+
+.flight-price-filter__input::-moz-range-track {
+  height: 3px;
+  background: transparent;
+}
+
+.flight-price-filter__input::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  margin-top: -8.5px;
+  border: 0;
+  border-radius: 50%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: #0a1628;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.flight-price-filter__input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: #49b6d2;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.flight-price-filter__input:active::-webkit-slider-thumb {
+  cursor: grabbing;
+}
+
+.flight-price-filter__input:active::-moz-range-thumb {
+  cursor: grabbing;
+}
+
+.flight-price-filter__input:focus-visible {
+  outline: 2px solid #13718a;
+  outline-offset: 4px;
+  border-radius: 5px;
+}
+
+.flight-price-filter__input:disabled::-webkit-slider-thumb {
+  cursor: default;
+}
+
+.flight-price-filter__input:disabled::-moz-range-thumb {
+  cursor: default;
+}
+
+.flight-price-filter__values {
+  margin-top: 6px;
+  color: #444;
+  font-size: 12px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
