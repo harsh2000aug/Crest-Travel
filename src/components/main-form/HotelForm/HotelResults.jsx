@@ -20,6 +20,10 @@ import {
   ChildCountToStore,
   TotalRooms,
 } from "../../../atoms/userAtom";
+import { GiTwoCoins } from "react-icons/gi";
+import priceline from "../../../assets/images/priceline.png";
+import expedia from "../../../assets/images/expedia.png";
+import agoda from "../../../assets/images/agoda.png";
 
 function HotelCard({
   image,
@@ -51,7 +55,7 @@ function HotelCard({
       : 0;
 
   return (
-    <div className="lux-hotel-card" onClick={onClick}>
+    <div className="lux-hotel-card">
       <div className="lux-hotel-img-wrap">
         <img src={image || dummy} alt={name || "Hotel"} />
         {calculatedDiscount > 0 && (
@@ -61,7 +65,13 @@ function HotelCard({
 
       <div className="lux-hotel-content">
         <div className="lux-top-row">
-          <div>
+          <div
+            style={{
+              paddingTop: "15px",
+              paddingLeft: "15px",
+              paddingRight: "15px",
+            }}
+          >
             <h3>{name}</h3>
 
             <p className="lux-location">
@@ -101,71 +111,108 @@ function HotelCard({
             >
               Ratings:
               <span className="lux-stars">
-                {Number(starRating) > 0 &&
-                  [...Array(Math.floor(Number(starRating)))].map((_, index) => (
-                    <FaStar key={index} />
-                  ))}
+                {[...Array(5)].map((_, index) => (
+                  <FaStar
+                    key={index}
+                    className={
+                      index < Math.floor(Number(starRating))
+                        ? "lux-star-filled"
+                        : "lux-star-empty"
+                    }
+                  />
+                ))}
               </span>
             </span>
           </div>
         </div>
         <div className="lux-bottom-row">
           <div className="lux-price-box">
-            {Number(credit || 0) > 0 && (
-              <div className="lux-credit">
-                Using <b>{Number(credit).toFixed(2)}</b> room coins
-              </div>
-            )}
-            {Array.isArray(brandSupplierRates) &&
-              brandSupplierRates.length > 0 && (
-                <div className="hotel-supplier-comparison">
-                  <div className="hotel-supplier-comparison__title">
-                    Compare prices
-                  </div>
-
-                  <div className="hotel-supplier-comparison__list">
-                    {brandSupplierRates.map((supplier, index) => {
-                      const supplierPrice = Number(supplier?.totalRate || 0);
-                      const ourPriceValue = Number(newPrice || 0);
-
-                      if (!supplier?.providerName || supplierPrice <= 0) {
-                        return null;
-                      }
-
-                      const difference = supplierPrice - ourPriceValue;
-
-                      return (
-                        <div
-                          className="hotel-supplier-comparison__row"
-                          key={`${supplier.providerName}-${index}`}
-                        >
-                          <span className="hotel-supplier-comparison__name">
-                            {supplier.providerName}
-                          </span>
-
-                          <span className="hotel-supplier-comparison__price">
-                            ${supplierPrice.toFixed(2)}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            <h2>${Number(newPrice || 0).toFixed(2)}</h2>
-
-            <small>Includes taxes</small>
-
-            <button
-              type="button"
-              className="lux-view-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClick();
+            <div
+              style={{
+                padding: "15px",
               }}
             >
-              View Deal
-            </button>
+              {Number(credit || 0) > 0 && (
+                <div className="lux-credit">
+                  <GiTwoCoins /> Using <b>{Number(credit).toFixed(2)}</b> room
+                  coins
+                </div>
+              )}
+              <h2>${Number(newPrice || 0).toFixed(2)}</h2>
+              <small>Includes taxes</small>
+              <button
+                type="button"
+                className="lux-view-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClick();
+                }}
+              >
+                View Deal →
+              </button>
+            </div>
+            <div>
+              {Array.isArray(brandSupplierRates) &&
+                brandSupplierRates.length > 0 && (
+                  <div className="hotel-supplier-comparison">
+                    <div className="hotel-supplier-comparison__title">
+                      Average retail price based on public feeds
+                    </div>
+
+                    <div className="hotel-supplier-comparison__list">
+                      {brandSupplierRates.map((supplier, index) => {
+                        const supplierPrice = Number(supplier?.totalRate || 0);
+
+                        if (!supplier?.providerName || supplierPrice <= 0) {
+                          return null;
+                        }
+
+                        const providerNameMap = {
+                          EAN: "Expedia",
+                          Priceline_CUG: "Priceline",
+                          Priceline_agoda: "Agoda",
+                        };
+
+                        const providerImageMap = {
+                          EAN: expedia,
+                          Priceline_CUG: priceline,
+                          Priceline_agoda: agoda,
+                        };
+
+                        const displayProviderName =
+                          providerNameMap[supplier.providerName] ||
+                          supplier.providerName;
+
+                        const providerImage =
+                          providerImageMap[supplier.providerName];
+
+                        return (
+                          <div
+                            className="hotel-supplier-comparison__row"
+                            key={`${supplier.providerName}-${index}`}
+                          >
+                            <span className="hotel-supplier-comparison__name">
+                              {providerImage && (
+                                <img
+                                  src={providerImage}
+                                  alt={displayProviderName}
+                                  className="hotel-supplier-comparison__logo"
+                                />
+                              )}
+
+                              <span>{displayProviderName}</span>
+                            </span>
+
+                            <span className="hotel-supplier-comparison__price">
+                              ${supplierPrice.toFixed(2)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+            </div>
           </div>
         </div>
       </div>

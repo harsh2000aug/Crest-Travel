@@ -113,6 +113,8 @@ const Hotel = () => {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [showFailurePopup, setShowFailurePopup] = useState(false);
+  const [showBookingErrorPopup, setShowBookingErrorPopup] = useState(false);
+  const [bookingErrorMessage, setBookingErrorMessage] = useState("");
   const [bookingCompleted, setBookingCompleted] = useState(false);
   const [cancellationPolicy, setCancellationPolicy] = useState([]);
   const [showCancellationPolicy, setShowCancellationPolicy] = useState(false);
@@ -525,7 +527,12 @@ const Hotel = () => {
         console.error("BOOKING FAILED:", bookingResponse);
 
         setHotelLoader(false);
-        setShowFailurePopup(true);
+
+        setBookingErrorMessage(
+          bookingResponse?.message || "Your booking could not be completed.",
+        );
+
+        setShowBookingErrorPopup(true);
 
         return;
       }
@@ -788,12 +795,24 @@ const Hotel = () => {
 
           console.log("BOOKING AFTER PAYMENT RESPONSE:", bookingResponse);
 
+          if (bookingResponse?.success === false) {
+            console.error("BOOKING AFTER PAYMENT FAILED:", bookingResponse);
+
+            setHotelLoader(false);
+
+            setBookingErrorMessage(
+              bookingResponse?.message ||
+                "Your booking could not be completed.",
+            );
+
+            setShowBookingErrorPopup(true);
+
+            return;
+          }
+
           localStorage.removeItem("hotelPaymentItemId");
-
           localStorage.removeItem("hotelPaymentFormData");
-
           localStorage.removeItem("hotelPaymentLeadGuest");
-
           localStorage.removeItem("hotelPaymentBookingInfo");
 
           setHotelLoader(false);
@@ -1095,7 +1114,9 @@ const Hotel = () => {
                       {/* FIRST NAME */}
 
                       <div className="form-group">
-                        <label>First Name *</label>
+                        <label>
+                          First Name <sup>*</sup>
+                        </label>
 
                         <input
                           type="text"
@@ -1116,7 +1137,9 @@ const Hotel = () => {
                       {/* LAST NAME */}
 
                       <div className="form-group">
-                        <label>Last Name *</label>
+                        <label>
+                          Last Name <sup>*</sup>
+                        </label>
 
                         <input
                           type="text"
@@ -1137,7 +1160,9 @@ const Hotel = () => {
                       {/* AGE */}
 
                       <div className="form-group small-field">
-                        <label>Age</label>
+                        <label>
+                          Age <sup>*</sup>
+                        </label>
 
                         <input
                           type="number"
@@ -1161,7 +1186,9 @@ const Hotel = () => {
                       {/* GENDER */}
 
                       <div className="form-group small-field">
-                        <label>Gender *</label>
+                        <label>
+                          Gender <sup>*</sup>
+                        </label>
 
                         <select
                           className="booking-input"
@@ -1250,7 +1277,9 @@ const Hotel = () => {
 
                       {/* FIRST NAME */}
                       <div className="form-group">
-                        <label>First Name *</label>
+                        <label>
+                          First Name <sup>*</sup>
+                        </label>
 
                         <input
                           type="text"
@@ -1314,7 +1343,9 @@ const Hotel = () => {
 
                       {/* GENDER */}
                       <div className="form-group small-field">
-                        <label>Gender *</label>
+                        <label>
+                          Gender <sup>*</sup>
+                        </label>
 
                         <select
                           className="booking-input"
@@ -1346,7 +1377,9 @@ const Hotel = () => {
                   {/* EMAIL */}
 
                   <div className="form-group full-width">
-                    <label>Email Address</label>
+                    <label>
+                      Email Address <sup>*</sup>
+                    </label>
 
                     <input
                       type="email"
@@ -1370,44 +1403,63 @@ const Hotel = () => {
 
                   {/* PHONE */}
 
-                  <div className="phone-wrapper">
-                    <div className="country-code">
-                      <select
-                        className="booking-input"
-                        value={leadGuest.countryCode}
-                        onChange={(e) =>
-                          setLeadGuest({
-                            ...leadGuest,
-                            countryCode: e.target.value,
-                          })
-                        }
-                      >
-                        {countryCodes.map((item, index) => (
-                          <option key={index} value={item.code}>
-                            {item.country} ({item.code})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                  <div className="form-group">
+                    <label>
+                      Phone Number <sup>*</sup>
+                    </label>
 
-                    <div className="phone-number">
-                      <input
-                        type="tel"
-                        className="booking-input"
-                        placeholder="Phone Number"
-                        {...register("phone", {
-                          required: "Phone number is required",
+                    <div className="phone-wrapper">
+                      <div className="country-code">
+                        <select
+                          className="booking-input"
+                          value={leadGuest.countryCode}
+                          onChange={(e) =>
+                            setLeadGuest({
+                              ...leadGuest,
+                              countryCode: e.target.value,
+                            })
+                          }
+                        >
+                          {countryCodes.map((item, index) => (
+                            <option key={index} value={item.code}>
+                              {item.country} ({item.code})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                          minLength: {
-                            value: 10,
-                            message: "Enter a valid phone number",
-                          },
-                        })}
-                      />
+                      <div className="phone-number">
+                        <input
+                          type="tel"
+                          className="booking-input"
+                          placeholder="Phone Number"
+                          inputMode="numeric"
+                          maxLength={15}
+                          {...register("phone", {
+                            required: "Phone number is required",
+                            pattern: {
+                              value: /^[0-9]+$/,
+                              message: "Phone number can contain numbers only",
+                            },
+                            minLength: {
+                              value: 10,
+                              message: "Enter a valid phone number",
+                            },
+                            onChange: (e) => {
+                              e.target.value = e.target.value.replace(
+                                /\D/g,
+                                "",
+                              );
+                            },
+                          })}
+                        />
 
-                      {errors.phone && (
-                        <p className="booking-error">{errors.phone.message}</p>
-                      )}
+                        {errors.phone && (
+                          <p className="booking-error">
+                            {errors.phone.message}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1420,7 +1472,9 @@ const Hotel = () => {
                   {/* ADDRESS 1 */}
 
                   <div className="form-group full-width">
-                    <label>Address Line 1 *</label>
+                    <label>
+                      Address Line 1 <sup>*</sup>
+                    </label>
 
                     <input
                       type="text"
@@ -1453,7 +1507,9 @@ const Hotel = () => {
                     {/* COUNTRY */}
 
                     <div className="form-group">
-                      <label>Country *</label>
+                      <label>
+                        Country <sup>*</sup>
+                      </label>
 
                       <select
                         className="booking-input"
@@ -1480,7 +1536,9 @@ const Hotel = () => {
                     {/* STATE */}
 
                     <div className="form-group">
-                      <label>State *</label>
+                      <label>
+                        State <sup>*</sup>
+                      </label>
 
                       <select
                         className="booking-input"
@@ -1511,7 +1569,9 @@ const Hotel = () => {
                     {/* CITY */}
 
                     <div className="form-group">
-                      <label>City *</label>
+                      <label>
+                        City <sup>*</sup>
+                      </label>
 
                       <input
                         type="text"
@@ -1530,14 +1590,21 @@ const Hotel = () => {
                     {/* ZIP */}
 
                     <div className="form-group">
-                      <label>Zip / Postal Code *</label>
+                      <label>
+                        Zip / Postal Code <sup>*</sup>
+                      </label>
 
                       <input
                         type="text"
                         className="booking-input"
                         placeholder="Zip Code"
+                        maxLength={10}
                         {...register("zipCode", {
                           required: "Zip Code is required",
+                          maxLength: {
+                            value: 10,
+                            message: "Zip Code cannot exceed 10 characters",
+                          },
                         })}
                       />
 
@@ -1559,7 +1626,9 @@ const Hotel = () => {
                     {/* CARD NUMBER */}
 
                     <div className="form-group">
-                      <label>Card Number *</label>
+                      <label>
+                        Card Number <sup>*</sup>
+                      </label>
                       <input
                         type="text"
                         className="booking-input"
@@ -1590,7 +1659,9 @@ const Hotel = () => {
                     {/* CARD HOLDER */}
 
                     <div className="form-group">
-                      <label>Name on Card *</label>
+                      <label>
+                        Name on Card <sup>*</sup>
+                      </label>
 
                       <input
                         type="text"
@@ -1598,6 +1669,16 @@ const Hotel = () => {
                         placeholder="Card Holder Name"
                         {...register("cardHolder", {
                           required: "Card Holder Name is required",
+                          pattern: {
+                            value: /^[A-Za-z ]+$/,
+                            message: "Name can contain letters and spaces only",
+                          },
+                          onChange: (e) => {
+                            e.target.value = e.target.value.replace(
+                              /[^A-Za-z ]/g,
+                              "",
+                            );
+                          },
                         })}
                       />
 
@@ -1613,7 +1694,9 @@ const Hotel = () => {
                     {/* EXPIRY */}
 
                     <div className="form-group">
-                      <label>Valid To (MM/YY) *</label>
+                      <label>
+                        Valid To (MM/YY) <sup>*</sup>
+                      </label>
 
                       <input
                         type="text"
@@ -1642,10 +1725,12 @@ const Hotel = () => {
                     {/* CVV */}
 
                     <div className="form-group">
-                      <label>CVV *</label>
+                      <label>
+                        CVV <sup>*</sup>
+                      </label>
 
                       <input
-                        type="text"
+                        type="password"
                         className="booking-input"
                         placeholder="CVV"
                         maxLength={4}
@@ -1911,7 +1996,7 @@ const Hotel = () => {
                 <div className="price-row">
                   <span>Savings</span>
 
-                  <span>${show_saving_before_credit.toFixed(2)}</span>
+                  <span>- ${show_saving_before_credit.toFixed(2)}</span>
                 </div>
 
                 <hr />
@@ -1926,6 +2011,35 @@ const Hotel = () => {
           </div>
         </div>
       </section>
+
+      {showBookingErrorPopup && (
+        <div className="booking-error-overlay">
+          <div className="booking-error-popup">
+            <button
+              className="booking-error-close"
+              onClick={() => setShowBookingErrorPopup(false)}
+            >
+              ×
+            </button>
+
+            <div className="booking-error-info-icon">i</div>
+
+            <h2>Cancellation Failed</h2>
+
+            <p>
+              You can try again or connect with us on
+              contact@cresttravelclub.com If you are facing any issue.
+            </p>
+
+            <button
+              className="booking-error-ok-btn"
+              onClick={() => setShowBookingErrorPopup(false)}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </>

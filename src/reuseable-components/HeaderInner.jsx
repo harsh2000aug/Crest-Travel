@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/images/logo.webp";
 import { CiWallet, CiUser } from "react-icons/ci";
@@ -7,6 +7,8 @@ import { IoIosLogOut } from "react-icons/io";
 import { changePassword } from "../store/Services/AllApi";
 import { toast } from "react-toastify";
 import { RiLockPasswordLine } from "react-icons/ri";
+
+const TWO_HOURS = 2 * 60 * 60 * 1000;
 
 const HeaderInner = () => {
   const personDetails = JSON.parse(localStorage.getItem("personDetails")) || {};
@@ -23,6 +25,24 @@ const HeaderInner = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) return;
+
+    const timer = setTimeout(() => {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("Email");
+      localStorage.removeItem("personDetails");
+
+      sessionStorage.clear();
+
+      window.location.replace("/");
+    }, TWO_HOURS);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const darkHeaderRoutes = [
     "/my-bookings",

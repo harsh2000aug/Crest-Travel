@@ -83,27 +83,41 @@ const MyBookings = () => {
       setLoading(true);
 
       try {
+        const apiStatus =
+          activeTab === "Upcoming"
+            ? "UPCOMING"
+            : activeTab === "Cancelled"
+              ? "CANCELLED"
+              : "COMPLETED";
+
         const res = await hotelUpcomingOrder({
           body: {
             memberid: localStorage.getItem("bookingId"),
-            status: "UPCOMING",
+            status: apiStatus,
             travelDate: {
               start: "2026-09-01",
               end: "2028-09-14",
             },
             limit: PAGE_LIMIT,
-            offset: currentPage,
+            offset: currentPage * PAGE_LIMIT,
           },
         });
 
-        const orders = res?.orders || [];
+        const orders = [...(res?.orders || [])].sort(
+          (a, b) => new Date(b.createdat) - new Date(a.createdat),
+        );
 
         const mappedBookings = orders.map((order) => ({
           id: order.orderid,
           type: "hotels",
-          status: "Upcoming",
+          status:
+            activeTab === "Upcoming"
+              ? "Upcoming"
+              : activeTab === "Cancelled"
+                ? "Cancelled"
+                : "Completed",
           hotelName: order.property_name,
-          city: "",
+          city: order.property_city || "",
           checkIn: new Date(order.start_date).toLocaleDateString("en-GB", {
             day: "2-digit",
             month: "short",
@@ -119,21 +133,18 @@ const MyBookings = () => {
           amount: `$${Number(order.our_price || 0).toFixed(2)}`,
           image: order?.image,
           orderStatus: order.orderstatus,
+          cancellable: order?.cancellable === true,
         }));
 
         setUpcomingBookings(mappedBookings);
 
-        const nextPageAvailable = orders.length === PAGE_LIMIT;
+        const totalCount = Number(res?.count || 0);
+        const calculatedTotalPages = Math.ceil(totalCount / PAGE_LIMIT);
 
-        setHasNextPage(nextPageAvailable);
-
-        if (nextPageAvailable) {
-          setTotalPages((prev) => Math.max(prev, currentPage + 2));
-        } else {
-          setTotalPages((prev) => Math.max(prev, currentPage + 1));
-        }
+        setTotalPages(calculatedTotalPages);
+        setHasNextPage(currentPage < calculatedTotalPages - 1);
       } catch (error) {
-        console.error("Error fetching upcoming bookings:", error);
+        console.error("Error fetching bookings:", error);
         setUpcomingBookings([]);
         setHasNextPage(false);
       } finally {
@@ -142,10 +153,17 @@ const MyBookings = () => {
     };
 
     fetchUpcomingBookings();
-  }, [currentPage]);
+  }, [currentPage, activeTab]);
 
-  const handleParticularBookingClick = (id) => {
-    navigate(`/hotel-booking-details?id=${encodeURIComponent(id)}`);
+  const handleParticularBookingClick = (booking) => {
+    sessionStorage.setItem(
+      "hotelBookingCancellable",
+      JSON.stringify(booking.cancellable),
+    );
+
+    sessionStorage.setItem("hotelBookingStatus", booking.status);
+
+    navigate(`/hotel-booking-details?id=${encodeURIComponent(booking.id)}`);
   };
 
   useEffect(() => {
@@ -236,7 +254,10 @@ const MyBookings = () => {
                 {bookingTabs.map((tab) => (
                   <button
                     key={tab}
-                    onClick={() => setActiveTab(tab)}
+                    onClick={() => {
+                      setActiveTab(tab);
+                      setCurrentPage(0);
+                    }}
                     className={`voyage-tab ${
                       activeTab === tab ? "voyage-tab-active" : ""
                     }`}
@@ -253,7 +274,7 @@ const MyBookings = () => {
                   <div
                     className="voyage-booking-card"
                     key={booking.id}
-                    onClick={() => handleParticularBookingClick(booking.id)}
+                    onClick={() => handleParticularBookingClick(booking)}
                   >
                     <div className="voyage-booking-image">
                       <img

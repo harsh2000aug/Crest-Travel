@@ -7,6 +7,7 @@ import {
   FaInstagram,
   FaPinterestP,
   FaYoutube,
+  FaTiktok,
   FaLinkedinIn,
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -45,6 +46,9 @@ const Footer = () => {
           </Link>
           <Link to="https://x.com/cresttravelclub" target="_blank">
             <FaXTwitter />
+          </Link>
+          <Link to="https://www.tiktok.com/@cresttravelclub" target="_blank">
+            <FaTiktok />
           </Link>
           <p className="luxFooter__copyright">
             © 2026 Crest Travel Club. All rights reserved.

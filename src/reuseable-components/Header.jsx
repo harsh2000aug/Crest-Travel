@@ -59,7 +59,7 @@ const Header = ({ personDetails }) => {
   const showDarkHeader = darkHeaderRoutes.includes(location.pathname);
 
   const [isLoggedIn, setIsLoggedIn] = useState(
-    !!localStorage.getItem("accessToken")
+    !!localStorage.getItem("accessToken"),
   );
 
   const {
@@ -238,7 +238,8 @@ const Header = ({ personDetails }) => {
 
       if (!forgotPassword?.success) {
         toast.error(
-          forgotPassword?.message || "Unable to process forgot password request"
+          forgotPassword?.message ||
+            "Unable to process forgot password request",
         );
 
         return;
@@ -251,7 +252,7 @@ const Header = ({ personDetails }) => {
       setShowResetPassword(true);
 
       toast.success(
-        forgotPassword?.message || "OTP sent successfully to your email"
+        forgotPassword?.message || "OTP sent successfully to your email",
       );
     } catch (error) {
       console.error("Forgot password error:", error);
@@ -293,7 +294,7 @@ const Header = ({ personDetails }) => {
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          "Unable to change password"
+          "Unable to change password",
       );
     }
   };
@@ -310,7 +311,7 @@ const Header = ({ personDetails }) => {
           attribute,
           selector.includes("property=")
             ? selector.match(/property="([^"]+)"/)?.[1]
-            : selector.match(/name="([^"]+)"/)?.[1]
+            : selector.match(/name="([^"]+)"/)?.[1],
         );
         document.head.appendChild(meta);
       }
@@ -454,7 +455,7 @@ const Header = ({ personDetails }) => {
         // OG IMAGE ALT
         addOrUpdateMetaProperty(
           "og:image:alt",
-          blog.imageAlt || blog.title || "Crest Travel Club"
+          blog.imageAlt || blog.title || "Crest Travel Club",
         );
 
         // TWITTER
@@ -477,6 +478,7 @@ const Header = ({ personDetails }) => {
 
     loadBlogSEO();
   }, [location.pathname]);
+
   return (
     <>
       {showLogin && (
