@@ -70,7 +70,7 @@ function App() {
         setPersonDetails(res?.data?.get?.result);
         localStorage.setItem(
           "personDetails",
-          JSON.stringify(res?.data?.get?.result),
+          JSON.stringify(res?.data?.get?.result)
         );
         localStorage.setItem("tierId", res?.data?.get?.result?.tierid);
         localStorage.setItem("bookingId", res?.data?.get?.result?.id);

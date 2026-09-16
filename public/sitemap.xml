@@ -1,58 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
+ 
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
+ 
   <url>
     <loc>https://www.cresttravelclub.com/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-
+ 
   <url>
     <loc>https://www.cresttravelclub.com/about-us</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
-
+ 
   <url>
     <loc>https://www.cresttravelclub.com/whats-included</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
-
+ 
   <url>
     <loc>https://www.cresttravelclub.com/join-now</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
-
+ 
   <url>
     <loc>https://www.cresttravelclub.com/customer-service</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
-
+ 
   <url>
     <loc>https://www.cresttravelclub.com/privacy-policy</loc>
     <changefreq>daily</changefreq>
     <priority>0.4</priority>
   </url>
-
+ 
   <url>
     <loc>https://www.cresttravelclub.com/terms-and-conditions</loc>
     <changefreq>daily</changefreq>
     <priority>0.4</priority>
   </url>
-
+ 
   <url>
     <loc>https://www.cresttravelclub.com/refund-and-cancellation-policies</loc>
     <changefreq>daily</changefreq>
     <priority>0.4</priority>
   </url>
-
+ 
   <url>
     <loc>https://www.cresttravelclub.com/blogs</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
 </url>
-
+  <url>
+    <loc>https://www.cresttravelclub.com/blogs/get-discounted-hotel-rates-without-using-hotel-coupons</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+</url>
+  <url>
+    <loc>https://www.cresttravelclub.com/blogs/what-should-you-look-for-in-a-travel-club-membership</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+</url>
+  <url>
+    <loc>https://www.cresttravelclub.com/blogs/how-much-can-you-save-with-a-travel-club-membership</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+</url>
+  <url>
+    <loc>https://www.cresttravelclub.com/blogs/are-travel-clubs-worth-joining</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+</url>
+ 
 </urlset>
+ 
