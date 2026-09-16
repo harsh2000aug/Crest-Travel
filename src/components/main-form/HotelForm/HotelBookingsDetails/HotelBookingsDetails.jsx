@@ -16,6 +16,7 @@ import Footer from "../../../../reuseable-components/Footer";
 import {
   hotelBookingCancel,
   hotelBookingInfo,
+  hotelPriceRefund,
 } from "../../../../store/Services/AllApi";
 import "./HotelBookingsDetails.css";
 
@@ -28,7 +29,10 @@ const HotelBookingDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showCancelPopup, setShowCancelPopup] = useState(false);
+  const [showRefundPopup, setShowRefundPopup] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [refundDetails, setRefundDetails] = useState(null);
+  const [showNotCancellablePopup, setShowNotCancellablePopup] = useState(false);
 
   useEffect(() => {
     const fetchBookingDetails = async () => {
@@ -120,6 +124,54 @@ const HotelBookingDetails = () => {
     return 0;
   };
 
+  const handleRefund = async () => {
+    if (!booking?.bookingId) return;
+
+    try {
+      setCancelling(true);
+
+      const res = await hotelPriceRefund({
+        body: {
+          orderid: booking.bookingId,
+        },
+      });
+
+      console.log("Hotel Refund Response:", res);
+
+      const refundEligibility = res?.data?.checkRefundEligibility;
+
+      const cancellationDetails = refundEligibility?.cancellationDetails;
+      const eligible = refundEligibility?.eligible;
+
+      if (
+        refundEligibility?.success &&
+        eligible === true &&
+        cancellationDetails
+      ) {
+        // Booking is cancellable
+        setRefundDetails(cancellationDetails);
+        setShowCancelPopup(false);
+        setShowNotCancellablePopup(false);
+        setShowRefundPopup(true);
+      } else if (refundEligibility?.success && eligible === false) {
+        // Booking is NOT cancellable
+        setShowCancelPopup(false);
+        setShowRefundPopup(false);
+        setRefundDetails(null);
+        setShowNotCancellablePopup(true);
+      } else {
+        console.error(
+          "Refund eligibility check failed:",
+          refundEligibility?.message || "Unable to check refund eligibility",
+        );
+      }
+    } catch (error) {
+      console.error("Error checking refund eligibility:", error);
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   const handleBookingCancel = async () => {
     if (!booking?.bookingId) return;
 
@@ -135,7 +187,8 @@ const HotelBookingDetails = () => {
       console.log("Booking Cancel Response:", res);
 
       if (res?.success) {
-        setShowCancelPopup(false);
+        setShowRefundPopup(false);
+        setRefundDetails(null);
 
         navigate("/my-booking");
       } else {
@@ -683,10 +736,100 @@ const HotelBookingDetails = () => {
               <button
                 type="button"
                 className="hbd-cancel-popup-yes"
-                onClick={handleBookingCancel}
+                onClick={handleRefund}
                 disabled={cancelling}
               >
                 {cancelling ? "Cancelling..." : "Yes, Cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRefundPopup && refundDetails && (
+        <div className="hbd-cancel-overlay">
+          <div className="hbd-cancel-popup">
+            <div className="hbd-cancel-popup-icon">
+              <FaInfoCircle />
+            </div>
+
+            <h2>Cancellation Charges</h2>
+
+            <p>
+              If you cancel this booking, a cancellation charge of{" "}
+              <strong>{formatPrice(refundDetails.cancellationCharges)}</strong>{" "}
+              will be applicable.
+            </p>
+
+            <div className="hbd-refund-details">
+              <div className="hbd-refund-row">
+                <span>Total Paid Amount</span>
+                <strong>{formatPrice(refundDetails.totalPaidAmount)}</strong>
+              </div>
+
+              <div className="hbd-refund-row">
+                <span>Cancellation Charges</span>
+                <strong>
+                  {formatPrice(refundDetails.cancellationCharges)}
+                </strong>
+              </div>
+
+              <div className="hbd-refund-row hbd-refund-total">
+                <span>Total Refund</span>
+                <strong>{formatPrice(refundDetails.totalRefund)}</strong>
+              </div>
+            </div>
+
+            <p className="hbd-refund-warning">
+              Are you sure you want to proceed with cancellation?
+            </p>
+
+            <div className="hbd-cancel-popup-actions">
+              <button
+                type="button"
+                className="hbd-cancel-popup-no"
+                onClick={() => {
+                  setShowRefundPopup(false);
+                  setRefundDetails(null);
+                }}
+                disabled={cancelling}
+              >
+                Go Back
+              </button>
+
+              <button
+                type="button"
+                className="hbd-cancel-popup-yes"
+                onClick={handleBookingCancel}
+                disabled={cancelling}
+              >
+                {cancelling ? "Cancelling..." : "OK, Continue"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNotCancellablePopup && (
+        <div className="hbd-cancel-overlay">
+          <div className="hbd-cancel-popup">
+            <div className="hbd-cancel-popup-icon">
+              <FaInfoCircle />
+            </div>
+
+            <h2>Booking Not Cancellable</h2>
+
+            <p>
+              This hotel booking is not cancellable and cannot be cancelled.
+            </p>
+
+            <div className="hbd-cancel-popup-actions">
+              <button
+                type="button"
+                className="hbd-cancel-popup-yes"
+                onClick={() => setShowNotCancellablePopup(false)}
+              >
+                OK
               </button>
             </div>
           </div>

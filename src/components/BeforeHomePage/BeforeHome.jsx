@@ -932,10 +932,7 @@ const BeforeHome = ({ personDetails }) => {
                 </p>
 
                 <div className="eliteTestimonials__user">
-                  <img
-                    src="https://randomuser.me/api/portraits/women/44.jpg"
-                    alt=""
-                  />
+                  <img src={user1} alt="" />
 
                   <div>
                     <h4>Chris</h4>
@@ -964,10 +961,7 @@ const BeforeHome = ({ personDetails }) => {
                 </p>
 
                 <div className="eliteTestimonials__user">
-                  <img
-                    src="https://randomuser.me/api/portraits/men/32.jpg"
-                    alt=""
-                  />
+                  <img src={user4} alt="" />
 
                   <div>
                     <h4>Megan</h4>
@@ -993,10 +987,7 @@ const BeforeHome = ({ personDetails }) => {
                 </p>
 
                 <div className="eliteTestimonials__user">
-                  <img
-                    src="https://randomuser.me/api/portraits/women/65.jpg"
-                    alt=""
-                  />
+                  <img src={user2} alt="" />
 
                   <div>
                     <h4>Selina Gomez</h4>
@@ -1021,10 +1012,7 @@ const BeforeHome = ({ personDetails }) => {
                 </p>
 
                 <div className="eliteTestimonials__user">
-                  <img
-                    src="https://static.vecteezy.com/system/resources/thumbnails/069/180/702/small/confident-man-portrait-home-interior-plants-blurred-background-profile-picture-free-photo.jpg"
-                    alt=""
-                  />
+                  <img src={user3} alt="" />
 
                   <div>
                     <h4>Jasper Collins</h4>

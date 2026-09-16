@@ -261,6 +261,11 @@ export const hotelPriceCheck = ({ body }: any) =>
     uriEndPoint: allApi.hotelPriceCheck.v1,
     body,
   });
+export const hotelPriceRefund = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.hotelPriceRefund.v1,
+    body,
+  });
 
 // vacation services
 export const searchVacationLocation = ({ body }: any) =>

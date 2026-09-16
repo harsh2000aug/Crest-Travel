@@ -30,7 +30,7 @@ const MainForm = () => {
     },
     {
       id: 3,
-      label: "Transfers",
+      label: "Car Rental",
       icon: LuCar,
     },
     {
