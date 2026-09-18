@@ -1,7 +1,9 @@
 /* =========================================================
    FLIGHT BOOKING PAGE
 ========================================================= */
-
+.m-top{
+  margin-top: 10px;
+}
 .fb-page {
   min-height: 100vh;
   background: #f5f8fc;
@@ -2376,5 +2378,271 @@
   .fb-card-details-card .fb-field input {
     height: 46px;
     font-size: 13px;
+  }
+}
+.fb-extra-services {
+  margin: 24px 0;
+  border: 1px solid #d8d8d8;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+}
+.fb-extra-header { padding: 20px 16px 0; }
+.fb-extra-header h2 { margin: 0 0 16px; font-size: 20px; }
+.fb-extra-header label { display: block; margin-bottom: 8px; font-size: 14px; }
+.fb-extra-header select {
+  width: min(100%, 430px);
+  min-height: 52px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #fff;
+  color: #303030;
+  font: inherit;
+}
+.fb-extra-tabs { display: flex; margin-top: 12px; border-bottom: 1px solid #d8d8d8; }
+.fb-extra-tab {
+  padding: 18px 30px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #444;
+  font: inherit;
+  cursor: pointer;
+}
+.fb-extra-tab.is-active { color: #081a35; border-bottom-color: #081a35; }
+.fb-extra-options { padding: 20px 34px 28px; }
+.fb-extra-group { min-width: 0; margin: 0 0 18px; padding: 0; border: 0; }
+.fb-extra-group:last-child { margin-bottom: 0; }
+.fb-extra-group legend { margin-bottom: 12px; font-size: 14px; font-weight: 600; color: #555; }
+.fb-extra-option {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  min-height: 42px;
+  padding: 8px 0;
+  color: #222;
+  cursor: pointer;
+}
+.fb-extra-option input[type="radio"] {
+  appearance: auto;
+  position: static;
+  opacity: 1;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #081a35;
+}
+.fb-extra-option span { overflow-wrap: anywhere; }
+.fb-extra-option strong { white-space: nowrap; font-size: 14px; }
+.fb-extra-tab:focus-visible,
+.fb-extra-header select:focus-visible,
+.fb-extra-option input:focus-visible { outline: 2px solid #081a35; outline-offset: 3px; }
+@media (max-width: 576px) {
+  .fb-extra-options { padding: 18px 16px 24px; }
+  .fb-extra-tab { padding: 16px 24px; }
+  .fb-extra-option { gap: 12px; font-size: 13px; }
+}
+body.fb-price-popup-open { overflow: hidden; }
+.fb-price-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  background: #0b193bc2;
+  backdrop-filter: blur(7px);
+}
+.fb-price-popup {
+  position: relative;
+  flex-shrink: 0;
+  width: min(480px, 100%);
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 1px solid #e6edf6;
+  border-radius: 24px;
+  background: #fff;
+  color: #142640;
+  font-family: inherit;
+  box-sizing: border-box;
+  box-shadow: 0 32px 100px #06172b40;
+}
+.fb-price-popup { display: block; animation: fb-price-popup-enter 180ms ease-out; }
+.fb-price-popup *, .fb-price-popup *::before, .fb-price-popup *::after { box-sizing: border-box; }
+.fb-price-popup__accent { height: 6px; background: linear-gradient(90deg, #175cd3, #63c8ed); }
+.fb-price-popup__content { padding: 32px 36px 28px; text-align: center; }
+.fb-price-popup__illustration { position: relative; display: grid; place-items: center; width: 116px; height: 116px; margin: 0 auto 24px; }
+.fb-price-popup__orbit { position: absolute; inset: 0; border: 1px dashed #b8cff2; border-radius: 50%; transform: rotate(-15deg); }
+.fb-price-popup__icon { display: grid; place-items: center; width: 86px; height: 86px; border: 7px solid #f6f9ff; border-radius: 50%; background: #eaf2ff; color: #175cd3; box-shadow: 0 8px 24px #175cd312; }
+.fb-price-popup__icon svg { width: 34px; height: 34px; stroke-width: 1.8; }
+.fb-price-popup__spark { position: absolute; width: 10px; height: 10px; border: 3px solid #fff; border-radius: 50%; background: #66b9e9; }
+.fb-price-popup__spark--one { top: 10px; right: 12px; width: 15px; height: 15px; }
+.fb-price-popup__spark--two { bottom: 16px; left: 5px; background: #ffbd71; }
+.fb-price-popup__eyebrow { display: block; margin-bottom: 12px; color: #3668a7; font-size: 10px; font-weight: 700; line-height: 1.5; letter-spacing: 1.8px; }
+.fb-price-popup .fb-price-popup__title { margin: 0 0 12px; color: #142640; font-size: clamp(24px, 5vw, 30px); font-weight: 750; line-height: 1.2; letter-spacing: -0.7px; }
+.fb-price-popup .fb-price-popup__description { max-width: 340px; margin: 0 auto 28px; color: #607089; font-size: 15px; line-height: 1.7; }
+.fb-price-popup .fb-price-popup__button { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 50px; padding: 13px 20px; border: 0; border-radius: 12px; background: #175cd3; color: #fff; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 6px 16px #175cd326; transition: background 150ms ease, transform 150ms ease; }
+.fb-price-popup__button svg { width: 19px; height: 19px; }
+.fb-price-popup .fb-price-popup__button:hover { background: #124dab; transform: translateY(-1px); }
+.fb-price-popup .fb-price-popup__button:focus-visible { outline: 3px solid #87b8ff; outline-offset: 4px; }
+.fb-price-popup .fb-price-popup__hint { margin: 20px 0 0; color: #758399; font-size: 12px; line-height: 1.6; }
+@keyframes fb-price-popup-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 480px) {
+  .fb-price-popup { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); border-radius: 20px; }
+  .fb-price-popup__content { padding: 28px 22px 24px; }
+  .fb-price-popup__illustration { width: 100px; height: 100px; margin-bottom: 22px; }
+  .fb-price-popup__icon { width: 76px; height: 76px; }
+  .fb-price-popup .fb-price-popup__description { font-size: 14px; }
+}
+@media (max-height: 540px) {
+  .fb-price-popup__content { padding-top: 20px; padding-bottom: 20px; }
+  .fb-price-popup__illustration { width: 72px; height: 72px; margin-bottom: 16px; }
+  .fb-price-popup__icon { width: 58px; height: 58px; }
+  .fb-price-popup__icon svg { width: 26px; height: 26px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fb-price-popup { animation: none; }
+  .fb-price-popup .fb-price-popup__button { transition: none; transform: none; }
+}
+.fob-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  animation: fob-fade-in 0.18s ease-out;
+}
+
+@keyframes fob-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fob-popup {
+  position: relative;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 36px 32px 28px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow:
+    0 20px 50px -10px rgba(15, 23, 42, 0.35),
+    0 0 0 1px rgba(15, 23, 42, 0.04);
+  animation: fob-pop-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fob-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.fob-popup__icon-wrap {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fob-popup__icon {
+  width: 30px;
+  height: 30px;
+  color: #dc2626;
+}
+
+.fob-popup__title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+
+.fob-popup__message {
+  font-size: 14.5px;
+  color: #64748b;
+  line-height: 1.55;
+  margin: 0 0 26px;
+}
+
+.fob-popup__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.fob-popup__button:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px -6px rgba(220, 38, 38, 0.45);
+}
+
+.fob-popup__button:active {
+  transform: translateY(0);
+}
+
+.fob-popup__button:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .fob-popup {
+    padding: 28px 22px 22px;
+    border-radius: 16px;
+  }
+
+  .fob-popup__icon-wrap {
+    width: 56px;
+    height: 56px;
+  }
+
+  .fob-popup__icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .fob-popup__title {
+    font-size: 17px;
+  }
+
+  .fob-popup__message {
+    font-size: 14px;
   }
 }
