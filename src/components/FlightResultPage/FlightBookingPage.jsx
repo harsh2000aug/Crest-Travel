@@ -1,11 +1,18 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray, Controller, useWatch } from "react-hook-form";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FiBriefcase, FiClock, FiX } from "react-icons/fi";
+import {
+  FiBriefcase,
+  FiClock,
+  FiX,
+  FiArrowLeft,
+  FiSearch,
+  FiAlertTriangle,
+} from "react-icons/fi";
 import "./FlightBookingPage.css";
-
+import "react-datepicker/dist/react-datepicker.css";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
 import {
@@ -327,6 +334,8 @@ const createEmptyPassenger = (passenger) => ({
   documentNumber: "",
 
   documentExpiry: "",
+
+  FrequentFlyerNumber: "",
 });
 
 /* =========================================================
@@ -455,6 +464,22 @@ function PassengerForm({ passenger, index, register, control, errors }) {
                 {passengerErrors.lastName.message}
               </small>
             )}
+          </div>
+        </div>
+
+        <div className="fb-form-grid fb-form-grid-two m-top">
+          <div className="fb-field">
+            <label htmlFor={`fb-flyer-number-${index}`}>
+              Flyer Number (optional)
+            </label>
+            <input
+              id={`fb-flyer-number-${index}`}
+              type="text"
+              placeholder="Enter flyer number"
+              {...register(`passengers.${index}.FrequentFlyerNumber`, {
+                setValueAs: (value) => String(value ?? "").trim(),
+              })}
+            />
           </div>
         </div>
 
@@ -610,11 +635,13 @@ function PassengerForm({ passenger, index, register, control, errors }) {
             <input
               type="text"
               placeholder="Enter passport number"
+              maxLength={8}
               {...register(`passengers.${index}.documentNumber`, {
                 required: "Passport number is required",
                 setValueAs: (value) => value.trim(),
                 validate: (value) =>
-                  Boolean(value?.trim()) || "Passport number is required",
+                  value?.length === 8 ||
+                  "Passport number must be exactly 8 characters",
               })}
             />
             {passengerErrors.documentNumber && (
@@ -628,15 +655,58 @@ function PassengerForm({ passenger, index, register, control, errors }) {
             <label>
               Document Expiry <span>*</span>
             </label>
-            <input
-              type="date"
-              {...register(`passengers.${index}.documentExpiry`, {
+
+            <Controller
+              name={`passengers.${index}.documentExpiry`}
+              control={control}
+              rules={{
                 required: "Document expiry is required",
-                validate: (value) =>
-                  !Number.isNaN(new Date(`${value}T00:00:00`).getTime()) ||
-                  "Enter a valid document expiry date",
-              })}
+                validate: (value) => {
+                  const expiryDate = new Date(`${value}T00:00:00`);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+
+                  if (Number.isNaN(expiryDate.getTime())) {
+                    return "Enter a valid document expiry date";
+                  }
+
+                  return (
+                    expiryDate >= today ||
+                    "Document expiry cannot be before today"
+                  );
+                },
+              }}
+              render={({ field }) => (
+                <DatePicker
+                  selected={
+                    field.value ? new Date(`${field.value}T00:00:00`) : null
+                  }
+                  onChange={(date) => {
+                    if (!date) {
+                      field.onChange("");
+                      return;
+                    }
+
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+
+                    field.onChange(`${year}-${month}-${day}`);
+                  }}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  minDate={new Date()}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Select document expiry"
+                  showMonthDropdown
+                  showYearDropdown
+                  dropdownMode="select"
+                  isClearable
+                  autoComplete="off"
+                />
+              )}
             />
+
             {passengerErrors.documentExpiry && (
               <small className="fb-error">
                 {passengerErrors.documentExpiry.message}
@@ -931,7 +1001,7 @@ function ItineraryCard({ flight, searchData }) {
    PRICE SUMMARY
 ========================================================= */
 
-function PriceSummary({ flight, searchData }) {
+function PriceSummary({ flight, searchData, totals }) {
   const currency = flight?.currency || "USD";
 
   const adults = Number(searchData?.adults || 0);
@@ -941,10 +1011,6 @@ function PriceSummary({ flight, searchData }) {
   const infants = Number(searchData?.infants || 0);
 
   const totalPassengers = adults + children + infants;
-
-  const pricePerPerson = Number(flight?.price || 0);
-
-  const totalPrice = Number(flight?.totalPrice || 0);
 
   const taxes = Number(flight?.taxes || 0);
 
@@ -1028,23 +1094,32 @@ function PriceSummary({ flight, searchData }) {
         <strong>{formatMoney(taxes, currency)}</strong>
       </div>
 
+      {totals.hasBaggage && (
+        <div className="fb-summary-row">
+          <span>Extra baggage</span>
+          <strong>{formatMoney(totals.baggageTotal, currency)}</strong>
+        </div>
+      )}
+
+      {totals.hasMeals && (
+        <div className="fb-summary-row">
+          <span>Meals</span>
+          <strong>{formatMoney(totals.mealTotal, currency)}</strong>
+        </div>
+      )}
+
       <div className="fb-summary-divider" />
 
       {/* TOTAL */}
 
-      <div className="fb-total-row">
+      <div className="fb-total-row" aria-live="polite">
         <div>
           <span>Total amount</span>
 
           <small>Inclusive of taxes & fees</small>
         </div>
 
-        <strong>
-          {formatMoney(
-            totalPrice || pricePerPerson * totalPassengers,
-            currency,
-          )}
-        </strong>
+        <strong>{formatMoney(totals.totalPrice, currency)}</strong>
       </div>
     </aside>
   );
@@ -1746,12 +1821,325 @@ function BillingAddress({ register, errors }) {
    MAIN PAGE
 ========================================================= */
 
+const getSelectedExtraServices = (
+  passenger,
+  services,
+  includePrice = false,
+) => {
+  return [
+    { key: "extrabaggage", type: "BAGGAGE" },
+    { key: "meals", type: "MEAL" },
+  ].flatMap(({ key, type }) => {
+    if (type === "BAGGAGE" && passenger?.type?.toLowerCase() === "infant") {
+      return [];
+    }
+
+    const available = Array.isArray(services?.[key]) ? services[key] : [];
+    const selectedIds = new Set(
+      Object.values(passenger?.extraServiceSelections?.[key] || {})
+        .filter((id) => id !== "" && id !== null && id !== undefined)
+        .map(String),
+    );
+
+    return available
+      .filter((service) => selectedIds.has(String(service.ServiceId)))
+      .map((service) => ({
+        serviceid: Number(service.ServiceId),
+        type: type,
+        description: String(service.Description || "").trim(),
+        ...(includePrice
+          ? { price: Number(service.price ?? service.ServiceCost?.Amount ?? 0) }
+          : {}),
+      }));
+  });
+};
+
+const getBookingTotals = (flight, searchData, passengers, services) => {
+  const passengerCount = ["adults", "children", "infants"].reduce(
+    (total, key) => total + Number(searchData?.[key] || 0),
+    0,
+  );
+  const flightTotal = Number(flight?.totalPrice || 0);
+  const selectedServices = (passengers || []).flatMap((passenger) =>
+    getSelectedExtraServices(passenger, services, true),
+  );
+  const sumPrice = (type) =>
+    selectedServices
+      .filter((service) => service.type === type)
+      .reduce((total, service) => total + Math.round(service.price * 100), 0);
+  const baggageCents = sumPrice("BAGGAGE");
+  const mealCents = sumPrice("MEAL");
+
+  return {
+    baggageTotal: baggageCents / 100,
+    mealTotal: mealCents / 100,
+    hasBaggage: selectedServices.some((service) => service.type === "BAGGAGE"),
+    hasMeals: selectedServices.some((service) => service.type === "MEAL"),
+    totalPrice:
+      (Math.round(flightTotal * 100) + baggageCents + mealCents) / 100,
+  };
+};
+
+function FlightExtraServices({ services, passengers, control }) {
+  const [selectedPassenger, setSelectedPassenger] = useState("0");
+  const [selectedTab, setSelectedTab] = useState("extrabaggage");
+  const passengerValues = useWatch({ control, name: "passengers" }) || [];
+  const tabs = [
+    { key: "extrabaggage", label: "Baggage" },
+    { key: "meals", label: "Meals" },
+  ].filter(
+    ({ key }) =>
+      Array.isArray(services?.[key]) &&
+      services[key].length > 0 &&
+      (key !== "extrabaggage" ||
+        passengers.some(
+          (passenger) => passenger.type?.toLowerCase() !== "infant",
+        )),
+  );
+
+  if (!tabs.length || !passengers.length) return null;
+
+  const activeTab = tabs.find(({ key }) => key === selectedTab) || tabs[0];
+  const eligiblePassengers = passengers
+    .map((passenger, index) => ({ passenger, index }))
+    .filter(
+      ({ passenger }) =>
+        activeTab.key !== "extrabaggage" ||
+        passenger.type?.toLowerCase() !== "infant",
+    );
+  const passengerIndex = eligiblePassengers.some(
+    ({ index }) => index === Number(selectedPassenger),
+  )
+    ? Number(selectedPassenger)
+    : eligiblePassengers[0].index;
+  const groups = [];
+
+  services[activeTab.key].forEach((service) => {
+    const groupKey = JSON.stringify([
+      service.Behavior || "",
+      service.FlightDesignator || "",
+    ]);
+    let group = groups.find((item) => item.key === groupKey);
+    if (!group) {
+      const direction = service.Behavior?.includes("OUTBOUND")
+        ? "Outbound"
+        : service.Behavior?.includes("INBOUND")
+          ? "Return"
+          : "";
+      group = {
+        key: groupKey,
+        label: [direction, service.FlightDesignator]
+          .filter(Boolean)
+          .join(" · "),
+        options: [],
+      };
+      groups.push(group);
+    }
+    group.options.push(service);
+  });
+
+  return (
+    <section className="fb-extra-services" aria-label="Extra services">
+      <div className="fb-extra-header">
+        <h2>Extra services</h2>
+        <label htmlFor="fb-extra-passenger">Passenger</label>
+        <select
+          id="fb-extra-passenger"
+          value={String(passengerIndex)}
+          onChange={(event) => setSelectedPassenger(event.target.value)}
+        >
+          {eligiblePassengers.map(({ passenger, index }) => {
+            const value = passengerValues[index];
+            const name = [value?.firstName, value?.middleName, value?.lastName]
+              .filter(Boolean)
+              .join(" ")
+              .trim();
+            return (
+              <option key={passenger.id} value={String(index)}>
+                {name ||
+                  `${getPassengerTypeLabel(passenger.type)} ${index + 1}`}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <div className="fb-extra-tabs" aria-label="Service categories">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            className={`fb-extra-tab${activeTab.key === tab.key ? " is-active" : ""}`}
+            aria-pressed={activeTab.key === tab.key}
+            onClick={() => setSelectedTab(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <div className="fb-extra-options">
+        {groups.map((group, groupIndex) => (
+          <Controller
+            key={`${passengers[passengerIndex].id}-${activeTab.key}-${group.key}`}
+            control={control}
+            name={`passengers.${passengerIndex}.extraServiceSelections.${activeTab.key}.${groupIndex}`}
+            defaultValue=""
+            shouldUnregister={false}
+            render={({ field }) => (
+              <fieldset className="fb-extra-group">
+                <legend>
+                  {[activeTab.label, group.label].filter(Boolean).join(" · ")}
+                </legend>
+                <label className="fb-extra-option">
+                  <input
+                    ref={field.ref}
+                    type="radio"
+                    name={field.name}
+                    value=""
+                    checked={!field.value}
+                    onBlur={field.onBlur}
+                    onChange={() => field.onChange("")}
+                  />
+                  <span>None</span>
+                  <strong>
+                    {formatMoney(
+                      0,
+                      group.options[0]?.ServiceCost?.CurrencyCode || "USD",
+                    )}
+                  </strong>
+                </label>
+                {group.options.map((service, index) => (
+                  <label
+                    className="fb-extra-option"
+                    key={`${service.ServiceId}-${index}`}
+                  >
+                    <input
+                      type="radio"
+                      name={field.name}
+                      value={String(service.ServiceId)}
+                      checked={field.value === String(service.ServiceId)}
+                      onBlur={field.onBlur}
+                      onChange={() => field.onChange(String(service.ServiceId))}
+                    />
+                    <span>
+                      {service.Description?.trim() || activeTab.label}
+                    </span>
+                    <strong>
+                      {formatMoney(
+                        service.price ?? service.ServiceCost?.Amount ?? 0,
+                        service.ServiceCost?.CurrencyCode || "USD",
+                      )}
+                    </strong>
+                  </label>
+                ))}
+              </fieldset>
+            )}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FlightPriceErrorPopup({ onGoBack }) {
+  const dialogRef = useRef(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    if (dialog && !dialog.open) dialog.showModal();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      if (dialog?.open) dialog.close();
+    };
+  }, []);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="fb-price-popup"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="fb-price-popup-title"
+      aria-describedby="fb-price-popup-description"
+      onCancel={(event) => event.preventDefault()}
+    >
+      <div className="fb-price-popup__accent" />
+      <div className="fb-price-popup__content">
+        <div className="fb-price-popup__illustration" aria-hidden="true">
+          <span className="fb-price-popup__orbit" />
+          <span className="fb-price-popup__icon">
+            <FiSearch />
+          </span>
+          <span className="fb-price-popup__spark fb-price-popup__spark--one" />
+          <span className="fb-price-popup__spark fb-price-popup__spark--two" />
+        </div>
+        <span className="fb-price-popup__eyebrow">
+          LET’S FIND YOUR NEXT FLIGHT
+        </span>
+        <h2 id="fb-price-popup-title" className="fb-price-popup__title">
+          Flights not found
+        </h2>
+        <p
+          id="fb-price-popup-description"
+          className="fb-price-popup__description"
+        >
+          Please search again. We couldn’t confirm availability for your
+          selected flight.
+        </p>
+        <button
+          type="button"
+          className="fb-price-popup__button"
+          onClick={onGoBack}
+          autoFocus
+        >
+          <FiArrowLeft aria-hidden="true" />
+          Go back
+        </button>
+        <p className="fb-price-popup__hint">
+          A new search is the first step to your next journey.
+        </p>
+      </div>
+    </dialog>
+  );
+}
+function FlightOrderErrorPopup({ message, onGoBack }) {
+  return (
+    <div className="fob-overlay">
+      <div className="fob-popup">
+        <div className="fob-popup__icon-wrap">
+          <FiAlertTriangle className="fob-popup__icon" aria-hidden="true" />
+        </div>
+
+        <h2 className="fob-popup__title">Booking couldn't be completed</h2>
+
+        <p className="fob-popup__message">
+          {message ||
+            "Something went wrong while placing your order. Please try again."}
+        </p>
+
+        <button
+          type="button"
+          className="fob-popup__button"
+          onClick={onGoBack}
+          autoFocus
+        >
+          Go back
+        </button>
+      </div>
+    </div>
+  );
+}
 export default function FlightBookingPage() {
+  const [orderFailed, setOrderFailed] = useState(false);
+  const [orderFailMessage, setOrderFailMessage] = useState("");
   const navigate = useNavigate();
   const [revalidateData, setRevalidateData] = useState([]);
   const [bookingData, setBookingData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [policyPopup, setPolicyPopup] = useState(null);
+  const [priceFetchFailed, setPriceFetchFailed] = useState(false);
   const policyDialogRef = useRef(null);
 
   const baggageDetails = revalidateData?.rules?.baggage || [];
@@ -1850,6 +2238,14 @@ export default function FlightBookingPage() {
     name: "passengers",
   });
 
+  const watchedPassengers = useWatch({ control, name: "passengers" });
+  const bookingTotals = getBookingTotals(
+    bookingData?.selectedFlight,
+    bookingData?.searchData,
+    watchedPassengers,
+    revalidateData?.extraservice,
+  );
+
   /* =======================================================
      PRICE API
   ======================================================= */
@@ -1858,7 +2254,7 @@ export default function FlightBookingPage() {
     setLoading(true);
     try {
       if (!fareCode) {
-        return;
+        throw new Error("Flight fare code not found");
       }
 
       const res = await flightPrices({
@@ -1870,9 +2266,14 @@ export default function FlightBookingPage() {
       });
 
       console.log("FLIGHT PRICE RESPONSE:", res);
+      if (res?.success === false || !res?.result?.pricing) {
+        throw new Error(res?.message || "Flights not found");
+      }
       setRevalidateData(res.result);
+      return res.result;
     } catch (error) {
       console.log("error in getting tax", error);
+      setPriceFetchFailed(true);
     } finally {
       setLoading(false);
     }
@@ -2086,7 +2487,19 @@ export default function FlightBookingPage() {
     return btoa(String(value ?? ""));
   };
 
-  const handlePayment = async (orderId, formData, paymentRemaining) => {
+  const handlePayment = async (orderId, formData) => {
+    const { baggageTotal, mealTotal } = getBookingTotals(
+      flight,
+      bookingData?.searchData,
+      formData?.passengers,
+      revalidateData?.extraservice,
+    );
+    const paymentRemaining =
+      (Math.round(Number(flight?.price || 0) * 100) +
+        Math.round(baggageTotal * 100) +
+        Math.round(mealTotal * 100)) /
+      100;
+
     setLoading(true);
     try {
       const cardData = formData?.card || {};
@@ -2128,7 +2541,7 @@ export default function FlightBookingPage() {
 
           mode: "CARD",
 
-          paymentRemaining: Number(paymentRemaining || 0),
+          paymentRemaining: paymentRemaining,
 
           identity: {
             number: encodeBase64(cardNumber),
@@ -2182,13 +2595,19 @@ export default function FlightBookingPage() {
                 passportExpiry: passenger.documentExpiry,
                 passportCountry: passenger.passportCountry,
                 nationality: passenger.nationality,
+                FrequentFlyerNumber: (
+                  passenger.FrequentFlyerNumber ?? ""
+                ).trim(),
                 type:
                   passenger.type === "child"
                     ? "Child"
                     : passenger.type === "infant"
                       ? "Infants"
                       : "Adult",
-                extraservice: [],
+                extraservice: getSelectedExtraServices(
+                  passenger,
+                  revalidateData?.extraservice,
+                ),
               })),
               primaryCountryCode: String(
                 contactData?.countryCode || "+91",
@@ -2319,7 +2738,12 @@ export default function FlightBookingPage() {
 
     const taxes = revalidateData.pricing.taxes;
 
-    const payable = revalidateData.pricing.showOurprice;
+    const payable = getBookingTotals(
+      selectedFlight,
+      searchData,
+      passengersData,
+      revalidateData?.extraservice,
+    ).totalPrice;
 
     const ourPrice = revalidateData.pricing.ourprice;
     const netPrice = revalidateData.pricing.totalFare;
@@ -2355,8 +2779,13 @@ export default function FlightBookingPage() {
           : passenger?.type === "infant"
             ? "Infants"
             : "Adult",
-      primary: passenger.type == "adult" ? true : false,
-      extraservice: [],
+      FrequentFlyerNumber: (passenger.FrequentFlyerNumber ?? "").trim(),
+      primary:
+        index === passengersData.findIndex((item) => item.type === "adult"),
+      extraservice: getSelectedExtraServices(
+        passenger,
+        revalidateData?.extraservice,
+      ),
     }));
 
     const flightSegments = outboundSegments.length
@@ -2426,7 +2855,8 @@ export default function FlightBookingPage() {
       route: route,
       base_price: basePrice,
       taxes: taxes,
-      payable: payable,
+      // payable: payable,
+      payable: ourPrice,
       our_price: ourPrice,
       rate: 1,
       net_price: netPrice,
@@ -2539,8 +2969,13 @@ export default function FlightBookingPage() {
 
       console.log("FLIGHT ORDER RESPONSE:", response);
 
-      if (response?.success === false) {
+      if (response?.data?.addorder?.success === false) {
         console.error("Flight order failed:", response);
+        setOrderFailMessage(
+          response?.data?.addorder?.message ||
+            "Something went wrong while placing your order. Please try again.",
+        );
+        setOrderFailed(true);
         return;
       }
 
@@ -2554,11 +2989,7 @@ export default function FlightBookingPage() {
       console.log("FLIGHT ORDER ID:", orderId);
 
       // Hit payment API after successful flight order
-      await handlePayment(
-        orderId,
-        formData,
-        revalidateData?.pricing?.showOurprice,
-      );
+      await handlePayment(orderId, formData);
 
       // navigate("/flight-payment");
     } catch (error) {
@@ -2572,10 +3003,24 @@ export default function FlightBookingPage() {
    NO BOOKING DATA
 ======================================================= */
 
+  if (priceFetchFailed) {
+    return <FlightPriceErrorPopup onGoBack={() => navigate(-1)} />;
+  }
+
   if (!bookingData) {
     return (
       <>
         {loading && <Loader />}
+        {orderFailed && (
+          <FlightOrderErrorPopup
+            onGoBack={() => {
+              message = { orderFailMessage };
+              setOrderFailed(false);
+              navigate(-1);
+            }}
+          />
+        )}
+
         <HeaderInner />
 
         <main className="fb-page">
@@ -2618,6 +3063,14 @@ export default function FlightBookingPage() {
   return (
     <>
       {loading && <Loader />}
+      {orderFailed && (
+        <FlightOrderErrorPopup
+          onGoBack={() => {
+            setOrderFailed(false);
+            navigate(-1);
+          }}
+        />
+      )}
       <HeaderInner />
 
       <main className="fb-page">
@@ -2831,6 +3284,12 @@ export default function FlightBookingPage() {
               ))}
             </div>
 
+            <FlightExtraServices
+              services={revalidateData?.extraservice}
+              passengers={passengers}
+              control={control}
+            />
+
             {/* =================================================
               04 - BILLING ADDRESS
           ================================================= */}
@@ -2915,7 +3374,11 @@ export default function FlightBookingPage() {
               PRICE SUMMARY
           ================================================= */}
 
-            <PriceSummary flight={flight} searchData={searchData} />
+            <PriceSummary
+              flight={flight}
+              searchData={searchData}
+              totals={bookingTotals}
+            />
 
             {/* =================================================
               HELP CARD

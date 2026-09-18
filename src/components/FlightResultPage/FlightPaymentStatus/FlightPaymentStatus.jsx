@@ -29,7 +29,20 @@ const FlightPaymentStatus = () => {
             sessionId: paymentData.sessionId,
             input: {
               fareSourceCode: paymentData.input.fareSourceCode,
-              passengers: paymentData.input.passengers,
+              passengers: {
+                ...paymentData.input.passengers,
+                details: paymentData.input.passengers.details.map(
+                  (passenger) => ({
+                    ...passenger,
+                    extraservice: (passenger.extraservice || []).map(
+                      (service) => ({
+                        serviceid: service.serviceid,
+                        quantity: 1,
+                      }),
+                    ),
+                  }),
+                ),
+              },
               orderid: paymentData.input.orderid,
             },
           },

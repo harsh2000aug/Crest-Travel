@@ -5,6 +5,7 @@ import "./FlightResultPage.css";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
 import { fligtsData, suggestionFlight } from "../../store/Services/AllApi";
+import Loader from "../../reuseable-components/Loader/Loader";
 
 /* =========================================================
    CURRENCY
@@ -750,9 +751,10 @@ function FlightCard({ flight }) {
         duration: flight.duration || "",
         stops: Number(flight.stops || 0),
         stopDetail: flight.stopDetail || "",
-
+        baseFare: Number(flight.baseFare || 0),
+        taxes: Number(flight.taxes || 0),
         price: Number(flight.price || 0),
-        totalPrice: Number(flight.totalPrice || 0),
+        totalPrice: Number(flight.totalFare || 0),
         currency: flight.currency || "USD",
 
         outboundSegments: Array.isArray(flight.outboundSegments)
@@ -2974,15 +2976,16 @@ export default function FlightResultPage() {
             {/* Loading */}
 
             {loading && (
-              <div className="no-flights">
-                <div className="no-flights-icon">✈️</div>
+              // <div className="no-flights">
+              //   <div className="no-flights-icon">✈️</div>
 
-                <div className="no-flights-title">Loading flights...</div>
+              //   <div className="no-flights-title">Loading flights...</div>
 
-                <div className="no-flights-sub">
-                  Please wait while we fetch the latest flight results.
-                </div>
-              </div>
+              //   <div className="no-flights-sub">
+              //     Please wait while we fetch the latest flight results.
+              //   </div>
+              // </div>
+              <Loader />
             )}
 
             {/* No Results */}
