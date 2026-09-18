@@ -266,7 +266,7 @@
   font-size: 35px;
 }
 
-.hbd-left-column button {
+.hbd-left-column .your-cancel-button-class {
   width: 100%;
   background: #d8a437;
   color: #fff;

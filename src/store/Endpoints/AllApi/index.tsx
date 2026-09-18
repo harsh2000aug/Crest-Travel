@@ -327,6 +327,37 @@ export const allApi = {
       useCarHeaders: true,
     },
   },
+  carBook: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphacar/book",
+      useCarHeaders: true,
+    },
+  },
+  carOrders: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphacar/get-order-booking",
+      useCarHeaders: true,
+    },
+  },
+  carOrdersInfo: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphacar/car-lookup",
+    },
+  },
+  carOrdersCancel: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphacar/cancel-booking",
+    },
+  },
+
   activityLocations: {
     v1: {
       ...defaults.methods.POST,
@@ -477,6 +508,13 @@ export const allApi = {
       ...defaults.methods.POST,
       ...defaults.versions.v1,
       uri: "/alphahotel/hotel-order",
+    },
+  },
+  phoneNumberAndMail: {
+    v1: {
+      ...defaults.methods.GET,
+      ...defaults.versions.v1,
+      uri: "/support/info",
     },
   },
 };

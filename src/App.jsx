@@ -45,6 +45,8 @@ import PaymentStatus from "./components/PaymentStatus/PaymentStatus";
 import HotelPaymentStatus from "./components/main-form/HotelForm/HotelPaymentStatus/HotelPaymentStatus";
 import HotelBookingsDetails from "./components/main-form/HotelForm/HotelBookingsDetails/HotelBookingsDetails";
 import FlightPaymentStatus from "./components/FlightResultPage/FlightPaymentStatus/FlightPaymentStatus";
+import CarPayment from "./components/main-form/CarRental/CarPayment/CarPayment";
+import CarBookingDetails from "./components/main-form/CarRental/CarBookingDetails/CarBookingDetails";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -71,7 +73,7 @@ function App() {
         setPersonDetails(res?.data?.get?.result);
         localStorage.setItem(
           "personDetails",
-          JSON.stringify(res?.data?.get?.result)
+          JSON.stringify(res?.data?.get?.result),
         );
         localStorage.setItem("tierId", res?.data?.get?.result?.tierid);
         localStorage.setItem("bookingId", res?.data?.get?.result?.id);
@@ -82,6 +84,7 @@ function App() {
 
     handleNewMemberDetails();
   }, [location.pathname]);
+
   return (
     <>
       <ToastContainer
@@ -100,6 +103,7 @@ function App() {
         <Route path="/payment/status" element={<PaymentStatus />} />
         <Route path="/hotel-payment" element={<HotelPaymentStatus />} />
         <Route path="/flight-payment" element={<FlightPaymentStatus />} />
+        <Route path="/car-payment" element={<CarPayment />} />
 
         <Route element={<BlogProtectedRoutes />}>
           <Route path="/admin-dashboard" element={<AdminDash />} />
@@ -147,6 +151,7 @@ function App() {
             path="/hotel-booking-details"
             element={<HotelBookingsDetails />}
           />
+          <Route path="/car-booking-details" element={<CarBookingDetails />} />
         </Route>
 
         <Route

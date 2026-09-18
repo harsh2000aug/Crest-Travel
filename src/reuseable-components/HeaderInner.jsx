@@ -4,7 +4,7 @@ import logo from "../assets/images/logo.webp";
 import { CiWallet, CiUser } from "react-icons/ci";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { IoIosLogOut } from "react-icons/io";
-import { changePassword } from "../store/Services/AllApi";
+import { changePassword, memberTripCoins } from "../store/Services/AllApi";
 import { toast } from "react-toastify";
 import { RiLockPasswordLine } from "react-icons/ri";
 
@@ -19,12 +19,30 @@ const HeaderInner = () => {
   const [showCoins, setShowCoins] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
+  const [roomCoins, setRoomCoins] = useState(0);
+  const [tripCoins, setTripCoins] = useState(0);
+
   // Change Password States
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState("");
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!event.target.closest(".member-menu")) {
+        setShowCoins(false);
+        setShowProfile(false);
+      }
+    };
+
+    document.addEventListener("click", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+    };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -63,21 +81,12 @@ const HeaderInner = () => {
     "/vacation-details",
     "/vacation-billing",
     "/hotel-booking-details",
+    "/car-booking-details",
   ];
 
   const showDarkHeader = darkHeaderRoutes.includes(location.pathname);
 
   const handleLogout = () => {
-    // localStorage.removeItem("accessToken");
-    // localStorage.removeItem("userFinal");
-    // localStorage.removeItem("Email");
-    // localStorage.removeItem("personDetails");
-    // localStorage.removeItem("roomCountToStore");
-    // localStorage.removeItem("adultCountToStore");
-    // localStorage.removeItem("childCountToStore");
-    // localStorage.removeItem("hotelToken");
-    // localStorage.removeItem("sessionId");
-    // sessionStorage.removeItem("flightBookingData");
     localStorage.clear();
     sessionStorage.clear();
     setShowProfile(false);
@@ -136,6 +145,51 @@ const HeaderInner = () => {
     setPasswordError("");
   };
 
+  useEffect(() => {
+    const getMemberCoins = async () => {
+      try {
+        const email = localStorage.getItem("Email");
+
+        if (!email) {
+          setRoomCoins(0);
+          setTripCoins(0);
+          return;
+        }
+
+        const [roomRes, tripRes] = await Promise.all([
+          memberTripCoins({
+            body: {
+              email,
+              type: "room",
+            },
+          }),
+          memberTripCoins({
+            body: {
+              email,
+              type: "trip",
+            },
+          }),
+        ]);
+
+        console.log("Room Coins Response:", roomRes);
+        console.log("Trip Coins Response:", tripRes);
+
+        const roomBalance = roomRes?.data?.balance?.result?.balance ?? 0;
+        const tripBalance = tripRes?.data?.balance?.result?.balance ?? 0;
+
+        setRoomCoins(roomBalance);
+        setTripCoins(tripBalance);
+
+        localStorage.setItem("roomCoins", String(roomBalance));
+      } catch (error) {
+        console.error("Member coins error:", error);
+        setRoomCoins(0);
+        setTripCoins(0);
+      }
+    };
+    getMemberCoins();
+  }, []);
+
   return (
     <>
       <header className={showDarkHeader ? "dark-header" : ""}>
@@ -184,15 +238,12 @@ const HeaderInner = () => {
                     </Link>
                   </li>
 
-                  {/* ===================== */}
-                  {/* MY COINS */}
-                  {/* ===================== */}
-
                   <li
                     className="my-coins"
                     onClick={() => {
                       setShowCoins((prev) => !prev);
                       setShowProfile(false);
+                      e.stopPropagation();
                     }}
                   >
                     <CiWallet />
@@ -208,7 +259,7 @@ const HeaderInner = () => {
                           <h4>Room Coins</h4>
                         </div>
 
-                        <span className="coin-value">0.00</span>
+                        <span className="coin-value">{roomCoins}</span>
                       </div>
 
                       <div className="coin-item">
@@ -218,20 +269,17 @@ const HeaderInner = () => {
                           <h4>Trip Coins</h4>
                         </div>
 
-                        <span className="coin-value">0</span>
+                        <span className="coin-value">{tripCoins}</span>
                       </div>
                     </div>
                   )}
-
-                  {/* ===================== */}
-                  {/* PROFILE */}
-                  {/* ===================== */}
 
                   <li
                     className="my-coins"
                     onClick={() => {
                       setShowProfile((prev) => !prev);
                       setShowCoins(false);
+                      e.stopPropagation();
                     }}
                   >
                     <CiUser />

@@ -14,10 +14,7 @@ import {
   FaChevronRight,
   FaRegSadTear,
 } from "react-icons/fa";
-import {
-  hotelBookingInfo,
-  hotelUpcomingOrder,
-} from "../../store/Services/AllApi";
+import { carOrders, hotelUpcomingOrder } from "../../store/Services/AllApi";
 import { useNavigate } from "react-router-dom";
 
 const sidebarItems = [
@@ -32,16 +29,6 @@ const sidebarItems = [
     icon: <FaPlane />,
   },
   {
-    id: "activities",
-    title: "Activities",
-    icon: <FaUmbrellaBeach />,
-  },
-  {
-    id: "cruises",
-    title: "Cruises",
-    icon: <FaShip />,
-  },
-  {
     id: "cars",
     title: "Car Rentals",
     icon: <FaCar />,
@@ -49,7 +36,17 @@ const sidebarItems = [
   {
     id: "activities",
     title: "Activities",
+    icon: <FaUmbrellaBeach />,
+  },
+  {
+    id: "buses",
+    title: "Bus",
     icon: <FaBus />,
+  },
+  {
+    id: "cruises",
+    title: "Cruises",
+    icon: <FaShip />,
   },
   {
     id: "tickets",
@@ -67,14 +64,16 @@ const MyBookings = () => {
   const [collapse, setCollapse] = useState(false);
   const [upcomingBookings, setUpcomingBookings] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const [carBookings, setCarBookings] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
 
   const PAGE_LIMIT = 10;
 
-  const filteredBookings = upcomingBookings.filter(
+  const allBookings = [...upcomingBookings, ...carBookings];
+
+  const filteredBookings = allBookings.filter(
     (item) => item.type === activeMenu && item.status === activeTab,
   );
 
@@ -164,6 +163,196 @@ const MyBookings = () => {
     sessionStorage.setItem("hotelBookingStatus", booking.status);
 
     navigate(`/hotel-booking-details?id=${encodeURIComponent(booking.id)}`);
+  };
+
+  useEffect(() => {
+    const fetchCarInfo = async () => {
+      if (activeMenu !== "cars") return;
+      setLoading(true);
+      try {
+        const res = await carOrders({
+          body: {
+            memberid: localStorage.getItem("bookingId"),
+            status:
+              activeTab === "Upcoming"
+                ? "UPCOMING"
+                : activeTab === "Cancelled"
+                  ? "CANCELLED"
+                  : "COMPLETED",
+            travelDate: {
+              start: "2026-09-01",
+              end: "2028-12-30",
+            },
+            limit: PAGE_LIMIT,
+            offset: currentPage * PAGE_LIMIT,
+            supplierid: 0,
+          },
+        });
+
+        console.log("carOrders Response:", res);
+
+        const orders = res?.orders || [];
+
+        const mappedCarBookings = orders.map((order) => {
+          const carData =
+            order?.booking_data?.revalidate ||
+            order?.booking_data?.data?.revalidate?.result ||
+            {};
+
+          const car = carData?.car || {};
+          const pickup = carData?.pickup || {};
+          const dropoff = carData?.dropoff || {};
+          const partner = carData?.partner || {};
+          const price = carData?.price || {};
+
+          const carName =
+            car?.name ||
+            order?.car_name ||
+            order?.property_name ||
+            "Car Rental";
+
+          const carDescription = car?.description || order?.car_name_type || "";
+
+          const carImage = car?.heroImage || order?.image || dummy;
+
+          const pickupLocation =
+            pickup?.name || pickup?.address || order?.pickuplocation || "";
+
+          const pickupCity = pickup?.city || "";
+
+          const dropoffLocation =
+            dropoff?.name || dropoff?.address || order?.dropofflocation || "";
+
+          const dropoffCity = dropoff?.city || "";
+
+          const partnerName = partner?.name || order?.partner || "";
+
+          const partnerLogo = partner?.logo || "";
+
+          const bookingStatus =
+            order?.booking_status ||
+            order?.bookingStatus ||
+            order?.orderstatus ||
+            carData?.booking_Status ||
+            "";
+
+          let status = "Upcoming";
+
+          if (
+            activeTab === "Cancelled" ||
+            bookingStatus === "CANCELLED" ||
+            bookingStatus === "CANCELED"
+          ) {
+            status = "Cancelled";
+          } else if (
+            activeTab === "Completed" ||
+            bookingStatus === "COMPLETED"
+          ) {
+            status = "Completed";
+          }
+
+          const totalPrice =
+            price?.total ??
+            price?.ourprice ??
+            order?.total ??
+            order?.our_price ??
+            0;
+
+          return {
+            id: order?.orderid,
+
+            type: "cars",
+            status,
+
+            carName,
+            carDescription,
+            carImage,
+
+            partnerName,
+            partnerLogo,
+
+            pickupLocation,
+            pickupCity,
+            pickupDate: pickup?.date || order?.start_date || "",
+
+            pickupTime: pickup?.time || order?.start_time || "",
+
+            pickupTimeText: pickup?.time_text || "",
+
+            dropoffLocation,
+            dropoffCity,
+            dropoffDate: dropoff?.date || order?.end_date || "",
+
+            dropoffTime: dropoff?.time || order?.end_time || "",
+
+            dropoffTimeText: dropoff?.time_text || "",
+
+            confirmationNumber:
+              order?.confirmation_number ||
+              order?.confirmationNumber ||
+              carData?.confirmationNumber ||
+              order?.orderid ||
+              "",
+
+            bookingStatus,
+
+            amount: `${price?.currency || order?.currencysymbol || order?.currency || "$"}${Number(
+              totalPrice,
+            ).toFixed(2)}`,
+
+            currency: price?.currency || order?.currency || "USD",
+
+            passengers: car?.passengers || order?.seats || 0,
+
+            bags: car?.bags || order?.bags || 0,
+
+            doors: car?.doors || "",
+
+            mileage: car?.mileage || "",
+
+            hasAC: car?.hasAC || false,
+
+            hasAMT: car?.hasAMT || false,
+
+            cancellable:
+              carData?.allowCancellation === true ||
+              carData?.is_cancellation_allowed === true ||
+              order?.cancellable === true,
+
+            cancellationMethod: carData?.cancellation_method || "",
+          };
+        });
+
+        setCarBookings(mappedCarBookings);
+
+        const totalCount = Number(res?.count || 0);
+        const calculatedTotalPages = Math.ceil(totalCount / PAGE_LIMIT);
+
+        setTotalPages(calculatedTotalPages || 1);
+        setHasNextPage(currentPage < calculatedTotalPages - 1);
+      } catch (error) {
+        console.error("CAR INFO ERROR:", error);
+        setCarBookings([]);
+        setHasNextPage(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCarInfo();
+  }, [activeMenu, activeTab, currentPage]);
+
+  const handleCarBookingClick = (booking) => {
+    if (!booking?.id) return;
+
+    sessionStorage.setItem(
+      "carBookingCancellable",
+      JSON.stringify(booking.cancellable),
+    );
+
+    sessionStorage.setItem("carBookingStatus", booking.status);
+
+    navigate(`/car-booking-details?orderid=${encodeURIComponent(booking.id)}`);
   };
 
   useEffect(() => {
@@ -270,49 +459,185 @@ const MyBookings = () => {
 
             {filteredBookings.length > 0 ? (
               <div className="voyage-booking-list">
-                {filteredBookings.map((booking) => (
-                  <div
-                    className="voyage-booking-card"
-                    key={booking.id}
-                    onClick={() => handleParticularBookingClick(booking)}
-                  >
-                    <div className="voyage-booking-image">
-                      <img
-                        src={booking.image || dummy}
-                        alt={booking.hotelName}
-                      />
+                {filteredBookings.map((booking) =>
+                  booking.type === "cars" ? (
+                    <div
+                      className="car-upcoming-booking-card"
+                      key={booking.id}
+                      onClick={() => handleCarBookingClick(booking)}
+                    >
+                      <div className="car-upcoming-booking-image-wrapper">
+                        <img
+                          className="car-upcoming-booking-image"
+                          src={booking.carImage || dummy}
+                          alt={booking.carName}
+                        />
 
-                      <span className="voyage-booking-status">
-                        {booking.status}
-                      </span>
+                        <span className="car-upcoming-booking-status">
+                          {booking.status}
+                        </span>
+                      </div>
+
+                      <div className="car-upcoming-booking-content">
+                        <div className="car-upcoming-booking-header">
+                          <div>
+                            <h3 className="car-upcoming-booking-title">
+                              {booking.carName}
+                            </h3>
+
+                            <p className="car-upcoming-booking-description">
+                              {booking.carDescription}
+                            </p>
+                          </div>
+
+                          {booking.partnerLogo && (
+                            <img
+                              className="car-upcoming-booking-partner-logo"
+                              src={booking.partnerLogo}
+                              alt={booking.partnerName}
+                            />
+                          )}
+                        </div>
+
+                        <div className="car-upcoming-booking-info-grid">
+                          <div className="car-upcoming-booking-info-item">
+                            <span className="car-upcoming-booking-label">
+                              Pick Up
+                            </span>
+
+                            <strong className="car-upcoming-booking-value">
+                              {booking.pickupLocation}
+                            </strong>
+
+                            <small className="car-upcoming-booking-location">
+                              {booking.pickupCity}
+                            </small>
+
+                            <small className="car-upcoming-booking-date">
+                              {booking.pickupTimeText ||
+                                `${booking.pickupDate} ${booking.pickupTime}`}
+                            </small>
+                          </div>
+
+                          <div className="car-upcoming-booking-info-item">
+                            <span className="car-upcoming-booking-label">
+                              Drop Off
+                            </span>
+
+                            <strong className="car-upcoming-booking-value">
+                              {booking.dropoffLocation}
+                            </strong>
+
+                            <small className="car-upcoming-booking-location">
+                              {booking.dropoffCity}
+                            </small>
+
+                            <small className="car-upcoming-booking-date">
+                              {booking.dropoffTimeText ||
+                                `${booking.dropoffDate} ${booking.dropoffTime}`}
+                            </small>
+                          </div>
+
+                          <div className="car-upcoming-booking-info-item">
+                            <span className="car-upcoming-booking-label">
+                              Confirmation
+                            </span>
+
+                            <strong className="car-upcoming-booking-value">
+                              {booking.confirmationNumber}
+                            </strong>
+                          </div>
+
+                          <div className="car-upcoming-booking-info-item">
+                            <span className="car-upcoming-booking-label">
+                              Car Details
+                            </span>
+
+                            <div className="car-upcoming-booking-features">
+                              <span>{booking.passengers} Passengers</span>
+
+                              <span>{booking.bags} Bags</span>
+
+                              <span>{booking.doors} Doors</span>
+
+                              {booking.mileage && (
+                                <span>{booking.mileage}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="car-upcoming-booking-footer">
+                          <div className="car-upcoming-booking-feature-tags">
+                            {booking.hasAC && (
+                              <span className="car-upcoming-booking-feature-tag">
+                                AC
+                              </span>
+                            )}
+
+                            {booking.hasAMT && (
+                              <span className="car-upcoming-booking-feature-tag">
+                                Automatic
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="car-upcoming-booking-price">
+                            <span className="car-upcoming-booking-price-label">
+                              Total
+                            </span>
+
+                            <strong className="car-upcoming-booking-price-value">
+                              {booking.amount}
+                            </strong>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                  ) : (
+                    <div
+                      className="voyage-booking-card"
+                      key={booking.id}
+                      onClick={() => handleParticularBookingClick(booking)}
+                    >
+                      <div className="voyage-booking-image">
+                        <img
+                          src={booking.image || dummy}
+                          alt={booking.hotelName}
+                        />
 
-                    <div className="voyage-booking-body">
-                      <h3>{booking.hotelName}</h3>
-
-                      <p>{booking.city}</p>
-
-                      <div className="voyage-booking-row">
-                        <span>Check In</span>
-                        <strong>{booking.checkIn}</strong>
+                        <span className="voyage-booking-status">
+                          {booking.status}
+                        </span>
                       </div>
 
-                      <div className="voyage-booking-row">
-                        <span>Check Out</span>
-                        <strong>{booking.checkOut}</strong>
-                      </div>
+                      <div className="voyage-booking-body">
+                        <h3>{booking.hotelName}</h3>
 
-                      <div className="voyage-booking-row">
-                        <span>Guests</span>
-                        <strong>{booking.guests}</strong>
-                      </div>
+                        <p>{booking.city}</p>
 
-                      <div className="voyage-booking-footer">
-                        <h2>{booking.amount}</h2>
+                        <div className="voyage-booking-row">
+                          <span>Check In</span>
+                          <strong>{booking.checkIn}</strong>
+                        </div>
+
+                        <div className="voyage-booking-row">
+                          <span>Check Out</span>
+                          <strong>{booking.checkOut}</strong>
+                        </div>
+
+                        <div className="voyage-booking-row">
+                          <span>Guests</span>
+                          <strong>{booking.guests}</strong>
+                        </div>
+
+                        <div className="voyage-booking-footer">
+                          <h2>{booking.amount}</h2>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ),
+                )}
               </div>
             ) : (
               <div className="voyage-empty-wrapper">

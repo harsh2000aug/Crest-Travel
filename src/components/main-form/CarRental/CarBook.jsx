@@ -214,6 +214,7 @@ const CarBook = () => {
   const [bookingDataBase64, setBookingDataBase64] = useState("");
   const [loading, setLoading] = useState(false);
   const [validateResponse, setValidateResponse] = useState([]);
+  const [revalidatedFareCode, setRevalidatedFareCode] = useState("");
   const navigate = useNavigate();
 
   const {
@@ -329,18 +330,43 @@ const CarBook = () => {
 
   const handleRevalidation = async (farecode) => {
     setLoading(true);
+
     try {
       const res = await carRevalidate({
         body: {
           fareCode: farecode,
         },
       });
+
+      console.log("CAR REVALIDATE RESPONSE", res);
+
       const responseString = JSON.stringify(res);
       const base64Response = btoa(unescape(encodeURIComponent(responseString)));
+
       setBookingDataBase64(base64Response);
-      setValidateResponse(res?.data?.revalidate?.result);
+
+      const revalidateResult = res?.data?.revalidate?.result;
+
+      setValidateResponse(revalidateResult || {});
+
+      const newFareCode =
+        revalidateResult?.fareCode ||
+        revalidateResult?.farecode ||
+        res?.data?.revalidate?.fareCode ||
+        res?.data?.revalidate?.farecode ||
+        "";
+
+      console.log("REVALIDATED FARE CODE", newFareCode);
+
+      if (!newFareCode) {
+        throw new Error("FareCode was not received from revalidate API");
+      }
+
+      setRevalidatedFareCode(newFareCode);
+
+      sessionStorage.setItem("carRevalidatedFareCode", String(newFareCode));
     } catch (error) {
-      console.log(error);
+      console.log("REVALIDATION ERROR", error);
     } finally {
       setLoading(false);
     }
@@ -359,8 +385,8 @@ const CarBook = () => {
       const paymentPayload = {
         input: {
           orderid: orderId,
-          success: `https://it.alphatravelclub.link/car/${orderId}/paymentSuccessful`,
-          fail: `https://it.alphatravelclub.link/car/${orderId}/bookingFailed`,
+          success: `${window.location.origin}/car-payment?payment=success`,
+          fail: `${window.location.origin}/car-payment?payment=failed`,
           mode: "CARD",
           paymentRemaining: Number(paymentRemaining || 0),
           identity: {
@@ -390,10 +416,56 @@ const CarBook = () => {
       console.log("FINAL PAYMENT RESPONSE", paymentResponse);
 
       const paymentResult = paymentResponse?.data?.paynow?.result;
-
       const paymentUrl = paymentResult?.url;
 
       if (paymentResult?.succeed && paymentUrl) {
+        sessionStorage.setItem("carPaymentOrderId", String(orderId));
+        sessionStorage.setItem(
+          "carPaymentFareCode",
+          String(
+            revalidatedFareCode ||
+              sessionStorage.getItem("carRevalidatedFareCode") ||
+              "",
+          ),
+        );
+
+        const fareCode = revalidatedFareCode;
+
+        const carPaymentData = {
+          orderId: orderId,
+          fareCode: fareCode,
+          firstName: data?.firstName || "",
+          lastName: data?.lastName || "",
+          email: data?.email || "",
+          phone: data?.phone || "",
+          country: data?.country || "",
+          city: data?.city || "",
+          state: data?.state || "",
+          postalCode: data?.postalCode || "",
+          driverFirstName: data?.firstName || "",
+          driverLastName: data?.lastName || "",
+          cardrequired: true,
+          specialRequest: [],
+          identity: {
+            firstname: data?.firstName || "",
+            lastname: data?.lastName || "",
+            type: "VI",
+            number: data?.cardNumber,
+            em: expiryMonth || "",
+            ey: expiryYear || "",
+            line1: data?.address || "",
+            city: data?.city || "",
+            state: data?.state || "",
+            country: data?.country || "",
+            postalCode: data?.postalCode || "",
+          },
+        };
+
+        sessionStorage.setItem(
+          "carPaymentData",
+          JSON.stringify(carPaymentData),
+        );
+
         window.location.href = paymentUrl;
         return;
       }

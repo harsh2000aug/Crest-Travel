@@ -9,7 +9,6 @@ import {
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
 import {
-  memberCancel,
   memberTripCoins,
   newMemberDetails,
   updateDetails,
@@ -43,49 +42,40 @@ const ProfileDetails = () => {
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const getTripCoins = async (memberDetails) => {
+  const getMemberCoins = async (memberDetails) => {
     try {
       const email = memberDetails?.email || localStorage.getItem("Email");
 
-      const programid = memberDetails?.tierid;
-
-      if (!email || !programid) {
-        console.log("Trip coins API skipped:", {
-          email,
-          programid,
-        });
+      if (!email) {
+        console.log("Member coins API skipped:", { email });
         return;
       }
 
-      console.log("Trip coins request:", {
-        email,
-        programid,
-      });
+      const [tripRes, roomRes] = await Promise.all([
+        memberTripCoins({
+          body: {
+            email,
+            type: "trip",
+          },
+        }),
+        memberTripCoins({
+          body: {
+            email,
+            type: "room",
+          },
+        }),
+      ]);
 
-      const res = await memberTripCoins({
-        body: {
-          email,
-          programid: 420306,
-        },
-      });
+      const tripCoinsValue = tripRes?.data?.balance?.result?.balance ?? 0;
 
-      console.log("Trip coins response:", res);
-
-      const tripCoinsValue =
-        res?.data?.get?.result?.tripCoins ??
-        res?.data?.get?.result?.tripcoins ??
-        res?.data?.result?.tripCoins ??
-        res?.data?.result?.tripcoins ??
-        res?.data?.tripCoins ??
-        res?.data?.tripcoins ??
-        res?.tripCoins ??
-        res?.tripcoins ??
-        0;
+      const roomCoinsValue = roomRes?.data?.balance?.result?.balance ?? 0;
 
       setTripCoins(tripCoinsValue);
+      setRoomCoins(roomCoinsValue);
     } catch (error) {
-      console.error("Trip coins error:", error);
+      console.error("Member coins error:", error);
       setTripCoins(0);
+      setRoomCoins(0);
     }
   };
 
@@ -125,24 +115,12 @@ const ProfileDetails = () => {
           localStorage.setItem("programid", String(memberDetails.tierid));
         }
 
-        await getTripCoins(memberDetails);
+        await getMemberCoins(memberDetails);
       }
     } catch (error) {
       console.error("Error fetching member details:", error);
     }
   };
-
-  // const fetchPlans = async () => {
-  //   try {
-  //     const res = await memberPlans({});
-  //     const plans = res?.data || [];
-
-  //     setMemberPlan(Array.isArray(plans) ? plans : []);
-  //   } catch (error) {
-  //     console.error("Error fetching membership plans:", error);
-  //     setMemberPlan([]);
-  //   }
-  // };
 
   useEffect(() => {
     const initializeProfile = async () => {
@@ -173,38 +151,11 @@ const ProfileDetails = () => {
     });
   };
 
-  // const handleCancelMembership = async () => {
-  //   setLoading(true);
-
-  //   try {
-  //     const response = await memberCancel({
-  //       body: {
-  //         reason: "",
-  //       },
-  //     });
-
-  //     if (response?.success) {
-  //       toast.success(response?.message || "Membership cancelled");
-  //       setShowCancelPopup(false);
-
-  //       await fetchMemberDetails();
-  //       await fetchPlans();
-  //     } else {
-  //       toast.error(response?.message || "Unable to cancel membership");
-  //     }
-  //   } catch (error) {
-  //     console.error("Cancel membership error:", error);
-  //     toast.error("Something went wrong");
-  //   } finally {
-  //     setLoading(false);
-  //   }
+  // const handleEditProfile = () => {
+  //   setFirstName(personDetails?.firstname || "");
+  //   setLastName(personDetails?.lastname || "");
+  //   setShowEditProfilePopup(true);
   // };
-
-  const handleEditProfile = () => {
-    setFirstName(personDetails?.firstname || "");
-    setLastName(personDetails?.lastname || "");
-    setShowEditProfilePopup(true);
-  };
 
   const handleProfileUpdate = async () => {
     setLoading(true);
@@ -263,7 +214,7 @@ const ProfileDetails = () => {
             );
           }
 
-          await getTripCoins(updatedPersonDetails);
+          await getMemberCoins(updatedPersonDetails);
         } else {
           const updatedPersonDetails = {
             ...personDetails,
@@ -290,8 +241,6 @@ const ProfileDetails = () => {
       setLoading(false);
     }
   };
-
-  console.log("personDetails:", personDetails);
 
   return (
     <>

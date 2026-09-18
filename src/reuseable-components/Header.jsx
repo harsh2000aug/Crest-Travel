@@ -363,20 +363,13 @@ const Header = ({ personDetails }) => {
 
     const loadBlogSEO = async () => {
       try {
-        console.log("SEO: Loading blog data...");
-
         const pathname = location.pathname;
 
-        console.log("SEO pathname:", pathname);
-
         if (!pathname.startsWith("/blogs/")) {
-          console.log("SEO: Not a blog detail page");
           return;
         }
 
         const blogSlug = pathname.split("/blogs/")[1];
-
-        console.log("SEO blog slug:", blogSlug);
 
         if (!blogSlug) {
           return;

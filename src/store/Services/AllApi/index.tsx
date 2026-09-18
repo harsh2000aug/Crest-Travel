@@ -191,6 +191,26 @@ export const carPayment = ({ body }: any) =>
     uriEndPoint: allApi.carPayment.v1,
     body,
   });
+export const carBook = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.carBook.v1,
+    body,
+  });
+export const carOrders = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.carOrders.v1,
+    body,
+  });
+export const carOrdersInfo = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.carOrdersInfo.v1,
+    body,
+  });
+export const carOrdersCancel = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.carOrdersCancel.v1,
+    body,
+  });
 export const activityLocations = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.activityLocations.v1,
@@ -332,4 +352,8 @@ export const hotelUpcomingOrder = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.hotelUpcomingOrder.v1,
     body,
+  });
+export const phoneNumberAndMail = () =>
+  callApi({
+    uriEndPoint: allApi.phoneNumberAndMail.v1,
   });
