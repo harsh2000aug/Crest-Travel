@@ -608,7 +608,7 @@ const ActivityArea = () => {
           <h4 className="activityArea__filterTitle">Price</h4>
 
           <div className="activityArea__rangeWrapper">
-            <span>Min</span>
+            <span>Min ${selectedPrice.min}</span>
 
             <input
               type="range"
@@ -619,7 +619,7 @@ const ActivityArea = () => {
               className="activityArea__rangeInput"
             />
 
-            <span>Max</span>
+            <span>Max ${selectedPrice.max}</span>
 
             <input
               type="range"

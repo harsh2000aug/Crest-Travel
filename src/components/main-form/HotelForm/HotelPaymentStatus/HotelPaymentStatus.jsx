@@ -88,7 +88,8 @@ const HotelPaymentStatus = () => {
 
         const bookingInfo = JSON.parse(savedBookingInfo);
 
-        const { hotelId, roomId, rateid, ourprice } = bookingInfo;
+        const { hotelId, roomId, rateid, appliedCredit, paymentRemaining } =
+          bookingInfo;
 
         console.log("PAYMENT STATUS DATA:", {
           itemId,
@@ -172,7 +173,11 @@ const HotelPaymentStatus = () => {
 
           hotelId: hotelId,
 
-          ourprice: ourprice,
+          ourprice: paymentRemaining,
+
+          paymentRemaining: paymentRemaining,
+
+          roomcoins: appliedCredit,
 
           rooms: [
             {
@@ -280,6 +285,12 @@ const HotelPaymentStatus = () => {
             email: bookingData.email || "",
           },
         };
+
+        console.log("HOTEL BOOKING VALUES:", {
+          appliedCredit,
+          paymentRemaining,
+          ourprice: paymentRemaining,
+        });
 
         console.log(
           "FINAL HOTEL BOOKING PAYLOAD:",

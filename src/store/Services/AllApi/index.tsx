@@ -251,6 +251,11 @@ export const activityOrderPlace = ({ body }: any) =>
     uriEndPoint: allApi.activityOrderPlace.v1,
     body,
   });
+export const activityBook = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityBook.v1,
+    body,
+  });
 export const forgotPasswordChange = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.forgotPasswordChange.v1,

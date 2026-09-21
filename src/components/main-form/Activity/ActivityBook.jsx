@@ -267,8 +267,8 @@ const ActivityBook = () => {
       const response = await activityOrderPlace({
         body: {
           orderid: orderId,
-          success: "https://ent.alphatravelclub.link/payRedirect",
-          fail: "https://ent.alphatravelclub.link/payRedirect",
+          success: `${window.location.origin}/payment-redirect?status=success`,
+          fail: `${window.location.origin}/payment-redirect?status=fail`,
           mode: "CARD",
           paymentRemaining,
           identity: {
@@ -303,6 +303,56 @@ const ActivityBook = () => {
         response?.data?.paynow?.result?.succeed &&
         paymentUrl
       ) {
+        const paymentRedirectData = {
+          bookingDate: latestBookingData.startDate || "",
+          activityCode: latestBookingData.activityCode || "",
+          gradeCode:
+            latestBookingData.gradeCode ||
+            latestBookingData.grade?.gradeCode ||
+            latestBookingData.grade_code ||
+            "",
+
+          orderId:
+            response?.data?.paynow?.result?.orderId ||
+            response?.data?.paynow?.result?.paymentIntentId ||
+            orderId,
+
+          startTime: latestBookingData.startTime || "",
+
+          primaryTraveller: {
+            firstName: primaryTraveler.firstName || "",
+            type: primaryTraveler.ageBand || "Adult",
+            title: primaryTraveler.title || "",
+            lastName: primaryTraveler.lastName || "",
+            email: primaryTraveler.email || "",
+            contactNo: primaryTraveler.phone || "",
+          },
+
+          ageBandCount: (formData.travelers || []).reduce((acc, traveler) => {
+            const ageBand = traveler.ageBand || traveler.type;
+
+            if (ageBand) {
+              acc[ageBand] = (acc[ageBand] || 0) + 1;
+            }
+
+            return acc;
+          }, {}),
+
+          bookingQuestionAnswers:
+            latestBookingData.bookingQuestionAnswers || [],
+
+          languageGuide: latestBookingData.languageGuide || {
+            type: "GUIDE",
+            language: "en",
+            legacyGuide: "en/SERVICE_GUIDE",
+          },
+        };
+
+        sessionStorage.setItem(
+          "activityPaymentRedirectData",
+          JSON.stringify(paymentRedirectData),
+        );
+
         window.location.href = paymentUrl;
         return;
       }

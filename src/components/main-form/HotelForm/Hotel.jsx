@@ -117,6 +117,8 @@ const Hotel = () => {
   const [countdown, setCountdown] = useState(5);
   const [showFailurePopup, setShowFailurePopup] = useState(false);
   const [showBookingErrorPopup, setShowBookingErrorPopup] = useState(false);
+  const [showApiFailPopup, setShowApiFailPopup] = useState(false);
+  const [apiFailMessage, setApiFailMessage] = useState("");
   const [bookingErrorMessage, setBookingErrorMessage] = useState("");
   const [bookingCompleted, setBookingCompleted] = useState(false);
   const [cancellationPolicy, setCancellationPolicy] = useState([]);
@@ -264,7 +266,11 @@ const Hotel = () => {
 
         hotelId: hotelId,
 
-        ourprice: ourprice_before_credit,
+        ourprice: finalHotelPrice,
+
+        paymentRemaining: finalHotelPrice,
+
+        roomcoins: appliedCredit,
 
         rooms: [
           {
@@ -392,52 +398,30 @@ const Hotel = () => {
 
       const paymentPayload = {
         hotelId: hotelId,
-
         correlationId,
-
-        paymentRemaining: ourprice_before_credit,
-
+        paymentRemaining: finalHotelPrice,
+        roomcoins: appliedCredit,
         recommendationId: recommendationId,
-
         token: token,
-
         start_date: checkIn,
-
         end_date: checkOut,
-
         success: `${window.location.origin}/hotel-payment?payment=success`,
-
         fail: `${window.location.origin}/hotel-payment?payment=failed`,
-
         mode: "CARD",
-
         identity: {
           number: encodeBase64(cardNumber),
-
           name: data.cardHolder || "",
-
           code: encodeBase64(data.cvv),
-
           type: getCardType(cardNumber),
-
           em: encodeBase64(expiryMonth),
-
           ey: encodeBase64(expiryYear),
-
           line1: data.address1 || "",
-
           line2: data.address2 || "",
-
           country: data.country || "",
-
           postalcode: data.zipCode || "",
-
           email: data.email || "",
-
           phone: `${leadGuest.countryCode || "+91"}${data.phone || ""}`,
-
           city: data.city || "",
-
           state: data.state || "",
         },
       };
@@ -471,6 +455,18 @@ const Hotel = () => {
 
         return;
       }
+
+      if (!paymentRes?.success) {
+        setHotelLoader(false);
+        setApiFailMessage(
+          paymentRes?.message || "Unable to process payment. Please try again.",
+        );
+        setShowApiFailPopup(true);
+
+        return;
+      }
+
+      setHotelLoader(false);
 
       if (!itemId) {
         console.error("itemId not received from PayNow:", paymentRes);
@@ -509,7 +505,8 @@ const Hotel = () => {
             hotelId,
             roomId: selectedRoom?.roomId || roomId,
             rateid: localStorage.getItem("rateid") || rateid,
-            ourprice: ourprice_before_credit,
+            appliedCredit: appliedCredit,
+            paymentRemaining: finalHotelPrice,
             correlationId,
             recommendationId,
             checkIn,
@@ -2121,6 +2118,29 @@ const Hotel = () => {
               onClick={() => setShowBookingErrorPopup(false)}
             >
               OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showApiFailPopup && (
+        <div className="booking-error-overlay">
+          <div className="booking-error-popup">
+            <div className="booking-error-info-icon">i</div>
+
+            <h2>Payment Failed</h2>
+
+            <p>{apiFailMessage}</p>
+
+            <button
+              type="button"
+              className="booking-error-ok-btn"
+              onClick={() => {
+                setShowApiFailPopup(false);
+                navigate(-1);
+              }}
+            >
+              Go Back
             </button>
           </div>
         </div>

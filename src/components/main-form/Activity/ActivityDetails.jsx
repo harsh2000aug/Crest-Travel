@@ -137,14 +137,14 @@ const ActivityDetails = () => {
   const [selectedTimes, setSelectedTimes] = useState({});
 
   const [participants, setParticipants] = useState({
-    adult: 2,
+    adult: 1,
     youth: 0,
     child: 0,
     infant: 0,
   });
 
   const [appliedParticipants, setAppliedParticipants] = useState({
-    adult: 2,
+    adult: 1,
     youth: 0,
     child: 0,
     infant: 0,
@@ -204,7 +204,11 @@ const ActivityDetails = () => {
     const nextParticipants = {};
 
     activityAgeBands.forEach((ageBand) => {
-      nextParticipants[ageBand.type] = ageBand.minTravelers;
+      if (ageBand.type === "adult") {
+        nextParticipants.adult = 1;
+      } else {
+        nextParticipants[ageBand.type] = 0;
+      }
     });
 
     setParticipants((previous) => ({
@@ -218,7 +222,11 @@ const ActivityDetails = () => {
     }));
   }, [activityAgeBands]);
 
-  const loadAvailability = async (date, participantState) => {
+  const loadAvailability = async (
+    date,
+    participantState,
+    ageBandsData = null,
+  ) => {
     if (!activityCode || !date) {
       return null;
     }
@@ -227,30 +235,31 @@ const ActivityDetails = () => {
     setAvailabilityError("");
 
     try {
-      const ageBands = (activityData?.pricingInfo?.ageBands || []).map(
-        (ageBand) => {
-          const band = String(ageBand?.ageBand || "").toUpperCase();
+      const sourceAgeBands =
+        ageBandsData || activityData?.pricingInfo?.ageBands || [];
 
-          let participantType = band.toLowerCase();
+      const ageBands = sourceAgeBands.map((ageBand) => {
+        const band = String(ageBand?.ageBand || "").toUpperCase();
 
-          if (band === "ADULT") {
-            participantType = "adult";
-          } else if (band === "YOUTH") {
-            participantType = "youth";
-          } else if (band === "CHILD") {
-            participantType = "child";
-          } else if (band === "INFANT") {
-            participantType = "infant";
-          } else if (band === "SENIOR") {
-            participantType = "senior";
-          }
+        let participantType = band.toLowerCase();
 
-          return {
-            ageBand: band,
-            numberOfTravelers: Number(participantState?.[participantType]) || 0,
-          };
-        },
-      );
+        if (band === "ADULT") {
+          participantType = "adult";
+        } else if (band === "YOUTH") {
+          participantType = "youth";
+        } else if (band === "CHILD") {
+          participantType = "child";
+        } else if (band === "INFANT") {
+          participantType = "infant";
+        } else if (band === "SENIOR") {
+          participantType = "senior";
+        }
+
+        return {
+          ageBand: band,
+          numberOfTravelers: Number(participantState?.[participantType]) || 0,
+        };
+      });
 
       const requestBody = {
         activityCode,
@@ -375,10 +384,10 @@ const ActivityDetails = () => {
 
         if (!active) return;
 
+        let initialActivityData = null;
+
         if (detailResult.status === "fulfilled") {
           const response = detailResult.value;
-
-          console.log("ACTIVITY DETAIL API DATA:", response?.data);
 
           const result =
             response?.data?.details?.result ||
@@ -390,6 +399,7 @@ const ActivityDetails = () => {
           console.log("ACTIVITY DETAIL EXTRACTED RESULT:", result);
 
           if (result && typeof result === "object") {
+            initialActivityData = result;
             setActivityData(result);
           } else {
             setActivityData(null);
@@ -463,8 +473,17 @@ const ActivityDetails = () => {
 
           setSelectedDate(initialDate);
 
-          if (initialDate) {
-            await loadAvailability(initialDate, appliedParticipants);
+          if (initialDate && initialActivityData) {
+            await loadAvailability(
+              initialDate,
+              {
+                adult: 1,
+                youth: 0,
+                child: 0,
+                infant: 0,
+              },
+              initialActivityData?.pricingInfo?.ageBands || [],
+            );
           }
         } else {
           console.error("ACTIVITY CALENDAR API FAILED:", calendarResult.reason);

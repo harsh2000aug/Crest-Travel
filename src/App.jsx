@@ -47,6 +47,7 @@ import HotelBookingsDetails from "./components/main-form/HotelForm/HotelBookings
 import FlightPaymentStatus from "./components/FlightResultPage/FlightPaymentStatus/FlightPaymentStatus";
 import CarPayment from "./components/main-form/CarRental/CarPayment/CarPayment";
 import CarBookingDetails from "./components/main-form/CarRental/CarBookingDetails/CarBookingDetails";
+import ActivityPayment from "./components/main-form/Activity/ActivityPayment/ActivityPayment";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -104,6 +105,7 @@ function App() {
         <Route path="/hotel-payment" element={<HotelPaymentStatus />} />
         <Route path="/flight-payment" element={<FlightPaymentStatus />} />
         <Route path="/car-payment" element={<CarPayment />} />
+        <Route path="/payment-redirect" element={<ActivityPayment />} />
 
         <Route element={<BlogProtectedRoutes />}>
           <Route path="/admin-dashboard" element={<AdminDash />} />

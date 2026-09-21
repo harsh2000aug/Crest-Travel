@@ -121,14 +121,14 @@ const Footer = () => {
 
           <a
             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-              `${mailAndPhone?.address?.line1 || ""}, ${
-                mailAndPhone?.address?.city || ""
-              }, ${mailAndPhone?.address?.postalCode || ""}`,
+              `${mailAndPhone?.address?.line1},
+              ${mailAndPhone?.address?.city}, 
+              ${mailAndPhone?.address?.postalCode}`,
             )}`}
             target="_blank"
             rel="noopener noreferrer"
           >
-            {mailAndPhone?.address?.line1}, {mailAndPhone?.address?.city}{" "}
+            {mailAndPhone?.address?.line1} <br /> {mailAndPhone?.address?.city}{" "}
             {mailAndPhone?.address?.postalCode}
           </a>
         </div>

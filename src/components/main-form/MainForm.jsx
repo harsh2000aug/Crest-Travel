@@ -10,6 +10,9 @@ import {
   LuCompass,
   LuTicket,
 } from "react-icons/lu";
+import { FaCar } from "react-icons/fa";
+import { MdKayaking } from "react-icons/md";
+
 import FlightForm from "./forms/FlightForm";
 import HotelForm from "./HotelForm/HotelForm";
 import HeaderInner from "../../reuseable-components/HeaderInner";
@@ -31,12 +34,12 @@ const MainForm = () => {
     {
       id: 3,
       label: "Car Rental",
-      icon: LuCar,
+      icon: FaCar,
     },
     {
       id: 4,
       label: "Activities",
-      icon: LuMap,
+      icon: MdKayaking,
     },
     {
       id: 5,

@@ -422,6 +422,13 @@ export const allApi = {
       uri: "/alphaactivity/pay-now",
     },
   },
+  activityBook: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/book",
+    },
+  },
   forgotPasswordChange: {
     v1: {
       ...defaults.methods.POST,
