@@ -171,6 +171,16 @@ export const flightTripDetail = ({ body }: any) =>
     uriEndPoint: allApi.flightTripDetail.v1,
     body,
   });
+export const upcomingFlight = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.upcomingFlight.v1,
+    body,
+  });
+export const upcomingFlightDetails = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.upcomingFlightDetails.v1,
+    body,
+  });
 export const carSearchLocation = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.carSearchLocation.v1,
