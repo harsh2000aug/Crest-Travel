@@ -290,6 +290,27 @@ export const allApi = {
       uri: "/alphaflight/book",
     },
   },
+  flightTripDetail: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaflight/trip-details",
+    },
+  },
+  upcomingFlight: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaflight/get-order-booking",
+    },
+  },
+  upcomingFlightDetails: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaflight/trip-details",
+    },
+  },
   carSearchLocation: {
     v1: {
       ...defaults.methods.POST,

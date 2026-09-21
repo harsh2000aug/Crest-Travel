@@ -47,7 +47,11 @@ import HotelBookingsDetails from "./components/main-form/HotelForm/HotelBookings
 import FlightPaymentStatus from "./components/FlightResultPage/FlightPaymentStatus/FlightPaymentStatus";
 import CarPayment from "./components/main-form/CarRental/CarPayment/CarPayment";
 import CarBookingDetails from "./components/main-form/CarRental/CarBookingDetails/CarBookingDetails";
+<<<<<<< HEAD
 import ActivityPayment from "./components/main-form/Activity/ActivityPayment/ActivityPayment";
+=======
+import FlightBookingDetails from "./components/FlightResultPage/FlightBookingDetails/FlightBookingDetails";
+>>>>>>> 239184561102ef6998d4740c046db98cb2163fda
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -141,6 +145,8 @@ function App() {
           <Route path="/hotel" element={<Hotel />} />
           <Route path="/flight-result" element={<FlightResultPage />} />
           <Route path="/flight-booking" element={<FlightBookingPage />} />
+          <Route path="/flight-bookingdet" element={<FlightBookingDetails />} />
+
           <Route path="/car-result" element={<CarResults />} />
           <Route path="/car-book" element={<CarBook />} />
           <Route path="/activities" element={<ActivityArea />} />
