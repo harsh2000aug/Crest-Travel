@@ -3737,3 +3737,126 @@ select.booking-input {
     font-size: 17px;
   }
 }
+
+.hotel-credit-card {
+  margin-top: 16px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.hotel-credit-balance {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #061d39;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.hotel-credit-balance-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #061d39;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.hotel-credit-limit-text {
+  margin-top: 12px;
+  color: #6d7278;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.hotel-credit-action-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.hotel-credit-input-wrapper {
+  position: relative;
+  width: 198px;
+}
+
+.hotel-credit-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 38px 0 14px;
+  border: 1px solid #d9d9d9;
+  border-radius: 7px;
+  outline: none;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.hotel-credit-input::-webkit-inner-spin-button,
+.hotel-credit-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.hotel-credit-input[type="number"] {
+  appearance: textfield;
+}
+
+.hotel-credit-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  background: #fff;
+  color: #777;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hotel-credit-applied-btn {
+  height: 38px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 7px;
+  background: #061d39;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.hotel-credit-applied-btn:hover {
+  background: #0b366b;
+}
+
+@media (max-width: 576px) {
+  .hotel-credit-action-row {
+    gap: 8px;
+  }
+
+  .hotel-credit-input-wrapper {
+    flex: 1;
+    width: auto;
+  }
+
+  .hotel-credit-applied-btn {
+    padding: 0 14px;
+  }
+}

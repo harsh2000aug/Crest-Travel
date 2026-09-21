@@ -761,7 +761,8 @@
 }
 
 .car-results-select-button:hover {
-  background: #0f56bf;
+  background: #dca648;
+  color: #000;
 }
 
 .car-results-agency-name {

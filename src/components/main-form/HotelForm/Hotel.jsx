@@ -72,6 +72,9 @@ const Hotel = () => {
 
   const heroImageMain = searchParams.get("heroUrl");
 
+  const credit = Number(searchParams.get("credit")) || 0;
+  const roomCoins = Number(localStorage.getItem("roomCoins")) || 0;
+
   useEffect(() => {
     if (correlationId) {
       localStorage.setItem("correlationId", correlationId);
@@ -122,6 +125,8 @@ const Hotel = () => {
   const [showRoomPolicy, setShowRoomPolicy] = useState(false);
   const [allGuestsInfoRequired, setAllGuestsInfoRequired] = useState(false);
   const [priceCheckResult, setPriceCheckResult] = useState([]);
+  const [creditInput, setCreditInput] = useState("");
+  const [appliedCredit, setAppliedCredit] = useState(0);
   const [loading, setLoading] = useState(false);
   const [leadGuest, setLeadGuest] = useState({
     title: "Mr",
@@ -959,6 +964,12 @@ const Hotel = () => {
       .replace(/\n{2,}/g, "\n")
       .trim();
   };
+
+  const roomCredit = Number(credit) || 0;
+
+  const maxUsableCredit = Math.min(roomCredit, roomCoins);
+
+  const finalHotelPrice = Math.max(ourprice_before_credit - appliedCredit, 0);
 
   useEffect(() => {
     window.scrollTo({
@@ -1999,12 +2010,86 @@ const Hotel = () => {
                   <span>- ${show_saving_before_credit.toFixed(2)}</span>
                 </div>
 
+                {appliedCredit > 0 && (
+                  <div className="price-row">
+                    <span>Room Credits</span>
+                    <span>- ${appliedCredit.toFixed(2)}</span>
+                  </div>
+                )}
+
                 <hr />
 
                 <div className="total-price">
                   <span>Total</span>
+                  <h2>${finalHotelPrice.toFixed(2)}</h2>
+                </div>
+              </div>
 
-                  <h2>${ourprice_before_credit.toFixed(2)}</h2>
+              {/* credits */}
+
+              <div className="hotel-credit-card">
+                <div className="hotel-credit-balance">
+                  <span className="hotel-credit-balance-icon">R</span>
+                  <span>Room Credits balance is: {roomCoins}</span>
+                </div>
+
+                <div className="hotel-credit-limit-text">
+                  Use up to {maxUsableCredit.toFixed(2)} Room Credits
+                </div>
+
+                <div className="hotel-credit-action-row">
+                  <div className="hotel-credit-input-wrapper">
+                    <input
+                      type="number"
+                      min="0"
+                      max={maxUsableCredit}
+                      step="0.01"
+                      value={creditInput}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        if (value === "") {
+                          setCreditInput("");
+                          return;
+                        }
+
+                        const numericValue = Number(value);
+
+                        if (numericValue <= maxUsableCredit) {
+                          setCreditInput(value);
+                        }
+                      }}
+                      placeholder="0"
+                      className="hotel-credit-input"
+                    />
+
+                    {creditInput && (
+                      <button
+                        type="button"
+                        className="hotel-credit-clear-btn"
+                        onClick={() => {
+                          setCreditInput("");
+                          setAppliedCredit(0);
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="hotel-credit-applied-btn"
+                    onClick={() => {
+                      const value = Number(creditInput);
+
+                      if (value > 0 && value <= maxUsableCredit) {
+                        setAppliedCredit(value);
+                      }
+                    }}
+                  >
+                    Apply
+                  </button>
                 </div>
               </div>
             </div>

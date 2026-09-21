@@ -1,0 +1,179 @@
+.car-payment-result-overlay {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.car-payment-result-popup {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 40px 35px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  animation: carPaymentPopupShow 0.3s ease;
+}
+
+@keyframes carPaymentPopupShow {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.car-payment-result-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  font-weight: 700;
+}
+
+.car-payment-success-icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.car-payment-failed-icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.car-payment-result-popup h2 {
+  margin: 0 0 12px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #172033;
+}
+
+.car-payment-result-popup p {
+  margin: 0 auto 25px;
+  max-width: 390px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #667085;
+}
+
+.car-payment-order-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 14px 16px;
+  margin-bottom: 25px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.car-payment-order-info span {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.car-payment-order-info strong {
+  font-size: 14px;
+  color: #172033;
+  word-break: break-all;
+}
+
+.car-payment-result-button {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 20px;
+  background: #172033;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.car-payment-result-button:hover {
+  opacity: 0.9;
+}
+
+.car-payment-loader-overlay {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.car-payment-loader-box {
+  text-align: center;
+  padding: 30px;
+}
+
+.car-payment-loader-spinner {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 20px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #172033;
+  border-radius: 50%;
+  animation: carPaymentLoaderSpin 0.8s linear infinite;
+}
+
+@keyframes carPaymentLoaderSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.car-payment-loader-box h3 {
+  margin: 0 0 8px;
+  font-size: 21px;
+  color: #172033;
+}
+
+.car-payment-loader-box p {
+  margin: 0;
+  color: #667085;
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .car-payment-result-overlay {
+    padding: 20px;
+  }
+
+  .car-payment-result-popup {
+    padding: 32px 22px;
+    border-radius: 15px;
+  }
+
+  .car-payment-result-popup h2 {
+    font-size: 23px;
+  }
+
+  .car-payment-result-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 32px;
+  }
+
+  .car-payment-order-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}

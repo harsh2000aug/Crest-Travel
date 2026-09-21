@@ -471,7 +471,7 @@ const HotelDetailPage = () => {
     const selectedRoom = {
       roomId: roomId,
       roomName: roomName,
-
+      credit: room?.credit != null ? Number(room.credit) : 0,
       recommendationId: room?.recommendationId || "",
       rateid: room?.rateid || "",
       publishedRate:
@@ -573,6 +573,7 @@ const HotelDetailPage = () => {
     params.set("heroUrl", roomImageUrl || "");
     params.set("roomId", roomId);
     params.set("roomName", roomName);
+    params.set("credit", String(room?.credit || 0));
     params.set(
       "publishedRate",
       room?.publishedRate != null ? String(room.publishedRate) : "0",

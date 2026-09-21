@@ -92,35 +92,45 @@ const MainForm = () => {
     <>
       <div className="main-booking">
         <HeaderInner />
-        <div className="container">
-          <section className="travel-section">
-            <div className="tabs-wrapper">
-              {categories.map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <button
-                    key={item.id}
-                    className={`tab-item ${
-                      activeTab === item.id ? "active" : ""
-                    }`}
-                    onClick={() => setActiveTab(item.id)}
-                  >
-                    <div className="icon-box">
-                      <Icon size={24} />
-                    </div>
-
-                    <span>{item.label}</span>
-
-                    {activeTab === item.id && (
-                      <div className="active-indicator"></div>
-                    )}
-                  </button>
-                );
-              })}
+        <div className="travel-section-modify">
+          <div className="container">
+            <div className="travel-content">
+              <h1>
+                Unlock <span>Extraordinary</span> Journeys
+              </h1>
+              <p>
+                Exclusive Travel Benefits. Curated Experiences. For a Better You
+              </p>
             </div>
-            <div className="tab-content">{renderForm()}</div>
-          </section>
+            <section className="travel-section">
+              <div className="tabs-wrapper">
+                {categories.map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <button
+                      key={item.id}
+                      className={`tab-item ${
+                        activeTab === item.id ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(item.id)}
+                    >
+                      <div className="icon-box">
+                        <Icon size={24} />
+                      </div>
+
+                      <span>{item.label}</span>
+
+                      {activeTab === item.id && (
+                        <div className="active-indicator"></div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="tab-content">{renderForm()}</div>
+            </section>
+          </div>
         </div>
       </div>
     </>

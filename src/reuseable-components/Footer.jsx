@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./header.css";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/images/foot-logo.png";
@@ -11,9 +11,23 @@ import {
   FaLinkedinIn,
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import { phoneNumberAndMail } from "../store/Services/AllApi";
 
 const Footer = () => {
   const location = useLocation();
+  const [mailAndPhone, setMailAndPhone] = useState();
+  useEffect(() => {
+    const numbersAndMail = async () => {
+      try {
+        const response = await phoneNumberAndMail();
+        setMailAndPhone(response?.data);
+      } catch (error) {}
+    };
+    numbersAndMail();
+  }, []);
+
+  const isLoggedIn = !!localStorage.getItem("accessToken");
+
   return (
     <footer className="luxFooter">
       <div className="luxFooter__container container">
@@ -84,14 +98,38 @@ const Footer = () => {
 
         <div className="luxFooter__column">
           <h4>CONTACT</h4>
-          <a href="mailto:contact@cresttravelclub.com">
-            contact@cresttravelclub.com
+
+          <a href={`mailto:${mailAndPhone?.email || ""}`}>
+            {mailAndPhone?.email}
           </a>
-          <a href="tel:+18883779065">+1 (888) 377-9065</a>
-          <a>
-            Trian Inc <br />
-            47 Eliot Street, NATICK, MA,
-            <br /> USA 01760
+
+          {isLoggedIn ? (
+            <>
+              <a href={`tel:${mailAndPhone?.before_phone_no || ""}`}>
+                {mailAndPhone?.before_phone_no}
+              </a>
+
+              <a href={`tel:${mailAndPhone?.after_phone_no || ""}`}>
+                {mailAndPhone?.after_phone_no}
+              </a>
+            </>
+          ) : (
+            <a href={`tel:${mailAndPhone?.before_phone_no || ""}`}>
+              {mailAndPhone?.before_phone_no}
+            </a>
+          )}
+
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+              `${mailAndPhone?.address?.line1 || ""}, ${
+                mailAndPhone?.address?.city || ""
+              }, ${mailAndPhone?.address?.postalCode || ""}`,
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {mailAndPhone?.address?.line1}, {mailAndPhone?.address?.city}{" "}
+            {mailAndPhone?.address?.postalCode}
           </a>
         </div>
       </div>

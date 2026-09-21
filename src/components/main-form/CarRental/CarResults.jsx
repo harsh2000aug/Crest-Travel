@@ -501,7 +501,22 @@ const CarResults = () => {
 
   const totalPages = Math.ceil(totalCars / carsPerPage);
   const paginatedCars = filteredCars;
-  console.log(paginatedCars);
+
+  const getPaginationPages = () => {
+    if (totalPages <= 3) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    if (currentPage <= 2) {
+      return [1, 2, "...", totalPages];
+    }
+
+    if (currentPage >= totalPages - 1) {
+      return [1, 2, "...", totalPages - 1, totalPages];
+    }
+
+    return [1, 2, "...", currentPage, "...", totalPages];
+  };
 
   const handlePageChange = (page) => {
     if (page < 1 || page > totalPages || page === currentPage) {
@@ -615,6 +630,13 @@ const CarResults = () => {
     console.log(bookingData);
     navigate("/car-book");
   };
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  });
 
   if (loading) {
     return (
@@ -1231,7 +1253,7 @@ const CarResults = () => {
                             className="car-results-select-button"
                             onClick={() => handleSelectCar(car)}
                           >
-                            Select Car
+                            Pay later
                           </button>
 
                           <span className="car-results-agency-name">
@@ -1256,21 +1278,27 @@ const CarResults = () => {
                   </button>
 
                   <div className="car-results-pagination-pages">
-                    {Array.from(
-                      { length: totalPages },
-                      (_, index) => index + 1,
-                    ).map((page) => (
-                      <button
-                        type="button"
-                        key={page}
-                        className={`car-results-pagination-page ${
-                          currentPage === page ? "active" : ""
-                        }`}
-                        onClick={() => handlePageChange(page)}
-                      >
-                        {page}
-                      </button>
-                    ))}
+                    {getPaginationPages().map((page, index) =>
+                      page === "..." ? (
+                        <span
+                          key={`dots-${index}`}
+                          className="car-results-pagination-dots"
+                        >
+                          ...
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          key={page}
+                          className={`car-results-pagination-page ${
+                            currentPage === page ? "active" : ""
+                          }`}
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </button>
+                      ),
+                    )}
                   </div>
 
                   <button

@@ -9,7 +9,30 @@
   min-height: 85vh;
 }
 
-.travel-section {
+.travel-content {
+  margin-bottom: 30px;
+  max-width: 800px;
+}
+
+.travel-content h1 {
+  font-size: 54px;
+  font-weight: 500;
+  line-height: 1.05;
+  color: #ffffffd9;
+}
+
+.travel-content h1 span {
+  color: #dca648;
+}
+
+.travel-content p {
+  color: #ffffffd9;
+  margin-top: 20px;
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+.travel-section-modify {
   padding: 50px 0;
 }
 
@@ -103,7 +126,7 @@
 }
 
 @media (max-width: 768px) {
-  .travel-section {
+  .travel-section-modify {
     padding: 0px;
     width: 100%;
   }
@@ -125,6 +148,9 @@
 
   .tab-item span {
     font-size: 12px;
+  }
+  .travel-content {
+    display: none;
   }
 }
 
