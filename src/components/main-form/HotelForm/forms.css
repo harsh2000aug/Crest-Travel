@@ -1390,7 +1390,7 @@
 
 .gallery-close {
   position: absolute;
-  top: -50px;
+  top: 0px;
   right: 0;
   width: 42px;
   height: 42px;

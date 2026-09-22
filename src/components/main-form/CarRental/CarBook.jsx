@@ -214,7 +214,6 @@ const CarBook = () => {
   const [bookingDataBase64, setBookingDataBase64] = useState("");
   const [loading, setLoading] = useState(false);
   const [validateResponse, setValidateResponse] = useState([]);
-  const [revalidatedFareCode, setRevalidatedFareCode] = useState("");
   const navigate = useNavigate();
 
   const {
@@ -348,23 +347,6 @@ const CarBook = () => {
       const revalidateResult = res?.data?.revalidate?.result;
 
       setValidateResponse(revalidateResult || {});
-
-      const newFareCode =
-        revalidateResult?.fareCode ||
-        revalidateResult?.farecode ||
-        res?.data?.revalidate?.fareCode ||
-        res?.data?.revalidate?.farecode ||
-        "";
-
-      console.log("REVALIDATED FARE CODE", newFareCode);
-
-      if (!newFareCode) {
-        throw new Error("FareCode was not received from revalidate API");
-      }
-
-      setRevalidatedFareCode(newFareCode);
-
-      sessionStorage.setItem("carRevalidatedFareCode", String(newFareCode));
     } catch (error) {
       console.log("REVALIDATION ERROR", error);
     } finally {
@@ -419,17 +401,9 @@ const CarBook = () => {
       const paymentUrl = paymentResult?.url;
 
       if (paymentResult?.succeed && paymentUrl) {
-        sessionStorage.setItem("carPaymentOrderId", String(orderId));
-        sessionStorage.setItem(
-          "carPaymentFareCode",
-          String(
-            revalidatedFareCode ||
-              sessionStorage.getItem("carRevalidatedFareCode") ||
-              "",
-          ),
-        );
+        const fareCode = bookingData?.car?.fareCode || "";
 
-        const fareCode = revalidatedFareCode;
+        sessionStorage.setItem("carPaymentFareCode", String(fareCode));
 
         const carPaymentData = {
           orderId: orderId,
@@ -450,7 +424,8 @@ const CarBook = () => {
             firstname: data?.firstName || "",
             lastname: data?.lastName || "",
             type: "VI",
-            number: data?.cardNumber,
+            number: String(data?.cardNumber || "").replace(/\s/g, ""),
+            code: data?.cvv || "",
             em: expiryMonth || "",
             ey: expiryYear || "",
             line1: data?.address || "",
@@ -503,10 +478,11 @@ const CarBook = () => {
           moduleid: 8472,
           supplierid: 4045,
           refundability: car?.refundability ?? response?.refundability ?? false,
-          cancellable: car?.cancellable ?? response?.cancellable ?? false,
           start_date: search?.pickupDate,
           end_date: search?.dropoffDate,
-          prepaid: car?.prepaid ?? response?.prepaid ?? false,
+          ...(car?.prepaid === true ? { prepaid: true } : {}),
+          cancellable:
+            car?.freeCancellation === true || car?.freeCancellation === "true",
           vehiclecode: car?.vehiclecode || car?.vehicleCode || car?.code || "",
           name: car?.name || car?.vehicleName || "",
           our_price: Number(
@@ -571,12 +547,10 @@ const CarBook = () => {
             driver_firstname: data?.firstName || "",
             driver_lastname: data?.lastName || "",
           },
-          image:
-            car?.image ||
-            car?.heroImage ||
-            "https://d15u1xbazig0vl.cloudfront.net/images/car/no_car.jpg",
+          image: car?.image || car?.heroImage,
           orderdate: new Date().toISOString(),
           booking_data: bookingDataBase64,
+          fareCode: car?.fareCode || "",
         },
       };
 
@@ -941,12 +915,28 @@ const CarBook = () => {
                       type="tel"
                       placeholder="Enter phone number"
                       inputMode="numeric"
+                      maxLength="15"
                       className={errors.phone ? "car-booking-input-error" : ""}
                       {...register("phone", {
                         required: "Phone number is required",
-                        pattern: {
-                          value: /^[0-9+\-\s()]{7,20}$/,
-                          message: "Please enter a valid phone number",
+                        validate: (value) => {
+                          const phone = value.replace(/\D/g, "");
+
+                          if (!/^\d{7,15}$/.test(phone)) {
+                            return "Please enter a valid phone number";
+                          }
+
+                          return true;
+                        },
+                        onChange: (event) => {
+                          const value = event.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 15);
+
+                          setValue("phone", value, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
                         },
                       })}
                     />
@@ -1088,14 +1078,29 @@ const CarBook = () => {
                       id="car-booking-postal-code"
                       type="text"
                       placeholder="Enter postal code"
+                      inputMode="numeric"
+                      maxLength="10"
                       className={
                         errors.postalCode ? "car-booking-input-error" : ""
                       }
                       {...register("postalCode", {
                         required: "Postal code is required",
-                        pattern: {
-                          value: /^[A-Za-z0-9\s-]{3,10}$/,
-                          message: "Please enter a valid postal code",
+                        validate: (value) => {
+                          if (!/^\d{3,10}$/.test(value)) {
+                            return "Please enter a valid postal code";
+                          }
+
+                          return true;
+                        },
+                        onChange: (event) => {
+                          const value = event.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 10);
+
+                          setValue("postalCode", value, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
                         },
                       })}
                     />
@@ -1285,9 +1290,22 @@ const CarBook = () => {
                       className={errors.cvv ? "car-booking-input-error" : ""}
                       {...register("cvv", {
                         required: "CVV is required",
-                        pattern: {
-                          value: /^\d{3,4}$/,
-                          message: "CVV must be 3 or 4 digits",
+                        validate: (value) => {
+                          if (!/^\d{3,4}$/.test(value)) {
+                            return "CVV must be 3 or 4 digits";
+                          }
+
+                          return true;
+                        },
+                        onChange: (event) => {
+                          const value = event.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 4);
+
+                          setValue("cvv", value, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
                         },
                       })}
                     />

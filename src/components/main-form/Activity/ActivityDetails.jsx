@@ -401,6 +401,27 @@ const ActivityDetails = () => {
           if (result && typeof result === "object") {
             initialActivityData = result;
             setActivityData(result);
+
+            const gradeLanguageData = Array.isArray(result?.bookableItems)
+              ? result.bookableItems.map((item) => ({
+                  gradeCode: item?.gradeCode || "",
+                  languageGuides: Array.isArray(item?.languageGuides)
+                    ? item.languageGuides.map((guide) => ({
+                        type: guide?.type || "",
+                        language: guide?.language || "",
+                        legacyGuide: guide?.legacyGuide || "",
+                        allowedAnswers: Array.isArray(guide?.allowedAnswers)
+                          ? guide.allowedAnswers
+                          : [],
+                      }))
+                    : [],
+                }))
+              : [];
+
+            sessionStorage.setItem(
+              "activityGradeLanguageData",
+              JSON.stringify(gradeLanguageData),
+            );
           } else {
             setActivityData(null);
             setError("Activity details not found.");
@@ -542,13 +563,6 @@ const ActivityDetails = () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, [participantsOpen, calendarOpen]);
-
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-    });
-  }, [activityCode]);
 
   const normalizedCalendarData = useMemo(() => {
     return calendarData
@@ -1012,7 +1026,17 @@ const ActivityDetails = () => {
 
   const handleBookNow = (item, detail, gradeKey) => {
     const price = detail?.totalPrice?.price || {};
+    const selectedLanguageGuides = Array.isArray(item?.languageGuides)
+      ? item.languageGuides.map((guide) => ({
+          type: guide?.type || "",
+          language: guide?.language || "",
+          legacyGuide: guide?.legacyGuide || "",
+        }))
+      : [];
 
+    const bookingQuestions = Array.isArray(activityData?.bookingQuestions)
+      ? activityData.bookingQuestions
+      : [];
     const selectedActivityData = {
       startDate: selectedDate || "",
       endDate: selectedDate || "",
@@ -1042,6 +1066,8 @@ const ActivityDetails = () => {
       duration: activityDuration || "",
       star_rating: displayRating || "",
       gradeCode: gradeKey || item?.gradeCode || "",
+      languageGuides: selectedLanguageGuides,
+      bookingQuestions,
     };
 
     const adultCount = Number(appliedParticipants?.adult) || 0;
@@ -1102,6 +1128,11 @@ const ActivityDetails = () => {
     sessionStorage.setItem(
       "activityBookingData",
       JSON.stringify(selectedActivityData),
+    );
+
+    sessionStorage.setItem(
+      "activityBookingQuestions",
+      JSON.stringify(bookingQuestions),
     );
 
     const params = new URLSearchParams({
@@ -1313,7 +1344,7 @@ const ActivityDetails = () => {
                                       <p>{item.description}</p>
                                     )}
 
-                                    {guideLanguages.length > 0 && (
+                                    {/* {guideLanguages.length > 0 && (
                                       <span className="activityDetailsUi__guide">
                                         Guide:{" "}
                                         {guideLanguages
@@ -1322,7 +1353,7 @@ const ActivityDetails = () => {
                                           )
                                           .join(", ")}
                                       </span>
-                                    )}
+                                    )} */}
 
                                     <div className="activityDetailsUi__timeSelect">
                                       <span className="activityDetailsUi__timeLabel">

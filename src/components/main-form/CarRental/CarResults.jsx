@@ -577,7 +577,14 @@ const CarResults = () => {
     };
   }, [mobilePopup]);
 
-  const handleSelectCar = (car) => {
+  const handleSelectCar = (car, paymentType) => {
+    const selectedPrice =
+      paymentType === "prepaid" ? car?.price_prepaid : car?.price_postpaid;
+
+    if (!selectedPrice) {
+      return;
+    }
+
     const bookingData = {
       car: {
         vehicleCode: car?.vehicle_code || "",
@@ -592,26 +599,39 @@ const CarResults = () => {
         hasAC: car?.hasAC || false,
         fuelType: car?.fuelType || "",
         transmission: getTransmission(car),
+
         partner: {
           code: car?.partner?.code || "",
           name: car?.partner?.name || "",
           logo: car?.partner?.logo || "",
         },
-        price: car?.price_postpaid?.total || car?.display_price || 0,
-        days: car?.price_postpaid?.days || 1,
-        mileage: car?.price_postpaid?.mileage || false,
-        freeCancellation: car?.price_postpaid?.free_cancellation || false,
+
+        paymentType,
+
+        prepaid: paymentType === "prepaid",
+
+        price: selectedPrice?.total || 0,
+        days: selectedPrice?.days || 1,
+        mileage: selectedPrice?.mileage || false,
+        freeCancellation: selectedPrice?.allow_cancellation ?? false,
+
+        fareCode: selectedPrice?.fareCode || "",
+
+        rateType: selectedPrice?.rateType || "",
+        payAtBooking: selectedPrice?.pay_at_booking || false,
+        allowCancellation: selectedPrice?.allow_cancellation || "",
+
         inclusions: car?.inclusions || [],
+
         pickup: {
           location: car?.pickup?.location || "",
           locationInformation: car?.pickup?.location_information || "",
         },
+
         dropoff: {
           location: car?.dropoff?.location || "",
           locationInformation: car?.dropoff?.location_information || "",
         },
-        fareCode:
-          car?.price_postpaid?.fareCode || car?.price_prepaid?.fareCode || "",
       },
 
       search: {
@@ -627,8 +647,11 @@ const CarResults = () => {
 
       currency,
     };
+
     sessionStorage.setItem("carBookingData", JSON.stringify(bookingData));
-    console.log(bookingData);
+
+    console.log("Selected Car Booking Data:", bookingData);
+
     navigate("/car-book");
   };
 
@@ -1217,9 +1240,12 @@ const CarResults = () => {
                           </div>
 
                           <div className="car-results-benefits-row">
-                            <span>✓ Pay Later</span>
+                            {car?.price_prepaid && <span>✓ Pay Now</span>}
 
-                            {car?.price_postpaid?.mileage ? (
+                            {car?.price_postpaid && <span>✓ Pay Later</span>}
+
+                            {car?.price_postpaid?.mileage ||
+                            car?.price_prepaid?.mileage ? (
                               <span>✓ Unlimited Mileage</span>
                             ) : (
                               <span>✓ Limited Mileage</span>
@@ -1241,24 +1267,52 @@ const CarResults = () => {
                           </span>
 
                           <strong>
-                            {currency} {Number(price).toFixed(2)}
+                            {currency}{" "}
+                            {Number(
+                              car?.price_postpaid?.total ||
+                                car?.price_prepaid?.total ||
+                                car?.display_price ||
+                                0,
+                            ).toFixed(2)}
                           </strong>
 
                           <small>
-                            for {car?.price_postpaid?.days || 1} day
-                            {(car?.price_postpaid?.days || 1) > 1 ? "s" : ""}
+                            for{" "}
+                            {car?.price_postpaid?.days ||
+                              car?.price_prepaid?.days ||
+                              1}{" "}
+                            day
+                            {(car?.price_postpaid?.days ||
+                              car?.price_prepaid?.days ||
+                              1) > 1
+                              ? "s"
+                              : ""}
                           </small>
 
-                          <button
-                            type="button"
-                            className="car-results-select-button"
-                            onClick={() => handleSelectCar(car)}
-                          >
-                            Pay later
-                          </button>
+                          <div className="car-results-payment-buttons">
+                            {car?.price_prepaid && (
+                              <button
+                                type="button"
+                                className="car-results-select-button"
+                                onClick={() => handleSelectCar(car, "prepaid")}
+                              >
+                                Pay Now
+                              </button>
+                            )}
+
+                            {car?.price_postpaid && (
+                              <button
+                                type="button"
+                                className="car-results-select-button"
+                                onClick={() => handleSelectCar(car, "postpaid")}
+                              >
+                                Pay Later
+                              </button>
+                            )}
+                          </div>
 
                           <span className="car-results-agency-name">
-                            {car.partner?.name}
+                            {car?.partner?.name}
                           </span>
                         </div>
                       </article>

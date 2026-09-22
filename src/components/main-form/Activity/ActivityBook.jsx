@@ -16,7 +16,21 @@ const ActivityBook = () => {
   const storedBookingData = JSON.parse(
     sessionStorage.getItem("activityBookingData") || "{}",
   );
+  const activityBookingData = JSON.parse(
+    sessionStorage.getItem("activityBookingData") || "{}",
+  );
 
+  const gradeCode = activityBookingData?.gradeCode || "";
+
+  const languageGuides = Array.isArray(activityBookingData?.languageGuides)
+    ? activityBookingData.languageGuides
+    : [];
+  const bookingQuestions = Array.isArray(activityBookingData?.bookingQuestions)
+    ? activityBookingData.bookingQuestions
+    : [];
+  const allowedAnswers = bookingQuestions.flatMap((question) =>
+    Array.isArray(question?.allowedAnswers) ? question.allowedAnswers : [],
+  );
   const travelers = Array.isArray(storedBookingData.guests)
     ? storedBookingData.guests
     : [];
@@ -37,6 +51,7 @@ const ActivityBook = () => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     mode: "onBlur",
@@ -52,6 +67,17 @@ const ActivityBook = () => {
         gender: "",
         birthDate: "",
       })),
+      languageGuide: "",
+      allowedAnswer: "",
+      languageGuide: "",
+      allowedAnswer: "",
+      arrivalTime: "",
+      pickupLocation: "",
+      dropoffAddress: "",
+      arrivalFlightNumber: "",
+      arrivalAirline: "",
+      disembarkationTime: "",
+      cruiseShipName: "",
       billingName: "",
       address1: "",
       address2: "",
@@ -145,6 +171,21 @@ const ActivityBook = () => {
         sessionStorage.getItem("activityBookingData") || "{}",
       );
 
+      const selectedLanguageGuide = formData?.languageGuide
+        ? JSON.parse(formData.languageGuide)
+        : null;
+
+      const updatedBookingData = {
+        ...latestBookingData,
+        languageGuide: selectedLanguageGuide,
+        allowedAnswer: formData?.allowedAnswer || "",
+      };
+
+      sessionStorage.setItem(
+        "activityBookingData",
+        JSON.stringify(updatedBookingData),
+      );
+
       const primaryTraveler =
         formData.travelers?.find((traveler) => traveler.primary) ||
         formData.travelers?.[0] ||
@@ -208,6 +249,7 @@ const ActivityBook = () => {
         orderDate: new Date().toISOString().split("T")[0],
         duration: latestBookingData.duration || "",
         star_rating: String(latestBookingData.star_rating || ""),
+        gradeCode: latestBookingData?.gradeCode || "",
       };
 
       console.log("activityOrder REQUEST:", requestBody);
@@ -230,7 +272,7 @@ const ActivityBook = () => {
       const paymentResponse = await handleAnkit(
         itemId,
         formData,
-        latestBookingData,
+        updatedBookingData,
       );
 
       console.log("Final Payment Response:", paymentResponse);
@@ -694,6 +736,247 @@ const ActivityBook = () => {
                     })
                   )}
                 </section>
+
+                {languageGuides.length > 0 && (
+                  <section className="activity-book-card">
+                    <div className="activity-book-language-selection">
+                      <div className="activity-book-field">
+                        <label>
+                          Your Language <span>*</span>
+                        </label>
+
+                        <select
+                          {...register("languageGuide", {
+                            required: "Please select a language",
+                          })}
+                        >
+                          <option value="">Select language</option>
+
+                          {languageGuides.map((guide, index) => {
+                            const languageNames = {
+                              en: "English",
+                              hi: "Hindi",
+                              mr: "Marathi",
+                              fr: "French",
+                              de: "German",
+                              es: "Spanish",
+                              it: "Italian",
+                              ru: "Russian",
+                              ja: "Japanese",
+                            };
+
+                            const languageName =
+                              languageNames[guide?.language] ||
+                              guide?.language ||
+                              "Unknown";
+
+                            return (
+                              <option
+                                key={`${guide?.language}-${guide?.type}-${index}`}
+                                value={JSON.stringify(guide)}
+                              >
+                                {languageName} - {guide?.type}
+                              </option>
+                            );
+                          })}
+                        </select>
+
+                        {errors.languageGuide && (
+                          <span className="activity-book-error">
+                            {errors.languageGuide.message}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </section>
+                )}
+
+                {allowedAnswers.length > 0 && (
+                  <section className="activity-book-card">
+                    <div className="activity-book-language-selection">
+                      <div className="activity-book-field">
+                        <label>
+                          Booking Info <span>*</span>
+                        </label>
+
+                        <select
+                          {...register("allowedAnswer", {
+                            required: "Please select booking info",
+                          })}
+                        >
+                          <option value="">Select booking info</option>
+
+                          {allowedAnswers.map((answer, index) => (
+                            <option
+                              key={`${answer?.answer}-${index}`}
+                              value={answer?.answer || ""}
+                            >
+                              {answer?.answer || ""}
+                            </option>
+                          ))}
+                        </select>
+
+                        {errors.allowedAnswer && (
+                          <span className="activity-book-error">
+                            {errors.allowedAnswer.message}
+                          </span>
+                        )}
+                      </div>
+
+                      {watch("allowedAnswer") === "AIR" && (
+                        <div className="activity-book-air-fields">
+                          <div className="activity-book-field">
+                            <input
+                              type="text"
+                              placeholder="Arrival time*"
+                              maxLength={100}
+                              {...register("arrivalTime", {
+                                required: "Arrival time is required",
+                              })}
+                            />
+                            <span className="activity-book-character-count">
+                              {watch("arrivalTime")?.length || 0}/100
+                            </span>
+                          </div>
+
+                          <div className="activity-book-field">
+                            <input
+                              type="text"
+                              placeholder="Pickup location*"
+                              maxLength={1000}
+                              {...register("pickupLocation", {
+                                required: "Pickup location is required",
+                              })}
+                            />
+                            <span className="activity-book-character-count">
+                              {watch("pickupLocation")?.length || 0}/1000
+                            </span>
+                          </div>
+
+                          <div className="activity-book-field">
+                            <input
+                              type="text"
+                              placeholder="Dropoff address*"
+                              maxLength={1000}
+                              {...register("dropoffAddress", {
+                                required: "Dropoff address is required",
+                              })}
+                            />
+                            <span className="activity-book-character-count">
+                              {watch("dropoffAddress")?.length || 0}/1000
+                            </span>
+                          </div>
+
+                          <div className="activity-book-field">
+                            <input
+                              type="text"
+                              placeholder="Arrival flight number*"
+                              maxLength={255}
+                              {...register("arrivalFlightNumber", {
+                                required: "Arrival flight number is required",
+                              })}
+                            />
+                            <span className="activity-book-character-count">
+                              {watch("arrivalFlightNumber")?.length || 0}/255
+                            </span>
+                          </div>
+
+                          <div className="activity-book-field">
+                            <input
+                              type="text"
+                              placeholder="Name of arrival airline*"
+                              maxLength={255}
+                              {...register("arrivalAirline", {
+                                required: "Arrival airline is required",
+                              })}
+                            />
+                            <span className="activity-book-character-count">
+                              {watch("arrivalAirline")?.length || 0}/255
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {watch("allowedAnswer") === "SEA" && (
+                        <div className="activity-book-air-fields">
+                          <div className="activity-book-field">
+                            <input
+                              type="text"
+                              placeholder="Pickup location*"
+                              maxLength={1000}
+                              {...register("pickupLocation", {
+                                required: "Pickup location is required",
+                              })}
+                            />
+                            <span className="activity-book-character-count">
+                              {watch("pickupLocation")?.length || 0}/1000
+                            </span>
+                          </div>
+
+                          <div className="activity-book-field">
+                            <input
+                              type="text"
+                              placeholder="Disembarkation time*"
+                              maxLength={100}
+                              {...register("disembarkationTime", {
+                                required: "Disembarkation time is required",
+                              })}
+                            />
+                            <span className="activity-book-character-count">
+                              {watch("disembarkationTime")?.length || 0}/100
+                            </span>
+                          </div>
+
+                          <div className="activity-book-field">
+                            <input
+                              type="text"
+                              placeholder="Name of cruise ship*"
+                              maxLength={255}
+                              {...register("cruiseShipName", {
+                                required: "Name of cruise ship is required",
+                              })}
+                            />
+                            <span className="activity-book-character-count">
+                              {watch("cruiseShipName")?.length || 0}/255
+                            </span>
+                          </div>
+
+                          <div className="activity-book-field">
+                            <input
+                              type="text"
+                              placeholder="Dropoff address*"
+                              maxLength={1000}
+                              {...register("dropoffAddress", {
+                                required: "Dropoff address is required",
+                              })}
+                            />
+                            <span className="activity-book-character-count">
+                              {watch("dropoffAddress")?.length || 0}/1000
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {watch("allowedAnswer") === "OTHER" && (
+                        <div className="activity-book-other-fields">
+                          <div className="activity-book-field">
+                            <input
+                              type="text"
+                              placeholder="Pickup location*"
+                              maxLength={1000}
+                              {...register("pickupLocation", {
+                                required: "Pickup location is required",
+                              })}
+                            />
+                            <span className="activity-book-character-count">
+                              {watch("pickupLocation")?.length || 0}/1000
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                )}
 
                 <section className="activity-book-card">
                   <div className="activity-book-section-header">
