@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+
 import { useSearchParams } from "react-router-dom";
 
 import {
@@ -7,7 +8,6 @@ import {
   FaPlaneDeparture,
   FaPlaneArrival,
   FaMapMarkerAlt,
-  FaPhone,
   FaUser,
   FaCalendarAlt,
   FaReceipt,
@@ -18,24 +18,33 @@ import {
   FaClock,
   FaCreditCard,
 } from "react-icons/fa";
+
 import { FaCircleXmark } from "react-icons/fa6";
 
 import HeaderInner from "../../../reuseable-components/HeaderInner";
 import Footer from "../../../reuseable-components/Footer";
 import Loader from "../../../reuseable-components/Loader/Loader";
 
-import { upcomingFlightDetails } from "../../../store/Services/AllApi";
+import {
+  checkFlightCancel,
+  checkFlightRefund,
+  upcomingFlightDetails,
+} from "../../../store/Services/AllApi";
 
 import "./FlightBookingDetails.css";
 
 const FlightBookingDetails = () => {
   const [searchParams] = useSearchParams();
+
   const itemId = searchParams.get("id");
 
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(null);
   const [error, setError] = useState("");
-
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [refundDetails, setRefundDetails] = useState(null);
+  const [refundLoading, setRefundLoading] = useState(false);
+  const [refundError, setRefundError] = useState("");
   useEffect(() => {
     const fetchData = async () => {
       if (!itemId) {
@@ -58,6 +67,7 @@ const FlightBookingDetails = () => {
         console.log("Flight Booking Details Response:", res);
 
         const tripData = res?.data?.tripdetails?.Data;
+
         const itinerary = tripData?.TripDetailsResult?.TravelItinerary;
 
         if (
@@ -74,6 +84,7 @@ const FlightBookingDetails = () => {
         }
       } catch (error) {
         console.error("Flight Booking Details Error:", error);
+
         setError("Something went wrong while loading booking details.");
       } finally {
         setLoading(false);
@@ -83,10 +94,66 @@ const FlightBookingDetails = () => {
     fetchData();
   }, [itemId]);
 
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
+  const checkRefundEligibility = async () => {
+    setRefundLoading(true);
+    setRefundError("");
+    setLoading(true);
+    try {
+      const res = await checkFlightRefund({
+        body: {
+          sessionId: localStorage.getItem("sessionId"),
+          input: {
+            orderid: itemId,
+          },
+        },
+      });
+
+      const details = res?.data?.checkRefundEligibility;
+
+      if (details?.success) {
+        setRefundDetails(details);
+        setShowCancelModal(true);
+      } else {
+        setRefundError(details?.message || "Unable to fetch refund details.");
+      }
+    } catch (error) {
+      console.log(error);
+      setRefundError("Something went wrong while checking refund eligibility.");
+    } finally {
+      setRefundLoading(false);
+      setLoading(false);
+    }
+  };
+
+  const confirmCancelBooking = async () => {
+    try {
+      const res = await checkFlightCancel({
+        body: {
+          sessionId: localStorage.getItem("sessionId"),
+          bookingid: itemId,
+        },
+      });
+      setShowCancelModal(false);
+    } catch (error) {
+      console.log("error in cancelling booking", error);
+    }
+  };
   const formatDate = (date) => {
     if (!date) return "-";
 
-    return new Date(date).toLocaleDateString("en-GB", {
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "-";
+    }
+
+    return parsedDate.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -96,7 +163,13 @@ const FlightBookingDetails = () => {
   const formatDateWithTime = (date) => {
     if (!date) return "-";
 
-    return new Date(date).toLocaleString("en-GB", {
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "-";
+    }
+
+    return parsedDate.toLocaleString("en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -108,7 +181,13 @@ const FlightBookingDetails = () => {
   const formatTime = (date) => {
     if (!date) return "-";
 
-    return new Date(date).toLocaleTimeString("en-GB", {
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "-";
+    }
+
+    return parsedDate.toLocaleTimeString("en-GB", {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -123,7 +202,12 @@ const FlightBookingDetails = () => {
   const formatDuration = (minutes) => {
     const totalMinutes = Number(minutes || 0);
 
+    if (!totalMinutes) {
+      return "0m";
+    }
+
     const hours = Math.floor(totalMinutes / 60);
+
     const mins = totalMinutes % 60;
 
     if (hours === 0) {
@@ -141,48 +225,100 @@ const FlightBookingDetails = () => {
     return booking?.TripDetailsResult?.TravelItinerary || {};
   };
 
-  const getFlights = () => {
-    return booking?.booking_data?.flighticket || [];
-  };
-
-  // Flattened list of every flight leg, in order, from booking_data.flighticket
-  const getAllTicketFlights = () => {
-    return getFlights().flatMap((ticket) => ticket?.flights || []);
-  };
-
-  // Outbound/return used to be decided purely by array index
-  // (flighticket[0] = outbound, flighticket[1] = return). That breaks if a
-  // response ever comes back with a different grouping. Each leg already
-  // carries a `legIndicator` (0 = outbound, 1 = return), so use that when
-  // it's present and only fall back to index-based grouping if it's missing.
-  const getOutboundFlights = () => {
-    const allFlights = getAllTicketFlights();
-    const hasLegIndicator = allFlights.some(
-      (flight) => typeof flight?.legIndicator === "number",
+  /*
+   * IMPORTANT:
+   * Flight details are now taken from:
+   *
+   * TravelItinerary
+   *   -> Itineraries
+   *      -> ItineraryInfo
+   *         -> ReservationItems
+   *
+   * This is the actual itinerary returned by Mystifly.
+   */
+  const getReservationItems = () => {
+    return (
+      getItinerary()?.Itineraries?.flatMap(
+        (itinerary) => itinerary?.ItineraryInfo?.ReservationItems || [],
+      ) || []
     );
+  };
 
-    if (hasLegIndicator) {
-      return allFlights.filter((flight) => flight?.legIndicator === 0);
-    }
+  /*
+   * Convert ReservationItems into the same structure
+   * used by the existing UI.
+   */
+  const getAllFlights = () => {
+    return getReservationItems().map((flight) => ({
+      airline: flight?.airlineName || flight?.MarketingAirlineCode || "-",
 
-    return getFlights()?.[0]?.flights || [];
+      departure: flight?.DepartureAirportLocationCode || "-",
+
+      arrival: flight?.ArrivalAirportLocationCode || "-",
+
+      departurelocation: flight?.DepartureAirportLocationCode || "-",
+
+      arrivallocation: flight?.ArrivalAirportLocationCode || "-",
+
+      departureTime: flight?.DepartureDateTime,
+
+      arrivalTime: flight?.ArrivalDateTime,
+
+      flightCode:
+        flight?.MarketingAirlineCode || flight?.OperatingAirlineCode || "-",
+
+      flightNumber: flight?.FlightNumber || "-",
+
+      flightId: flight?.ItemRPH,
+
+      stops: Number(flight?.StopQuantity || 0),
+
+      triptime: Number(flight?.JourneyDuration || 0),
+
+      cabin: flight?.CabinClass || "-",
+
+      checkInBaggage: flight?.Baggage || "-",
+
+      cabinBaggage: "-",
+
+      pnrNumber: flight?.AirlinePNR || "-",
+
+      departureTerminal: flight?.DepartureTerminal || "-",
+
+      arrivalTerminal: flight?.ArrivalTerminal || "-",
+
+      bookingClass: flight?.ResBookDesigCode || "-",
+
+      flightStatus: flight?.FlightStatus || "-",
+
+      isReturn: flight?.IsReturn === true,
+
+      fareFamily: flight?.FareFamily || "-",
+
+      paymentMode: flight?.paymentMode || "-",
+
+      airlineCode:
+        flight?.OperatingAirlineCode || flight?.MarketingAirlineCode || "-",
+
+      raw: flight,
+    }));
+  };
+
+  /*
+   * Use IsReturn from ReservationItems.
+   *
+   * IsReturn:
+   * false = outbound
+   * true  = return
+   *
+   * This is more reliable than relying on array indexes.
+   */
+  const getOutboundFlights = () => {
+    return getAllFlights().filter((flight) => flight?.isReturn === false);
   };
 
   const getReturnFlights = () => {
-    const allFlights = getAllTicketFlights();
-    const hasLegIndicator = allFlights.some(
-      (flight) => typeof flight?.legIndicator === "number",
-    );
-
-    if (hasLegIndicator) {
-      return allFlights.filter((flight) => flight?.legIndicator === 1);
-    }
-
-    return getFlights()?.[1]?.flights || [];
-  };
-
-  const getAllFlights = () => {
-    return getAllTicketFlights();
+    return getAllFlights().filter((flight) => flight?.isReturn === true);
   };
 
   const getPassenger = () => {
@@ -218,36 +354,39 @@ const FlightBookingDetails = () => {
       return JSON.parse(booking.cancellation_policy);
     } catch (error) {
       console.error("Unable to parse cancellation policy:", error);
+
       return null;
     }
   };
 
-  // The raw per-segment reservation data from the itinerary — this is the
-  // schema-guaranteed source for baggage allowance per flight leg.
-  const getReservationItems = () => {
-    return (
-      getItinerary()?.Itineraries?.[0]?.ItineraryInfo?.ReservationItems || []
-    );
-  };
-
-  // booking_data.flighticket[].flights[].checkInBaggage / cabinBaggage is a
-  // custom field that isn't always populated by the backend, which is why
-  // baggage sometimes showed blank. Build a reliable flightNumber -> baggage
-  // lookup from ReservationItems (per-leg "Baggage" field) and the fare
-  // breakdown's BaggageInfo / CabinBaggageInfo arrays (same order as the
-  // reservation items), and only fall back to the flighticket fields last.
+  /*
+   * Build baggage map directly from ReservationItems.
+   *
+   * ReservationItems:
+   * FlightNumber -> Baggage
+   */
   const getBaggageByFlightNumber = () => {
     const reservationItems = getReservationItems();
+
     const fareBreakdown = getFareBreakdown();
+
     const baggageInfoList = fareBreakdown?.BaggageInfo || [];
+
     const cabinBaggageInfoList = fareBreakdown?.CabinBaggageInfo || [];
 
     const map = {};
 
     reservationItems.forEach((item, index) => {
-      map[item?.FlightNumber] = {
-        checkedBaggage: item?.Baggage || baggageInfoList?.[index] || null,
-        cabinBaggage: cabinBaggageInfoList?.[index] || null,
+      const flightNumber = item?.FlightNumber;
+
+      if (!flightNumber) {
+        return;
+      }
+
+      map[flightNumber] = {
+        checkedBaggage: item?.Baggage || baggageInfoList?.[index] || "-",
+
+        cabinBaggage: cabinBaggageInfoList?.[index] || "-",
       };
     });
 
@@ -263,15 +402,13 @@ const FlightBookingDetails = () => {
   };
 
   const getGuestCount = () => {
-    return booking?.guests?.length || booking?.travellers?.length || 0;
+    return (
+      booking?.guests?.length ||
+      booking?.travellers?.length ||
+      getItinerary()?.PassengerInfos?.length ||
+      0
+    );
   };
-
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-    });
-  }, []);
 
   if (loading) {
     return (
@@ -280,6 +417,7 @@ const FlightBookingDetails = () => {
 
         <div className="hbd-loading-wrapper">
           <div className="hbd-loader"></div>
+
           <p>Loading booking details...</p>
         </div>
 
@@ -309,14 +447,29 @@ const FlightBookingDetails = () => {
   }
 
   const itinerary = getItinerary();
+
+  /*
+   * All flight segments now come from
+   * TravelItinerary.Itineraries[].ItineraryInfo.ReservationItems
+   */
+  const allFlights = getAllFlights();
+
   const outboundFlights = getOutboundFlights();
+
   const returnFlights = getReturnFlights();
+
   const passenger = getPassenger();
+
   const eTicket = getETicket();
+
   const fareBreakdown = getFareBreakdown();
+
   const fareDetails = getFareDetails();
+
   const extraServices = getExtraServices();
+
   const cancellationPolicy = getCancellationPolicy();
+
   const baggageByFlightNumber = getBaggageByFlightNumber();
 
   const transactions = itinerary?.TransactionDetails?.Transactions || [];
@@ -324,22 +477,43 @@ const FlightBookingDetails = () => {
   const transaction = transactions?.[0] || {};
 
   const bookingStatus = itinerary?.BookingStatus || "Booked";
+
   const ticketStatus = itinerary?.TicketStatus || "Ticketed";
 
   const isCancelled =
     bookingStatus?.toLowerCase() === "cancelled" ||
     ticketStatus?.toLowerCase() === "cancelled";
 
-  const allFlights = getAllFlights();
-
   const firstFlight = allFlights?.[0];
+
   const lastFlight = allFlights?.[allFlights.length - 1];
+  const tripOrigin =
+    outboundFlights?.[0]?.departure ||
+    firstFlight?.departure ||
+    itinerary?.Origin ||
+    "-";
+
+  const tripDestination =
+    outboundFlights?.[outboundFlights.length - 1]?.arrival ||
+    firstFlight?.arrival ||
+    itinerary?.Destination ||
+    "-";
 
   const totalStopsOutbound =
-    outboundFlights.length > 0 ? outboundFlights.length - 1 : 0;
+    outboundFlights.length > 0
+      ? outboundFlights.reduce(
+          (total, flight) => total + Number(flight?.stops || 0),
+          0,
+        )
+      : 0;
 
   const totalStopsReturn =
-    returnFlights.length > 0 ? returnFlights.length - 1 : 0;
+    returnFlights.length > 0
+      ? returnFlights.reduce(
+          (total, flight) => total + Number(flight?.stops || 0),
+          0,
+        )
+      : 0;
 
   const passengerName = [
     passenger?.PaxName?.PassengerTitle,
@@ -352,7 +526,21 @@ const FlightBookingDetails = () => {
   const passengerType =
     passenger?.PassengerType === "ADT"
       ? "Adult"
-      : passenger?.PassengerType || "Adult";
+      : passenger?.PassengerType === "CHD"
+        ? "Child"
+        : passenger?.PassengerType === "INF"
+          ? "Infant"
+          : passenger?.PassengerType || "Adult";
+
+  const outboundDuration = outboundFlights.reduce(
+    (total, flight) => total + Number(flight?.triptime || 0),
+    0,
+  );
+
+  const returnDuration = returnFlights.reduce(
+    (total, flight) => total + Number(flight?.triptime || 0),
+    0,
+  );
 
   return (
     <>
@@ -404,7 +592,9 @@ const FlightBookingDetails = () => {
                 isCancelled ? "hbd-confirmation-status-cancelled" : ""
               }`}
             >
-              {isCancelled ? "Cancelled" : ticketStatus}
+              {isCancelled
+                ? "Cancelled"
+                : booking?.TripDetailsResult?.TravelItinerary?.BookingStatus}
             </div>
           </div>
 
@@ -429,16 +619,20 @@ const FlightBookingDetails = () => {
                   <div className="hbd-hotel-heading">
                     <div>
                       <h2>
-                        {itinerary?.Origin || firstFlight?.departure || "-"} →{" "}
-                        {itinerary?.Destination || lastFlight?.arrival || "-"}
+                        {tripOrigin} → {tripDestination}
                       </h2>
 
                       <p className="hbd-location">
                         <FaMapMarkerAlt />
 
-                        {itinerary?.TripType || booking?.booking_data?.trip}
+                        {itinerary?.TripType ||
+                          booking?.booking_data?.trip ||
+                          "Flight"}
+
                         {" · "}
-                        {booking?.booking_data?.trip === "RoundTrip"
+
+                        {itinerary?.TripType === "Return" ||
+                        booking?.booking_data?.trip === "RoundTrip"
                           ? "Round Trip"
                           : "Flight Journey"}
                       </p>
@@ -465,8 +659,8 @@ const FlightBookingDetails = () => {
                       <div className="hbd-night-line"></div>
 
                       <span className="hbd-night-badge">
-                        {booking?.booking_data?.trip ||
-                          itinerary?.TripType ||
+                        {itinerary?.TripType ||
+                          booking?.booking_data?.trip ||
                           "FLIGHT"}
                       </span>
 
@@ -488,7 +682,19 @@ const FlightBookingDetails = () => {
 
                 <div className="hbd-hotel-image-wrapper">
                   <div className="hbd-no-image">
-                    <FaPlane />
+                    <img
+                      src={`https://d15u1xbazig0vl.cloudfront.net/images/flight/${
+                        booking?.TripDetailsResult?.booking_data?.flighticket[0]
+                          ?.flights[0]?.flightCode
+                      }.png`}
+                      alt={booking.flightCode || "Flight"}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        e.currentTarget.nextElementSibling.style.display =
+                          "block";
+                      }}
+                    />
+                    <FaPlane style={{ display: "none" }} />
                   </div>
                 </div>
               </section>
@@ -508,9 +714,11 @@ const FlightBookingDetails = () => {
                       <p>
                         {outboundFlights.length === 1
                           ? "Direct flight"
-                          : `${totalStopsOutbound} stop${
-                              totalStopsOutbound > 1 ? "s" : ""
-                            }`}
+                          : totalStopsOutbound === 0
+                            ? "Direct flight"
+                            : `${totalStopsOutbound} stop${
+                                totalStopsOutbound > 1 ? "s" : ""
+                              }`}
                       </p>
                     </div>
                   </div>
@@ -523,7 +731,7 @@ const FlightBookingDetails = () => {
 
                       <div className="hbd-room-information">
                         <h3>
-                          {outboundFlights?.[0]?.departure} →{" "}
+                          {outboundFlights?.[0]?.departure || "-"} →{" "}
                           {
                             outboundFlights?.[outboundFlights.length - 1]
                               ?.arrival
@@ -546,13 +754,7 @@ const FlightBookingDetails = () => {
                           <span>
                             <FaClock />
 
-                            {formatDuration(
-                              outboundFlights.reduce(
-                                (total, flight) =>
-                                  total + Number(flight?.triptime || 0),
-                                0,
-                              ),
-                            )}
+                            {formatDuration(outboundDuration)}
                           </span>
                         </div>
                       </div>
@@ -570,7 +772,7 @@ const FlightBookingDetails = () => {
                   {outboundFlights.map((flight, index) => (
                     <div
                       className="hbd-traveler-details"
-                      key={`outbound-${index}`}
+                      key={`outbound-${flight?.flightNumber}-${index}`}
                     >
                       <div className="hbd-traveler-avatar">
                         <FaPlane />
@@ -578,12 +780,12 @@ const FlightBookingDetails = () => {
 
                       <div className="hbd-traveler-info">
                         <h3>
-                          {flight?.departure} → {flight?.arrival}
+                          {flight?.departure || "-"} → {flight?.arrival || "-"}
                         </h3>
 
                         <p>
-                          {flight?.airline} · {flight?.flightCode}
-                          {flight?.flightNumber}
+                          {flight?.airline || "-"} · {flight?.flightCode || "-"}
+                          {flight?.flightNumber || "-"}
                         </p>
 
                         <div className="hbd-traveler-contact">
@@ -593,8 +795,29 @@ const FlightBookingDetails = () => {
                           </span>
 
                           <span>
+                            {flight?.departureTerminal
+                              ? `Terminal ${flight.departureTerminal}`
+                              : ""}
+
+                            {flight?.departureTerminal &&
+                            flight?.arrivalTerminal
+                              ? " → "
+                              : ""}
+
+                            {flight?.arrivalTerminal
+                              ? `Terminal ${flight.arrivalTerminal}`
+                              : ""}
+                          </span>
+                        </div>
+
+                        <div className="hbd-traveler-contact">
+                          <span>
                             {getAirportName(flight, "departure")} →{" "}
                             {getAirportName(flight, "arrival")}
+                          </span>
+
+                          <span>
+                            Duration: {formatDuration(flight?.triptime)}
                           </span>
                         </div>
                       </div>
@@ -622,9 +845,11 @@ const FlightBookingDetails = () => {
                       <p>
                         {returnFlights.length === 1
                           ? "Direct flight"
-                          : `${totalStopsReturn} stop${
-                              totalStopsReturn > 1 ? "s" : ""
-                            }`}
+                          : totalStopsReturn === 0
+                            ? "Direct flight"
+                            : `${totalStopsReturn} stop${
+                                totalStopsReturn > 1 ? "s" : ""
+                              }`}
                       </p>
                     </div>
                   </div>
@@ -637,7 +862,7 @@ const FlightBookingDetails = () => {
 
                       <div className="hbd-room-information">
                         <h3>
-                          {returnFlights?.[0]?.departure} →{" "}
+                          {returnFlights?.[0]?.departure || "-"} →{" "}
                           {returnFlights?.[returnFlights.length - 1]?.arrival}
                         </h3>
 
@@ -657,13 +882,7 @@ const FlightBookingDetails = () => {
                           <span>
                             <FaClock />
 
-                            {formatDuration(
-                              returnFlights.reduce(
-                                (total, flight) =>
-                                  total + Number(flight?.triptime || 0),
-                                0,
-                              ),
-                            )}
+                            {formatDuration(returnDuration)}
                           </span>
                         </div>
                       </div>
@@ -679,7 +898,7 @@ const FlightBookingDetails = () => {
                   {returnFlights.map((flight, index) => (
                     <div
                       className="hbd-traveler-details"
-                      key={`return-${index}`}
+                      key={`return-${flight?.flightNumber}-${index}`}
                     >
                       <div className="hbd-traveler-avatar">
                         <FaPlane />
@@ -687,12 +906,12 @@ const FlightBookingDetails = () => {
 
                       <div className="hbd-traveler-info">
                         <h3>
-                          {flight?.departure} → {flight?.arrival}
+                          {flight?.departure || "-"} → {flight?.arrival || "-"}
                         </h3>
 
                         <p>
-                          {flight?.airline} · {flight?.flightCode}
-                          {flight?.flightNumber}
+                          {flight?.airline || "-"} · {flight?.flightCode || "-"}
+                          {flight?.flightNumber || "-"}
                         </p>
 
                         <div className="hbd-traveler-contact">
@@ -702,8 +921,29 @@ const FlightBookingDetails = () => {
                           </span>
 
                           <span>
+                            {flight?.departureTerminal
+                              ? `Terminal ${flight.departureTerminal}`
+                              : ""}
+
+                            {flight?.departureTerminal &&
+                            flight?.arrivalTerminal
+                              ? " → "
+                              : ""}
+
+                            {flight?.arrivalTerminal
+                              ? `Terminal ${flight.arrivalTerminal}`
+                              : ""}
+                          </span>
+                        </div>
+
+                        <div className="hbd-traveler-contact">
+                          <span>
                             {getAirportName(flight, "departure")} →{" "}
                             {getAirportName(flight, "arrival")}
+                          </span>
+
+                          <span>
+                            Duration: {formatDuration(flight?.triptime)}
                           </span>
                         </div>
                       </div>
@@ -726,6 +966,7 @@ const FlightBookingDetails = () => {
 
                   <div>
                     <h2>Baggage Details</h2>
+
                     <p>Baggage allowance for your journey</p>
                   </div>
                 </div>
@@ -744,7 +985,7 @@ const FlightBookingDetails = () => {
                     return (
                       <div
                         className="hbd-contact-item"
-                        key={`baggage-${index}`}
+                        key={`baggage-${flight?.flightNumber}-${index}`}
                       >
                         <div className="hbd-contact-icon">
                           <FaSuitcase />
@@ -775,6 +1016,7 @@ const FlightBookingDetails = () => {
 
                   <div>
                     <h2>Traveler Details</h2>
+
                     <p>Passenger information for this reservation</p>
                   </div>
                 </div>
@@ -815,41 +1057,49 @@ const FlightBookingDetails = () => {
 
                 <div className="hbd-guest-names">
                   <span>Date of Birth</span>
+
                   <strong>{formatDate(passenger?.DateOfBirth)}</strong>
                 </div>
 
                 <div className="hbd-guest-names">
                   <span>Gender</span>
+
                   <strong>{passenger?.Gender || "-"}</strong>
                 </div>
 
                 <div className="hbd-guest-names">
                   <span>Passport Number</span>
+
                   <strong>{passenger?.PassportNumber || "-"}</strong>
                 </div>
 
                 <div className="hbd-guest-names">
                   <span>Passport Expiry</span>
+
                   <strong>{formatDate(passenger?.PassportExpiresOn)}</strong>
                 </div>
 
                 <div className="hbd-guest-names">
                   <span>Passport Issuance Country</span>
+
                   <strong>{passenger?.PassportIssuanceCountry || "-"}</strong>
                 </div>
 
                 <div className="hbd-guest-names">
                   <span>Passenger Nationality</span>
+
                   <strong>{passenger?.PassengerNationality || "-"}</strong>
                 </div>
 
                 <div className="hbd-guest-names">
                   <span>Passport Nationality</span>
+
                   <strong>{passenger?.PassportNationality || "-"}</strong>
                 </div>
 
                 <div className="hbd-guest-names">
                   <span>E-Ticket Number</span>
+
                   <strong>{eTicket?.ETicketNumber || "-"}</strong>
                 </div>
               </section>
@@ -865,6 +1115,7 @@ const FlightBookingDetails = () => {
 
                     <div>
                       <h2>Extra Services</h2>
+
                       <p>Baggage and meal services added to your booking</p>
                     </div>
                   </div>
@@ -910,6 +1161,7 @@ const FlightBookingDetails = () => {
 
                   <div>
                     <h2>Booking Details</h2>
+
                     <p>Flight reservation information</p>
                   </div>
                 </div>
@@ -922,13 +1174,13 @@ const FlightBookingDetails = () => {
 
                     <div>
                       <span>Booking Reference</span>
+
                       <strong>{itinerary?.MFRef || "-"}</strong>
 
                       <p>
                         PNR:{" "}
                         {firstFlight?.pnrNumber ||
-                          itinerary?.PassengerInfos?.[0]?.ETickets?.[0]
-                            ?.ETicketNumber ||
+                          eTicket?.ETicketNumber ||
                           "-"}
                       </p>
                     </div>
@@ -942,9 +1194,14 @@ const FlightBookingDetails = () => {
                     <div>
                       <span>Payment</span>
 
-                      <strong>{booking?.payment_mode || "-"}</strong>
+                      <strong>
+                        {booking?.TripDetailsResult?.payment_mode || "-"}
+                      </strong>
 
-                      <p>Gateway: {booking?.payment_gateway || "-"}</p>
+                      <p>
+                        Gateway:{" "}
+                        {booking?.TripDetailsResult?.payment_gateway || "-"}
+                      </p>
                     </div>
                   </div>
 
@@ -970,9 +1227,11 @@ const FlightBookingDetails = () => {
                     <div>
                       <span>Fare Type</span>
 
-                      <strong>{itinerary?.FareType || "-"}</strong>
+                      <strong>
+                        {booking?.TripDetailsResult?.TravelItinerary?.FareType}
+                      </strong>
 
-                      <p>Provider: {itinerary?.Provider || "-"}</p>
+                      <p>Provider: {booking?.TripDetailsResult?.Provider}</p>
                     </div>
                   </div>
                 </div>
@@ -989,6 +1248,7 @@ const FlightBookingDetails = () => {
 
                     <div>
                       <h2>Fare Rules</h2>
+
                       <p>Rules associated with your flight fare</p>
                     </div>
                   </div>
@@ -1003,11 +1263,13 @@ const FlightBookingDetails = () => {
                         <div className="hbd-policy-rule" key={detailIndex}>
                           <div>
                             <span>Category</span>
+
                             <strong>{detail?.category || "-"}</strong>
                           </div>
 
                           <div>
                             <span>Rules</span>
+
                             <strong>
                               {detail?.rules || "No rules provided"}
                             </strong>
@@ -1029,6 +1291,7 @@ const FlightBookingDetails = () => {
 
                   <div>
                     <h2>Flight Policy</h2>
+
                     <p>Refund and exchange information</p>
                   </div>
                 </div>
@@ -1099,6 +1362,7 @@ const FlightBookingDetails = () => {
               <section className="hbd-card hbd-price-card">
                 <div className="hbd-price-title">
                   <FaReceipt />
+
                   <h2>Price Details</h2>
                 </div>
 
@@ -1146,7 +1410,7 @@ const FlightBookingDetails = () => {
                 <div className="hbd-total-row">
                   <span>Total Amount</span>
 
-                  <strong>{formatPrice(booking?.payable)}</strong>
+                  <strong>${booking?.TripDetailsResult?.our_price}</strong>
                 </div>
               </section>
 
@@ -1157,6 +1421,7 @@ const FlightBookingDetails = () => {
               <section className="hbd-card hbd-price-card">
                 <div className="hbd-price-title">
                   <FaInfoCircle />
+
                   <h2>Booking Information</h2>
                 </div>
 
@@ -1175,19 +1440,21 @@ const FlightBookingDetails = () => {
                 <div className="hbd-price-row">
                   <span>Provider</span>
 
-                  <strong>{itinerary?.Provider || "-"}</strong>
+                  <strong>{booking?.TripDetailsResult?.Provider || "-"}</strong>
                 </div>
 
                 <div className="hbd-price-row">
                   <span>Payment Mode</span>
 
-                  <strong>{booking?.payment_mode || "-"}</strong>
+                  <strong>
+                    {booking?.TripDetailsResult?.payment_mode || "-"}
+                  </strong>
                 </div>
 
                 <div className="hbd-price-row">
                   <span>Currency</span>
 
-                  <strong>{booking?.currency || "-"}</strong>
+                  <strong>{booking?.TripDetailsResult?.currency || "-"}</strong>
                 </div>
 
                 <div className="hbd-price-row">
@@ -1202,7 +1469,9 @@ const FlightBookingDetails = () => {
                   <span>Booking Created</span>
 
                   <strong>
-                    {formatDateWithTime(booking?.BookingCreatedOn)}
+                    {formatDateWithTime(
+                      booking?.TripDetailsResult?.BookingCreatedOn,
+                    )}
                   </strong>
                 </div>
               </section>
@@ -1214,6 +1483,7 @@ const FlightBookingDetails = () => {
               <section className="hbd-card hbd-price-card">
                 <div className="hbd-price-title">
                   <FaTicketAlt />
+
                   <h2>Ticket Details</h2>
                 </div>
 
@@ -1243,6 +1513,7 @@ const FlightBookingDetails = () => {
               <section className="hbd-card hbd-price-card">
                 <div className="hbd-price-title">
                   <FaInfoCircle />
+
                   <h2>Cancellation Policy</h2>
                 </div>
 
@@ -1274,7 +1545,74 @@ const FlightBookingDetails = () => {
               </section>
             </aside>
           </div>
+          <button
+            className="your-cancel-button-class"
+            onClick={checkRefundEligibility}
+          >
+            Cancel Booking
+          </button>
+          {refundError && (
+            <p style={{ color: "#b91c1c", marginTop: 8 }}>{refundError}</p>
+          )}
         </main>
+        {showCancelModal && refundDetails && (
+          <div
+            className="hbd-modal-overlay"
+            onClick={() => setShowCancelModal(false)}
+          >
+            <div className="hbd-modal-box" onClick={(e) => e.stopPropagation()}>
+              <h3>Cancel Booking</h3>
+
+              {refundDetails?.eligible ? (
+                <>
+                  <p className="hbd-modal-refund-text">
+                    The total refund amount will be:{" "}
+                    <strong>
+                      {formatPrice(
+                        refundDetails?.cancellationDetails?.totalRefund,
+                      )}
+                    </strong>
+                  </p>
+
+                  <p className="hbd-modal-confirm-text">
+                    Are you sure you want to cancel?
+                  </p>
+
+                  <div className="hbd-modal-actions">
+                    <button
+                      className="hbd-modal-btn hbd-modal-btn-secondary"
+                      onClick={() => setShowCancelModal(false)}
+                    >
+                      No, Go Back
+                    </button>
+
+                    <button
+                      className="hbd-modal-btn hbd-modal-btn-danger"
+                      onClick={confirmCancelBooking}
+                    >
+                      Yes, Cancel Booking
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="hbd-modal-confirm-text">
+                    This booking is not eligible for cancellation.
+                  </p>
+
+                  <div className="hbd-modal-actions">
+                    <button
+                      className="hbd-modal-btn hbd-modal-btn-secondary"
+                      onClick={() => setShowCancelModal(false)}
+                    >
+                      OK
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         <Footer />
       </div>

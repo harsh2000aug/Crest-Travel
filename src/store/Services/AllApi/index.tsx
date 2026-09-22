@@ -176,6 +176,16 @@ export const upcomingFlight = ({ body }: any) =>
     uriEndPoint: allApi.upcomingFlight.v1,
     body,
   });
+export const checkFlightRefund = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.checkflightRefund.v1,
+    body,
+  });
+export const checkFlightCancel = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.checkflightCancel.v1,
+    body,
+  });
 export const upcomingFlightDetails = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.upcomingFlightDetails.v1,

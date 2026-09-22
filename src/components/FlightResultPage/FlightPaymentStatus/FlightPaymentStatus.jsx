@@ -141,7 +141,7 @@ const FlightPaymentStatus = () => {
                 ? "We’re confirming your flight reservation. This may take a moment."
                 : bookingStatus
                   ? "Your flight booking is confirmed. Thank you for letting us be part of your journey."
-                  : "Please review the details below. If you need help, contact our support team."}
+                  : "Please review the details below. If you need help, contact our support team. Email: contact@cresttravelclub.com and support: +1 (888) 377-9065"}
             </p>
 
             <div className="flight-status__notice">
