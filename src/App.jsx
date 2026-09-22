@@ -47,11 +47,8 @@ import HotelBookingsDetails from "./components/main-form/HotelForm/HotelBookings
 import FlightPaymentStatus from "./components/FlightResultPage/FlightPaymentStatus/FlightPaymentStatus";
 import CarPayment from "./components/main-form/CarRental/CarPayment/CarPayment";
 import CarBookingDetails from "./components/main-form/CarRental/CarBookingDetails/CarBookingDetails";
-<<<<<<< HEAD
 import ActivityPayment from "./components/main-form/Activity/ActivityPayment/ActivityPayment";
-=======
 import FlightBookingDetails from "./components/FlightResultPage/FlightBookingDetails/FlightBookingDetails";
->>>>>>> 239184561102ef6998d4740c046db98cb2163fda
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");

@@ -300,33 +300,33 @@ const CarBook = () => {
       .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  const handleCompleteBooking = (data) => {
-    const [expiryMonth, expiryYear] = (data.expiryDate || "").split("/");
+  // const handleCompleteBooking = (data) => {
+  //   const [expiryMonth, expiryYear] = (data.expiryDate || "").split("/");
 
-    const passengerDetails = {
-      title: data.title,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      phone: data.phone,
-    };
+  //   const passengerDetails = {
+  //     title: data.title,
+  //     firstName: data.firstName,
+  //     lastName: data.lastName,
+  //     email: data.email,
+  //     phone: data.phone,
+  //   };
 
-    const billingDetails = {
-      address: data.address,
-      city: data.city,
-      state: data.state,
-      country: data.country,
-      postalCode: data.postalCode,
-    };
+  //   const billingDetails = {
+  //     address: data.address,
+  //     city: data.city,
+  //     state: data.state,
+  //     country: data.country,
+  //     postalCode: data.postalCode,
+  //   };
 
-    const cardDetails = {
-      cardNumber: data.cardNumber,
-      cardName: data.cardName,
-      expiryMonth,
-      expiryYear,
-      cvv: data.cvv,
-    };
-  };
+  //   const cardDetails = {
+  //     cardNumber: data.cardNumber,
+  //     cardName: data.cardName,
+  //     expiryMonth,
+  //     expiryYear,
+  //     cvv: data.cvv,
+  //   };
+  // };
 
   const handleRevalidation = async (farecode) => {
     setLoading(true);

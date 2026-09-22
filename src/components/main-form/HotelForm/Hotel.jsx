@@ -451,39 +451,51 @@ const Hotel = () => {
         console.error("PAYMENT FAILED:", paymentRes);
 
         setHotelLoader(false);
-        setShowFailurePopup(true);
 
-        return;
-      }
-
-      if (!paymentRes?.success) {
-        setHotelLoader(false);
-        setApiFailMessage(
-          paymentRes?.message || "Unable to process payment. Please try again.",
+        setBookingErrorMessage(
+          paymentRes?.message || "Your booking could not be completed.",
         );
-        setShowApiFailPopup(true);
+
+        setShowBookingErrorPopup(true);
 
         return;
       }
 
-      setHotelLoader(false);
+      // if (!paymentRes?.success) {
+      //   setHotelLoader(false);
+      //   setApiFailMessage(
+      //     paymentRes?.message || "Unable to process payment. Please try again.",
+      //   );
+      //   setShowApiFailPopup(true);
+
+      //   return;
+      // }
 
       if (!itemId) {
         console.error("itemId not received from PayNow:", paymentRes);
 
         setHotelLoader(false);
-        setShowFailurePopup(true);
+
+        setBookingErrorMessage(
+          paymentRes?.message || "Your booking could not be completed.",
+        );
+
+        setShowBookingErrorPopup(true);
 
         return;
       }
 
-      // 3D Secure authentication required
       if (requiresAction === true || action3ds === true) {
         if (!paymentUrl) {
           console.error("3DS required but redirectUrl is missing:", paymentRes);
 
           setHotelLoader(false);
-          setShowFailurePopup(true);
+
+          setBookingErrorMessage(
+            paymentRes?.message || "Unable to continue with payment.",
+          );
+
+          setShowBookingErrorPopup(true);
 
           return;
         }
@@ -551,7 +563,13 @@ const Hotel = () => {
 
       setHotelLoader(false);
 
-      setShowFailurePopup(true);
+      setBookingErrorMessage(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Your booking could not be completed.",
+      );
+
+      setShowBookingErrorPopup(true);
     }
   };
 
@@ -593,7 +611,11 @@ const Hotel = () => {
     }
 
     if (paymentStatus === "failed") {
-      setShowFailurePopup(true);
+      setBookingErrorMessage(
+        "Your payment could not be completed. Please try again.",
+      );
+
+      setShowBookingErrorPopup(true);
 
       return;
     }
@@ -829,9 +851,15 @@ const Hotel = () => {
         } catch (error) {
           console.error("BOOKING AFTER PAYMENT ERROR:", error);
 
-          setHotelLoader(false);
+          setBookingErrorMessage(
+            error?.response?.data?.message ||
+              error?.message ||
+              "Your booking could not be completed.",
+          );
 
-          setShowFailurePopup(true);
+          setShowBookingErrorPopup(true);
+        } finally {
+          setHotelLoader(false);
         }
       };
 
@@ -1048,7 +1076,9 @@ const Hotel = () => {
           <div className="payment-failure-popup">
             <div className="payment-failure-icon">✕</div>
 
-            <h2>Transaction Failed</h2>
+            <h2>Contact Us</h2>
+
+            <p></p>
 
             <button onClick={() => setShowFailurePopup(false)}>
               Try Again

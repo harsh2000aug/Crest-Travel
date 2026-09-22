@@ -610,7 +610,8 @@ const CarResults = () => {
           location: car?.dropoff?.location || "",
           locationInformation: car?.dropoff?.location_information || "",
         },
-        fareCode: car?.price_postpaid?.fareCode,
+        fareCode:
+          car?.price_postpaid?.fareCode || car?.price_prepaid?.fareCode || "",
       },
 
       search: {

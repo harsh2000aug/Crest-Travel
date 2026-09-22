@@ -216,8 +216,6 @@ const HotelDetailPage = () => {
       const hotelResult = getHotelResult(res);
       setHotelImages(hotelResult);
 
-      // In case this endpoint DOES also return pricing (like your sample JSON),
-      // grab it too — but never overwrite a populated room list with an empty one.
       const pricingResult = getFilterResult(res);
       const groups = Array.isArray(pricingResult?.groups)
         ? pricingResult.groups
@@ -586,9 +584,7 @@ const HotelDetailPage = () => {
     );
     params.set(
       "ourprice_before_credit",
-      room?.ourprice_before_credit != null
-        ? String(room.ourprice_before_credit)
-        : "0",
+      room?.ourprice != null ? String(room.ourprice) : "0",
     );
     params.set(
       "payAtHotel",
