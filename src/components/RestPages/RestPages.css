@@ -4282,6 +4282,9 @@
   color: #2563eb;
   font-size: 21px;
 }
+.voyage-flight-airline-icon img{
+  width: 100%;
+}
 
 .voyage-flight-airline-name {
   margin: 0;

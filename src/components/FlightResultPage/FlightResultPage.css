@@ -1257,6 +1257,54 @@
   .fare-grid {
     grid-template-columns: 1fr;
   }
+
+  .flight-card-main {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .time-block.dep,
+  .time-block.arr {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+
+  .flight-time {
+    font-size: 18px;
+  }
+
+  .price-amount {
+    font-size: 22px;
+  }
+
+  .airline-logo-lg {
+    width: 44px;
+    height: 44px;
+    font-size: 14px;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pagination-pages {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .baggage-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .multi-city-route-preview {
+    font-size: 12px;
+  }
+   .results-count {
+    font-size: 11px;
+}
 }
 /* =========================================================
    PAGINATION
@@ -1637,4 +1685,138 @@
   font-size: 12px;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+/* Mobile-only toggle buttons — hidden on desktop */
+.mobile-search-toggle,
+.mobile-filter-toggle {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .search-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .page-body {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  /* Search panel toggle */
+  .mobile-search-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 11px 16px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius-sm);
+    color: var(--white);
+    font-family: "Inter", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .search-form-panel {
+    display: none;
+  }
+
+  .search-form-panel.open {
+    display: block;
+  }
+
+  /* Results bar */
+  .results-summary {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .sort-row {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Filter panel toggle */
+  .mobile-filter-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .filter-sidebar {
+    display: none;
+    position: static;
+    height: auto;
+    max-height: 70vh;
+  }
+
+  .filter-sidebar.mobile-open {
+    display: block;
+    margin-bottom: 14px;
+  }
+
+  /* Flight card — stack into two rows instead of one tight strip */
+  .flight-card-main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .airline-identity {
+    order: 1;
+    flex: 1 1 100%;
+  }
+
+  .time-block.dep {
+    order: 2;
+    flex: 1 1 45%;
+    padding: 0;
+  }
+
+  .time-block.arr {
+    order: 3;
+    flex: 1 1 15%;
+    padding: 0;
+  }
+
+  .duration-strip {
+    order: 4;
+    flex: 1 1 100%;
+    padding: 4px 0 0;
+  }
+
+  .price-section {
+    order: 5;
+    flex: 1 1 100%;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    padding-left: 0;
+    margin-left: 0;
+    text-align: left;
+  }
+
+  .fare-grid {
+    grid-template-columns: 1fr;
+  }
+  .flight-details-grid {
+    grid-template-columns: 1fr;
+  }
+  .results-count {
+    font-size: 11px;
+}
 }

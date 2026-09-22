@@ -311,6 +311,21 @@ export const allApi = {
       uri: "/alphaflight/trip-details",
     },
   },
+  checkflightRefund: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaflight/check-refund-eligibility",
+    },
+  },
+  checkflightCancel: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaflight/cancel-booking",
+    },
+  },
+
   carSearchLocation: {
     v1: {
       ...defaults.methods.POST,

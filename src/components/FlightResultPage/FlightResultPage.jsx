@@ -355,6 +355,29 @@ function AirlineLogo({ code, name, size = "md" }) {
 
   const className = size === "lg" ? "airline-logo-lg" : "airline-logo";
 
+  const [imgError, setImgError] = useState(false);
+
+  const logoUrl = code
+    ? `https://d15u1xbazig0vl.cloudfront.net/images/flight/${code}.png`
+    : null;
+
+  if (logoUrl && !imgError) {
+    return (
+      <div className={className} title={airlineName}>
+        <img
+          src={logoUrl}
+          alt={airlineName}
+          onError={() => setImgError(true)}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className={className} title={airlineName}>
       {initials || "—"}
@@ -1037,7 +1060,8 @@ const EMPTY_SEGMENT = {
 
 export default function FlightResultPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   /* =========================
      URL PARAMS (used only as INITIAL / default form values)
   ========================= */
@@ -1887,619 +1911,549 @@ export default function FlightResultPage() {
                 Multi City
               </button>
             </div>
+            <button
+              type="button"
+              className="mobile-search-toggle"
+              onClick={() => setShowMobileSearch((prev) => !prev)}
+            >
+              🔍 {showMobileSearch ? "Hide Search" : "Modify Search"}
+            </button>
+            <div
+              className={`search-form-panel ${showMobileSearch ? "open" : ""}`}
+            >
+              <form onSubmit={handleSubmit(onSubmit)}>
+                {isMultiCity ? (
+                  <div className="multi-city-form">
+                    {multiCityFields.map((segmentField, index) => (
+                      <div className="multi-city-segment" key={segmentField.id}>
+                        <div className="multi-city-segment-header">
+                          <div className="multi-city-segment-title">
+                            Flight {index + 1}
+                          </div>
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-              {isMultiCity ? (
-                <div className="multi-city-form">
-                  {multiCityFields.map((segmentField, index) => (
-                    <div className="multi-city-segment" key={segmentField.id}>
-                      <div className="multi-city-segment-header">
-                        <div className="multi-city-segment-title">
-                          Flight {index + 1}
+                          {multiCityFields.length > 2 && (
+                            <button
+                              type="button"
+                              className="multi-city-remove"
+                              onClick={() => removeMultiCitySegment(index)}
+                            >
+                              Remove
+                            </button>
+                          )}
                         </div>
 
-                        {multiCityFields.length > 2 && (
-                          <button
-                            type="button"
-                            className="multi-city-remove"
-                            onClick={() => removeMultiCitySegment(index)}
+                        <div className="multi-city-fields">
+                          <div
+                            className="form-field"
+                            style={{
+                              position: "relative",
+                            }}
                           >
-                            Remove
-                          </button>
+                            <label className="form-label">From</label>
+
+                            <div className="form-input-wrap">
+                              <span className="form-input-icon">🛫</span>
+
+                              <Controller
+                                control={control}
+                                name={`multiCitySegments.${index}.originName`}
+                                rules={{
+                                  required: "Origin is required",
+                                  validate: () => {
+                                    const origin = getValues(
+                                      `multiCitySegments.${index}.origin`,
+                                    );
+
+                                    return origin
+                                      ? true
+                                      : "Please select an origin airport";
+                                  },
+                                }}
+                                render={({ field }) => (
+                                  <input
+                                    className={`form-input ${
+                                      errors.multiCitySegments?.[index]
+                                        ?.originName
+                                        ? "multi-city-input-error"
+                                        : ""
+                                    }`}
+                                    value={field.value || ""}
+                                    placeholder="City or Airport"
+                                    onChange={(e) => {
+                                      field.onChange(e.target.value);
+
+                                      updateMultiCitySegment(
+                                        index,
+                                        "originName",
+                                        e.target.value,
+                                      );
+
+                                      handleMultiCityAirportSearch(
+                                        index,
+                                        "origin",
+                                        e.target.value,
+                                      );
+                                    }}
+                                    onFocus={() =>
+                                      handleMultiCityAirportSearch(
+                                        index,
+                                        "origin",
+                                        field.value || "",
+                                      )
+                                    }
+                                  />
+                                )}
+                              />
+                            </div>
+                            {errors.multiCitySegments?.[index]?.originName && (
+                              <span className="multi-city-validation-error">
+                                {
+                                  errors.multiCitySegments[index].originName
+                                    .message
+                                }
+                              </span>
+                            )}
+
+                            {multiCityDropdown.index === index &&
+                              multiCityDropdown.field === "origin" &&
+                              multiCityDropdown.items.length > 0 && (
+                                <div className="dropdownFlight multi-city-dropdown">
+                                  {multiCityDropdown.items.map(
+                                    (item, itemIndex) => (
+                                      <div
+                                        key={itemIndex}
+                                        className="dropdown-item"
+                                        onClick={() =>
+                                          selectMultiCityAirport(
+                                            index,
+                                            "origin",
+                                            item,
+                                          )
+                                        }
+                                      >
+                                        <div className="airport-row">
+                                          <div>
+                                            <div className="city-name">
+                                              {item.fullname}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              )}
+                          </div>
+
+                          <div
+                            className="form-field"
+                            style={{
+                              position: "relative",
+                            }}
+                          >
+                            <label className="form-label">To</label>
+
+                            <div className="form-input-wrap">
+                              <span className="form-input-icon">🛬</span>
+
+                              <Controller
+                                control={control}
+                                name={`multiCitySegments.${index}.destinationName`}
+                                rules={{
+                                  required: "Destination is required",
+                                  validate: () => {
+                                    const destination = getValues(
+                                      `multiCitySegments.${index}.destination`,
+                                    );
+
+                                    return destination
+                                      ? true
+                                      : "Please select a destination airport";
+                                  },
+                                }}
+                                render={({ field }) => (
+                                  <input
+                                    className={`form-input ${
+                                      errors.multiCitySegments?.[index]
+                                        ?.destinationName
+                                        ? "multi-city-input-error"
+                                        : ""
+                                    }`}
+                                    value={field.value || ""}
+                                    placeholder="City or Airport"
+                                    onChange={(e) => {
+                                      field.onChange(e.target.value);
+
+                                      updateMultiCitySegment(
+                                        index,
+                                        "destinationName",
+                                        e.target.value,
+                                      );
+
+                                      handleMultiCityAirportSearch(
+                                        index,
+                                        "destination",
+                                        e.target.value,
+                                      );
+                                    }}
+                                    onFocus={() =>
+                                      handleMultiCityAirportSearch(
+                                        index,
+                                        "destination",
+                                        field.value || "",
+                                      )
+                                    }
+                                  />
+                                )}
+                              />
+                            </div>
+                            {errors.multiCitySegments?.[index]
+                              ?.destinationName && (
+                              <span className="multi-city-validation-error">
+                                {
+                                  errors.multiCitySegments[index]
+                                    .destinationName.message
+                                }
+                              </span>
+                            )}
+                            {multiCityDropdown.index === index &&
+                              multiCityDropdown.field === "destination" &&
+                              multiCityDropdown.items.length > 0 && (
+                                <div className="dropdownFlight multi-city-dropdown">
+                                  {multiCityDropdown.items.map(
+                                    (item, itemIndex) => (
+                                      <div
+                                        key={itemIndex}
+                                        className="dropdown-item"
+                                        onClick={() =>
+                                          selectMultiCityAirport(
+                                            index,
+                                            "destination",
+                                            item,
+                                          )
+                                        }
+                                      >
+                                        <div className="airport-row">
+                                          <div>
+                                            <div className="city-name">
+                                              {item.fullname}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              )}
+                          </div>
+
+                          <div className="form-field">
+                            <label className="form-label">Departure</label>
+
+                            <div className="form-input-wrap">
+                              <span className="form-input-icon">📅</span>
+
+                              <input
+                                type="date"
+                                className={`form-input ${
+                                  errors.multiCitySegments?.[index]
+                                    ?.departureDate
+                                    ? "multi-city-input-error"
+                                    : ""
+                                }`}
+                                min={
+                                  index === 0
+                                    ? getToday()
+                                    : multiCitySegments?.[index - 1]
+                                        ?.departureDate || getToday()
+                                }
+                                {...register(
+                                  `multiCitySegments.${index}.departureDate`,
+                                  {
+                                    required: "Departure date is required",
+
+                                    validate: (value) => {
+                                      if (!value) {
+                                        return "Departure date is required";
+                                      }
+
+                                      if (index === 0) {
+                                        return true;
+                                      }
+
+                                      const previousDate = getValues(
+                                        `multiCitySegments.${index - 1}.departureDate`,
+                                      );
+
+                                      if (
+                                        previousDate &&
+                                        value < previousDate
+                                      ) {
+                                        return "Date must be on or after previous flight date";
+                                      }
+
+                                      return true;
+                                    },
+                                  },
+                                )}
+                              />
+                            </div>
+                            {errors.multiCitySegments?.[index]
+                              ?.departureDate && (
+                              <span className="multi-city-validation-error">
+                                {
+                                  errors.multiCitySegments[index].departureDate
+                                    .message
+                                }
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="multi-city-bottom">
+                      {multiCityFields.length < 6 && (
+                        <button
+                          type="button"
+                          className="multi-city-add"
+                          onClick={addMultiCitySegment}
+                        >
+                          + Add Another Flight
+                        </button>
+                      )}
+
+                      <div className="multi-city-route-preview">
+                        {(multiCitySegments || []).map((segment, index) => (
+                          <span key={`route-${index}`}>
+                            {segment.origin || "From"} →{" "}
+                            {segment.destination || "To"}
+                            {index < multiCitySegments.length - 1 && <b> · </b>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="multi-city-common-row">
+                      <div
+                        className="form-field traveler-group"
+                        style={{
+                          position: "relative",
+                        }}
+                      >
+                        <label className="form-label">Travelers</label>
+
+                        <div
+                          className="form-input-wrap"
+                          onClick={() =>
+                            setShowTravelerDropdown((prev) => !prev)
+                          }
+                        >
+                          <span className="form-input-icon">👤</span>
+
+                          <div
+                            className="form-input"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            {totalTravelers} Traveler
+                            {totalTravelers > 1 ? "s" : ""}
+                          </div>
+                        </div>
+
+                        {showTravelerDropdown && (
+                          <div className="traveler-dropdown">
+                            <div className="traveler-row">
+                              <div>
+                                <h4>Adults</h4>
+                                <span>12+ Years</span>
+                              </div>
+
+                              <div className="counter">
+                                <button
+                                  type="button"
+                                  onClick={() => decrementTraveler("adults")}
+                                >
+                                  -
+                                </button>
+
+                                <span>{adults}</span>
+
+                                <button
+                                  type="button"
+                                  onClick={() => incrementTraveler("adults")}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="traveler-row">
+                              <div>
+                                <h4>Children</h4>
+                                <span>2 - 11 Years</span>
+                              </div>
+
+                              <div className="counter">
+                                <button
+                                  type="button"
+                                  onClick={() => decrementTraveler("children")}
+                                >
+                                  -
+                                </button>
+
+                                <span>{children}</span>
+
+                                <button
+                                  type="button"
+                                  onClick={() => incrementTraveler("children")}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="traveler-row">
+                              <div>
+                                <h4>Infants</h4>
+                                <span>Under 2 Years</span>
+                              </div>
+
+                              <div className="counter">
+                                <button
+                                  type="button"
+                                  onClick={() => decrementTraveler("infants")}
+                                >
+                                  -
+                                </button>
+
+                                <span>{infants}</span>
+
+                                <button
+                                  type="button"
+                                  onClick={() => incrementTraveler("infants")}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              className="done-btn"
+                              onClick={() => setShowTravelerDropdown(false)}
+                            >
+                              Done
+                            </button>
+                          </div>
                         )}
                       </div>
 
-                      <div className="multi-city-fields">
-                        <div
-                          className="form-field"
-                          style={{
-                            position: "relative",
-                          }}
-                        >
-                          <label className="form-label">From</label>
+                      <div className="form-field">
+                        <label className="form-label">Cabin Class</label>
 
-                          <div className="form-input-wrap">
-                            <span className="form-input-icon">🛫</span>
+                        <div className="form-input-wrap">
+                          <span className="form-input-icon">💼</span>
 
-                            <Controller
-                              control={control}
-                              name={`multiCitySegments.${index}.originName`}
-                              rules={{
-                                required: "Origin is required",
-                                validate: () => {
-                                  const origin = getValues(
-                                    `multiCitySegments.${index}.origin`,
-                                  );
-
-                                  return origin
-                                    ? true
-                                    : "Please select an origin airport";
-                                },
-                              }}
-                              render={({ field }) => (
-                                <input
-                                  className={`form-input ${
-                                    errors.multiCitySegments?.[index]
-                                      ?.originName
-                                      ? "multi-city-input-error"
-                                      : ""
-                                  }`}
-                                  value={field.value || ""}
-                                  placeholder="City or Airport"
-                                  onChange={(e) => {
-                                    field.onChange(e.target.value);
-
-                                    updateMultiCitySegment(
-                                      index,
-                                      "originName",
-                                      e.target.value,
-                                    );
-
-                                    handleMultiCityAirportSearch(
-                                      index,
-                                      "origin",
-                                      e.target.value,
-                                    );
-                                  }}
-                                  onFocus={() =>
-                                    handleMultiCityAirportSearch(
-                                      index,
-                                      "origin",
-                                      field.value || "",
-                                    )
-                                  }
-                                />
-                              )}
-                            />
-                          </div>
-                          {errors.multiCitySegments?.[index]?.originName && (
-                            <span className="multi-city-validation-error">
-                              {
-                                errors.multiCitySegments[index].originName
-                                  .message
-                              }
-                            </span>
-                          )}
-
-                          {multiCityDropdown.index === index &&
-                            multiCityDropdown.field === "origin" &&
-                            multiCityDropdown.items.length > 0 && (
-                              <div className="dropdownFlight multi-city-dropdown">
-                                {multiCityDropdown.items.map(
-                                  (item, itemIndex) => (
-                                    <div
-                                      key={itemIndex}
-                                      className="dropdown-item"
-                                      onClick={() =>
-                                        selectMultiCityAirport(
-                                          index,
-                                          "origin",
-                                          item,
-                                        )
-                                      }
-                                    >
-                                      <div className="airport-row">
-                                        <div>
-                                          <div className="city-name">
-                                            {item.fullname}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ),
-                                )}
-                              </div>
-                            )}
-                        </div>
-
-                        <div
-                          className="form-field"
-                          style={{
-                            position: "relative",
-                          }}
-                        >
-                          <label className="form-label">To</label>
-
-                          <div className="form-input-wrap">
-                            <span className="form-input-icon">🛬</span>
-
-                            <Controller
-                              control={control}
-                              name={`multiCitySegments.${index}.destinationName`}
-                              rules={{
-                                required: "Destination is required",
-                                validate: () => {
-                                  const destination = getValues(
-                                    `multiCitySegments.${index}.destination`,
-                                  );
-
-                                  return destination
-                                    ? true
-                                    : "Please select a destination airport";
-                                },
-                              }}
-                              render={({ field }) => (
-                                <input
-                                  className={`form-input ${
-                                    errors.multiCitySegments?.[index]
-                                      ?.destinationName
-                                      ? "multi-city-input-error"
-                                      : ""
-                                  }`}
-                                  value={field.value || ""}
-                                  placeholder="City or Airport"
-                                  onChange={(e) => {
-                                    field.onChange(e.target.value);
-
-                                    updateMultiCitySegment(
-                                      index,
-                                      "destinationName",
-                                      e.target.value,
-                                    );
-
-                                    handleMultiCityAirportSearch(
-                                      index,
-                                      "destination",
-                                      e.target.value,
-                                    );
-                                  }}
-                                  onFocus={() =>
-                                    handleMultiCityAirportSearch(
-                                      index,
-                                      "destination",
-                                      field.value || "",
-                                    )
-                                  }
-                                />
-                              )}
-                            />
-                          </div>
-                          {errors.multiCitySegments?.[index]
-                            ?.destinationName && (
-                            <span className="multi-city-validation-error">
-                              {
-                                errors.multiCitySegments[index].destinationName
-                                  .message
-                              }
-                            </span>
-                          )}
-                          {multiCityDropdown.index === index &&
-                            multiCityDropdown.field === "destination" &&
-                            multiCityDropdown.items.length > 0 && (
-                              <div className="dropdownFlight multi-city-dropdown">
-                                {multiCityDropdown.items.map(
-                                  (item, itemIndex) => (
-                                    <div
-                                      key={itemIndex}
-                                      className="dropdown-item"
-                                      onClick={() =>
-                                        selectMultiCityAirport(
-                                          index,
-                                          "destination",
-                                          item,
-                                        )
-                                      }
-                                    >
-                                      <div className="airport-row">
-                                        <div>
-                                          <div className="city-name">
-                                            {item.fullname}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ),
-                                )}
-                              </div>
-                            )}
-                        </div>
-
-                        <div className="form-field">
-                          <label className="form-label">Departure</label>
-
-                          <div className="form-input-wrap">
-                            <span className="form-input-icon">📅</span>
-
-                            <input
-                              type="date"
-                              className={`form-input ${
-                                errors.multiCitySegments?.[index]?.departureDate
-                                  ? "multi-city-input-error"
-                                  : ""
-                              }`}
-                              min={
-                                index === 0
-                                  ? getToday()
-                                  : multiCitySegments?.[index - 1]
-                                      ?.departureDate || getToday()
-                              }
-                              {...register(
-                                `multiCitySegments.${index}.departureDate`,
-                                {
-                                  required: "Departure date is required",
-
-                                  validate: (value) => {
-                                    if (!value) {
-                                      return "Departure date is required";
-                                    }
-
-                                    if (index === 0) {
-                                      return true;
-                                    }
-
-                                    const previousDate = getValues(
-                                      `multiCitySegments.${index - 1}.departureDate`,
-                                    );
-
-                                    if (previousDate && value < previousDate) {
-                                      return "Date must be on or after previous flight date";
-                                    }
-
-                                    return true;
-                                  },
-                                },
-                              )}
-                            />
-                          </div>
-                          {errors.multiCitySegments?.[index]?.departureDate && (
-                            <span className="multi-city-validation-error">
-                              {
-                                errors.multiCitySegments[index].departureDate
-                                  .message
-                              }
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  <div className="multi-city-bottom">
-                    {multiCityFields.length < 6 && (
-                      <button
-                        type="button"
-                        className="multi-city-add"
-                        onClick={addMultiCitySegment}
-                      >
-                        + Add Another Flight
-                      </button>
-                    )}
-
-                    <div className="multi-city-route-preview">
-                      {(multiCitySegments || []).map((segment, index) => (
-                        <span key={`route-${index}`}>
-                          {segment.origin || "From"} →{" "}
-                          {segment.destination || "To"}
-                          {index < multiCitySegments.length - 1 && <b> · </b>}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="multi-city-common-row">
-                    <div
-                      className="form-field traveler-group"
-                      style={{
-                        position: "relative",
-                      }}
-                    >
-                      <label className="form-label">Travelers</label>
-
-                      <div
-                        className="form-input-wrap"
-                        onClick={() => setShowTravelerDropdown((prev) => !prev)}
-                      >
-                        <span className="form-input-icon">👤</span>
-
-                        <div
-                          className="form-input"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          {totalTravelers} Traveler
-                          {totalTravelers > 1 ? "s" : ""}
-                        </div>
-                      </div>
-
-                      {showTravelerDropdown && (
-                        <div className="traveler-dropdown">
-                          <div className="traveler-row">
-                            <div>
-                              <h4>Adults</h4>
-                              <span>12+ Years</span>
-                            </div>
-
-                            <div className="counter">
-                              <button
-                                type="button"
-                                onClick={() => decrementTraveler("adults")}
-                              >
-                                -
-                              </button>
-
-                              <span>{adults}</span>
-
-                              <button
-                                type="button"
-                                onClick={() => incrementTraveler("adults")}
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="traveler-row">
-                            <div>
-                              <h4>Children</h4>
-                              <span>2 - 11 Years</span>
-                            </div>
-
-                            <div className="counter">
-                              <button
-                                type="button"
-                                onClick={() => decrementTraveler("children")}
-                              >
-                                -
-                              </button>
-
-                              <span>{children}</span>
-
-                              <button
-                                type="button"
-                                onClick={() => incrementTraveler("children")}
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="traveler-row">
-                            <div>
-                              <h4>Infants</h4>
-                              <span>Under 2 Years</span>
-                            </div>
-
-                            <div className="counter">
-                              <button
-                                type="button"
-                                onClick={() => decrementTraveler("infants")}
-                              >
-                                -
-                              </button>
-
-                              <span>{infants}</span>
-
-                              <button
-                                type="button"
-                                onClick={() => incrementTraveler("infants")}
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            className="done-btn"
-                            onClick={() => setShowTravelerDropdown(false)}
+                          <select
+                            className="form-input"
+                            {...register("cabinClass")}
                           >
-                            Done
-                          </button>
+                            <option>Economy</option>
+
+                            <option>Premium</option>
+
+                            <option>Business</option>
+
+                            <option>First Class</option>
+                          </select>
                         </div>
-                      )}
-                    </div>
-
-                    <div className="form-field">
-                      <label className="form-label">Cabin Class</label>
-
-                      <div className="form-input-wrap">
-                        <span className="form-input-icon">💼</span>
-
-                        <select
-                          className="form-input"
-                          {...register("cabinClass")}
-                        >
-                          <option>Economy</option>
-
-                          <option>Premium</option>
-
-                          <option>Business</option>
-
-                          <option>First Class</option>
-                        </select>
                       </div>
-                    </div>
 
-                    <button
-                      className="search-submit-btn"
-                      type="submit"
-                      disabled={loading}
-                    >
-                      {loading ? "Searching..." : "Search Flights"}
-                    </button>
+                      <button
+                        className="search-submit-btn"
+                        type="submit"
+                        disabled={loading}
+                      >
+                        {loading ? "Searching..." : "Search Flights"}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <>
-                  <div className="search-form">
-                    <div
-                      className="form-field origin-wrap"
-                      style={{
-                        position: "relative",
-                      }}
-                    >
-                      <label className="form-label">From</label>
+                ) : (
+                  <>
+                    <div className="search-form">
+                      <div
+                        className="form-field origin-wrap"
+                        style={{
+                          position: "relative",
+                        }}
+                      >
+                        <label className="form-label">From</label>
 
-                      <div className="form-input-wrap">
-                        <span className="form-input-icon">🛫</span>
+                        <div className="form-input-wrap">
+                          <span className="form-input-icon">🛫</span>
 
-                        <Controller
-                          control={control}
-                          name="originName"
-                          rules={{
-                            required: "Origin is required",
-                            validate: () =>
-                              getValues("origin")
-                                ? true
-                                : "Please select an origin airport",
-                          }}
-                          render={({ field }) => (
-                            <input
-                              className={`form-input ${
-                                errors.originName
-                                  ? "flight-validation-input"
-                                  : ""
-                              }`}
-                              value={field.value || ""}
-                              onChange={(e) => {
-                                field.onChange(e.target.value);
+                          <Controller
+                            control={control}
+                            name="originName"
+                            rules={{
+                              required: "Origin is required",
+                              validate: () =>
+                                getValues("origin")
+                                  ? true
+                                  : "Please select an origin airport",
+                            }}
+                            render={({ field }) => (
+                              <input
+                                className={`form-input ${
+                                  errors.originName
+                                    ? "flight-validation-input"
+                                    : ""
+                                }`}
+                                value={field.value || ""}
+                                onChange={(e) => {
+                                  field.onChange(e.target.value);
 
-                                setValue("origin", "", {
-                                  shouldValidate: true,
-                                });
+                                  setValue("origin", "", {
+                                    shouldValidate: true,
+                                  });
 
-                                setOriginAirport(null);
-                                setShowOriginDropdown(true);
-                              }}
-                              onFocus={() => setShowOriginDropdown(true)}
-                              placeholder="City or Airport"
-                            />
-                          )}
-                        />
-                      </div>
-                      {errors.originName && (
-                        <span className="flight-validation-error">
-                          {errors.originName.message}
-                        </span>
-                      )}
-
-                      {showOriginDropdown && originDropdown.length > 0 && (
-                        <div className="dropdownFlight">
-                          {originDropdown.map((item, index) => (
-                            <div
-                              key={index}
-                              className="dropdown-item"
-                              onClick={() => {
-                                setValue("originName", item.fullname);
-
-                                setOriginAirport(item);
-
-                                setValue(
-                                  "origin",
-                                  getAirportCode(item.fullname),
-                                );
-
-                                setShowOriginDropdown(false);
-
-                                setOriginDropdown([]);
-                              }}
-                            >
-                              <div className="airport-row">
-                                <div>
-                                  <div className="city-name">
-                                    {item.fullname}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
+                                  setOriginAirport(null);
+                                  setShowOriginDropdown(true);
+                                }}
+                                onFocus={() => setShowOriginDropdown(true)}
+                                placeholder="City or Airport"
+                              />
+                            )}
+                          />
                         </div>
-                      )}
-                    </div>
+                        {errors.originName && (
+                          <span className="flight-validation-error">
+                            {errors.originName.message}
+                          </span>
+                        )}
 
-                    <div
-                      className="form-field"
-                      style={{
-                        position: "relative",
-                      }}
-                    >
-                      <label className="form-label">To</label>
-
-                      <div className="form-input-wrap">
-                        <span className="form-input-icon">🛬</span>
-
-                        <Controller
-                          control={control}
-                          name="destinationName"
-                          rules={{
-                            required: "Destination is required",
-                            validate: () =>
-                              getValues("destination")
-                                ? true
-                                : "Please select a destination airport",
-                          }}
-                          render={({ field }) => (
-                            <input
-                              className={`form-input ${
-                                errors.destinationName
-                                  ? "flight-validation-input"
-                                  : ""
-                              }`}
-                              value={field.value || ""}
-                              onChange={(e) => {
-                                field.onChange(e.target.value);
-
-                                setValue("destination", "", {
-                                  shouldValidate: true,
-                                });
-
-                                setDestinationAirport(null);
-                                setShowDestinationDropdown(true);
-                              }}
-                              onFocus={() => setShowDestinationDropdown(true)}
-                              placeholder="City or Airport"
-                            />
-                          )}
-                        />
-                      </div>
-                      {errors.destinationName && (
-                        <span className="flight-validation-error">
-                          {errors.destinationName.message}
-                        </span>
-                      )}
-
-                      {showDestinationDropdown &&
-                        destinationDropdown.length > 0 && (
+                        {showOriginDropdown && originDropdown.length > 0 && (
                           <div className="dropdownFlight">
-                            {destinationDropdown.map((item, index) => (
+                            {originDropdown.map((item, index) => (
                               <div
                                 key={index}
                                 className="dropdown-item"
                                 onClick={() => {
-                                  setValue("destinationName", item.fullname);
+                                  setValue("originName", item.fullname);
 
-                                  setDestinationAirport(item);
+                                  setOriginAirport(item);
 
                                   setValue(
-                                    "destination",
+                                    "origin",
                                     getAirportCode(item.fullname),
                                   );
 
-                                  setShowDestinationDropdown(false);
+                                  setShowOriginDropdown(false);
 
-                                  setDestinationDropdown([]);
+                                  setOriginDropdown([]);
                                 }}
                               >
                                 <div className="airport-row">
@@ -2513,202 +2467,291 @@ export default function FlightResultPage() {
                             ))}
                           </div>
                         )}
-                    </div>
-
-                    <div className="form-field">
-                      <label className="form-label">Departure</label>
-
-                      <div className="form-input-wrap">
-                        <span className="form-input-icon">📅</span>
-
-                        <input
-                          type="date"
-                          className={`form-input ${
-                            errors.depDate ? "flight-validation-input" : ""
-                          }`}
-                          min={getToday()}
-                          {...register("depDate", {
-                            required: "Departure date is required",
-                          })}
-                        />
                       </div>
-                      {errors.depDate && (
-                        <span className="flight-validation-error">
-                          {errors.depDate.message}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="form-field">
-                      <label className="form-label">Return</label>
-
-                      <div className="form-input-wrap">
-                        <span className="form-input-icon">📅</span>
-
-                        <input
-                          type="date"
-                          className={`form-input ${
-                            errors.retDate ? "flight-validation-input" : ""
-                          }`}
-                          min={depDate || getToday()}
-                          disabled={!isRoundTrip}
-                          style={{
-                            opacity: !isRoundTrip ? 0.4 : 1,
-                          }}
-                          {...register("retDate", {
-                            validate: (value) => {
-                              if (!isRoundTrip) {
-                                return true;
-                              }
-
-                              if (!value) {
-                                return "Return date is required";
-                              }
-
-                              if (depDate && value < depDate) {
-                                return "Return date must be after departure date";
-                              }
-
-                              return true;
-                            },
-                          })}
-                        />
-                      </div>
-                      {errors.retDate && (
-                        <span className="flight-validation-error">
-                          {errors.retDate.message}
-                        </span>
-                      )}
-                    </div>
-
-                    <div
-                      className="form-field traveler-group"
-                      style={{
-                        position: "relative",
-                      }}
-                    >
-                      <label className="form-label">Travelers</label>
 
                       <div
-                        className="form-input-wrap"
-                        onClick={() => setShowTravelerDropdown((prev) => !prev)}
+                        className="form-field"
                         style={{
-                          cursor: "pointer",
+                          position: "relative",
                         }}
                       >
-                        <span className="form-input-icon">👤</span>
+                        <label className="form-label">To</label>
 
-                        <div
-                          className="form-input"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          {totalTravelers} Traveler
-                          {totalTravelers > 1 ? "s" : ""}
+                        <div className="form-input-wrap">
+                          <span className="form-input-icon">🛬</span>
+
+                          <Controller
+                            control={control}
+                            name="destinationName"
+                            rules={{
+                              required: "Destination is required",
+                              validate: () =>
+                                getValues("destination")
+                                  ? true
+                                  : "Please select a destination airport",
+                            }}
+                            render={({ field }) => (
+                              <input
+                                className={`form-input ${
+                                  errors.destinationName
+                                    ? "flight-validation-input"
+                                    : ""
+                                }`}
+                                value={field.value || ""}
+                                onChange={(e) => {
+                                  field.onChange(e.target.value);
+
+                                  setValue("destination", "", {
+                                    shouldValidate: true,
+                                  });
+
+                                  setDestinationAirport(null);
+                                  setShowDestinationDropdown(true);
+                                }}
+                                onFocus={() => setShowDestinationDropdown(true)}
+                                placeholder="City or Airport"
+                              />
+                            )}
+                          />
                         </div>
+                        {errors.destinationName && (
+                          <span className="flight-validation-error">
+                            {errors.destinationName.message}
+                          </span>
+                        )}
+
+                        {showDestinationDropdown &&
+                          destinationDropdown.length > 0 && (
+                            <div className="dropdownFlight">
+                              {destinationDropdown.map((item, index) => (
+                                <div
+                                  key={index}
+                                  className="dropdown-item"
+                                  onClick={() => {
+                                    setValue("destinationName", item.fullname);
+
+                                    setDestinationAirport(item);
+
+                                    setValue(
+                                      "destination",
+                                      getAirportCode(item.fullname),
+                                    );
+
+                                    setShowDestinationDropdown(false);
+
+                                    setDestinationDropdown([]);
+                                  }}
+                                >
+                                  <div className="airport-row">
+                                    <div>
+                                      <div className="city-name">
+                                        {item.fullname}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                       </div>
 
-                      {showTravelerDropdown && (
-                        <div className="traveler-dropdown">
-                          <div className="traveler-row">
-                            <div>
-                              <h4>Adults</h4>
-                              <span>12+ Years</span>
-                            </div>
+                      <div className="form-field">
+                        <label className="form-label">Departure</label>
 
-                            <div className="counter">
-                              <button
-                                type="button"
-                                onClick={() => decrementTraveler("adults")}
-                              >
-                                -
-                              </button>
+                        <div className="form-input-wrap">
+                          <span className="form-input-icon">📅</span>
 
-                              <span>{adults}</span>
-
-                              <button
-                                type="button"
-                                onClick={() => incrementTraveler("adults")}
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="traveler-row">
-                            <div>
-                              <h4>Children</h4>
-                              <span>2 - 11 Years</span>
-                            </div>
-
-                            <div className="counter">
-                              <button
-                                type="button"
-                                onClick={() => decrementTraveler("children")}
-                              >
-                                -
-                              </button>
-
-                              <span>{children}</span>
-
-                              <button
-                                type="button"
-                                onClick={() => incrementTraveler("children")}
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="traveler-row">
-                            <div>
-                              <h4>Infants</h4>
-                              <span>Under 2 Years</span>
-                            </div>
-
-                            <div className="counter">
-                              <button
-                                type="button"
-                                onClick={() => decrementTraveler("infants")}
-                              >
-                                -
-                              </button>
-
-                              <span>{infants}</span>
-
-                              <button
-                                type="button"
-                                onClick={() => incrementTraveler("infants")}
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            className="done-btn"
-                            onClick={() => setShowTravelerDropdown(false)}
-                          >
-                            Done
-                          </button>
+                          <input
+                            type="date"
+                            className={`form-input ${
+                              errors.depDate ? "flight-validation-input" : ""
+                            }`}
+                            min={getToday()}
+                            {...register("depDate", {
+                              required: "Departure date is required",
+                            })}
+                          />
                         </div>
-                      )}
-                    </div>
+                        {errors.depDate && (
+                          <span className="flight-validation-error">
+                            {errors.depDate.message}
+                          </span>
+                        )}
+                      </div>
 
-                    <button
-                      className="search-submit-btn"
-                      type="submit"
-                      disabled={loading}
-                    >
-                      {loading ? "Searching..." : "Search Flights"}
-                    </button>
-                  </div>
-                </>
-              )}
-            </form>
+                      <div className="form-field">
+                        <label className="form-label">Return</label>
+
+                        <div className="form-input-wrap">
+                          <span className="form-input-icon">📅</span>
+
+                          <input
+                            type="date"
+                            className={`form-input ${
+                              errors.retDate ? "flight-validation-input" : ""
+                            }`}
+                            min={depDate || getToday()}
+                            disabled={!isRoundTrip}
+                            style={{
+                              opacity: !isRoundTrip ? 0.4 : 1,
+                            }}
+                            {...register("retDate", {
+                              validate: (value) => {
+                                if (!isRoundTrip) {
+                                  return true;
+                                }
+
+                                if (!value) {
+                                  return "Return date is required";
+                                }
+
+                                if (depDate && value < depDate) {
+                                  return "Return date must be after departure date";
+                                }
+
+                                return true;
+                              },
+                            })}
+                          />
+                        </div>
+                        {errors.retDate && (
+                          <span className="flight-validation-error">
+                            {errors.retDate.message}
+                          </span>
+                        )}
+                      </div>
+
+                      <div
+                        className="form-field traveler-group"
+                        style={{
+                          position: "relative",
+                        }}
+                      >
+                        <label className="form-label">Travelers</label>
+
+                        <div
+                          className="form-input-wrap"
+                          onClick={() =>
+                            setShowTravelerDropdown((prev) => !prev)
+                          }
+                          style={{
+                            cursor: "pointer",
+                          }}
+                        >
+                          <span className="form-input-icon">👤</span>
+
+                          <div
+                            className="form-input"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            {totalTravelers} Traveler
+                            {totalTravelers > 1 ? "s" : ""}
+                          </div>
+                        </div>
+
+                        {showTravelerDropdown && (
+                          <div className="traveler-dropdown">
+                            <div className="traveler-row">
+                              <div>
+                                <h4>Adults</h4>
+                                <span>12+ Years</span>
+                              </div>
+
+                              <div className="counter">
+                                <button
+                                  type="button"
+                                  onClick={() => decrementTraveler("adults")}
+                                >
+                                  -
+                                </button>
+
+                                <span>{adults}</span>
+
+                                <button
+                                  type="button"
+                                  onClick={() => incrementTraveler("adults")}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="traveler-row">
+                              <div>
+                                <h4>Children</h4>
+                                <span>2 - 11 Years</span>
+                              </div>
+
+                              <div className="counter">
+                                <button
+                                  type="button"
+                                  onClick={() => decrementTraveler("children")}
+                                >
+                                  -
+                                </button>
+
+                                <span>{children}</span>
+
+                                <button
+                                  type="button"
+                                  onClick={() => incrementTraveler("children")}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="traveler-row">
+                              <div>
+                                <h4>Infants</h4>
+                                <span>Under 2 Years</span>
+                              </div>
+
+                              <div className="counter">
+                                <button
+                                  type="button"
+                                  onClick={() => decrementTraveler("infants")}
+                                >
+                                  -
+                                </button>
+
+                                <span>{infants}</span>
+
+                                <button
+                                  type="button"
+                                  onClick={() => incrementTraveler("infants")}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              className="done-btn"
+                              onClick={() => setShowTravelerDropdown(false)}
+                            >
+                              Done
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        className="search-submit-btn"
+                        type="submit"
+                        disabled={loading}
+                      >
+                        {loading ? "Searching..." : "Search Flights"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </form>
+            </div>
 
             <div className="search-meta-row">
               <div className="meta-pill">
@@ -2758,6 +2801,13 @@ export default function FlightResultPage() {
             </div>
 
             <div className="sort-row">
+              <button
+                type="button"
+                className="mobile-filter-toggle"
+                onClick={() => setShowMobileFilters((prev) => !prev)}
+              >
+                🎚️ Filters {showMobileFilters ? "▲" : "▼"}
+              </button>
               <span className="sort-label">Sort by:</span>
 
               <select
@@ -2774,7 +2824,9 @@ export default function FlightResultPage() {
               SIDEBAR
           ================================================= */}
 
-          <aside className="filter-sidebar">
+          <aside
+            className={`filter-sidebar ${showMobileFilters ? "mobile-open" : ""}`}
+          >
             <div className="filter-header">
               <div className="filter-title">Filters</div>
               <button

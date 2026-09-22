@@ -265,6 +265,9 @@
   color: #aaa;
   font-size: 35px;
 }
+.hbd-no-image img{
+  width: 100%;
+}
 
 .hbd-left-column .your-cancel-button-class {
   width: 100%;

@@ -788,9 +788,18 @@ const MyBookings = () => {
                       <div className="voyage-flight-card-header">
                         <div className="voyage-flight-airline-info">
                           <div className="voyage-flight-airline-icon">
-                            <FaPlane />
-                          </div>
+                            <img
+                              src={`https://d15u1xbazig0vl.cloudfront.net/images/flight/${booking.flightCode}.png`}
+                              alt={booking.flightCode || "Flight"}
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                                e.currentTarget.nextElementSibling.style.display =
+                                  "block";
+                              }}
+                            />
 
+                            <FaPlane style={{ display: "none" }} />
+                          </div>
                           <div>
                             <h3 className="voyage-flight-airline-name">
                               {booking.airline || "Flight"}

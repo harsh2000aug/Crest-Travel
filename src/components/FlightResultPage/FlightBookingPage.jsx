@@ -346,7 +346,6 @@ function PassengerForm({ passenger, index, register, control, errors }) {
   const typeLabel = getPassengerTypeLabel(passenger.type);
 
   const ageText = getPassengerAgeText(passenger.type);
-
   const passengerErrors = errors?.passengers?.[index] || {};
 
   return (
@@ -526,7 +525,6 @@ function PassengerForm({ passenger, index, register, control, errors }) {
               control={control}
               rules={{
                 required: "Date of birth is required",
-
                 validate: (value) =>
                   validatePassengerDOB(value, passenger.type),
               }}
@@ -540,11 +538,9 @@ function PassengerForm({ passenger, index, register, control, errors }) {
                       field.onChange("");
                       return;
                     }
-
                     const year = date.getFullYear();
                     const month = String(date.getMonth() + 1).padStart(2, "0");
                     const day = String(date.getDate()).padStart(2, "0");
-
                     field.onChange(`${year}-${month}-${day}`);
                   }}
                   dateFormat="dd/MM/yyyy"
@@ -555,6 +551,9 @@ function PassengerForm({ passenger, index, register, control, errors }) {
                   dropdownMode="select"
                   className="fb-date-picker"
                   autoComplete="off"
+                  onKeyDown={(e) => {
+                    e.preventDefault();
+                  }}
                 />
               )}
             />
@@ -1001,7 +1000,7 @@ function ItineraryCard({ flight, searchData }) {
    PRICE SUMMARY
 ========================================================= */
 
-function PriceSummary({ flight, searchData, totals }) {
+function PriceSummary({ flight, searchData, totals, paymentRemainingTotal }) {
   const currency = flight?.currency || "USD";
 
   const adults = Number(searchData?.adults || 0);
@@ -1119,7 +1118,8 @@ function PriceSummary({ flight, searchData, totals }) {
           <small>Inclusive of taxes & fees</small>
         </div>
 
-        <strong>{formatMoney(totals.totalPrice, currency)}</strong>
+        {/* <strong>{formatMoney(totals.totalPrice, currency)}</strong> */}
+        <strong>{formatMoney(paymentRemainingTotal, currency)}</strong>
       </div>
     </aside>
   );
@@ -2114,10 +2114,7 @@ function FlightOrderErrorPopup({ message, onGoBack }) {
 
         <h2 className="fob-popup__title">Booking couldn't be completed</h2>
 
-        <p className="fob-popup__message">
-          {message ||
-            "Something went wrong while placing your order. Please try again."}
-        </p>
+        <p className="fob-popup__message">{message}</p>
 
         <button
           type="button"
@@ -2245,7 +2242,11 @@ export default function FlightBookingPage() {
     watchedPassengers,
     revalidateData?.extraservice,
   );
-
+  const paymentRemainingTotal =
+    (Math.round(Number(bookingData?.selectedFlight?.price || 0) * 100) +
+      Math.round(bookingTotals.baggageTotal * 100) +
+      Math.round(bookingTotals.mealTotal * 100)) /
+    100;
   /* =======================================================
      PRICE API
   ======================================================= */
@@ -2971,10 +2972,7 @@ export default function FlightBookingPage() {
 
       if (response?.data?.addorder?.success === false) {
         console.error("Flight order failed:", response);
-        setOrderFailMessage(
-          response?.data?.addorder?.message ||
-            "Something went wrong while placing your order. Please try again.",
-        );
+        setOrderFailMessage(response?.data?.addorder?.message);
         setOrderFailed(true);
         return;
       }
@@ -3013,8 +3011,8 @@ export default function FlightBookingPage() {
         {loading && <Loader />}
         {orderFailed && (
           <FlightOrderErrorPopup
+            message={orderFailMessage}
             onGoBack={() => {
-              message = { orderFailMessage };
               setOrderFailed(false);
               navigate(-1);
             }}
@@ -3378,6 +3376,7 @@ export default function FlightBookingPage() {
               flight={flight}
               searchData={searchData}
               totals={bookingTotals}
+              paymentRemainingTotal={paymentRemainingTotal}
             />
 
             {/* =================================================
