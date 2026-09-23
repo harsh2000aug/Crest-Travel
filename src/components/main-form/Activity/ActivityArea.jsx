@@ -713,6 +713,14 @@ const ActivityArea = () => {
 
     navigate(`/activity-details?${params.toString()}`);
   };
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
+
   return (
     <div className="activityArea__page">
       <HeaderInner />

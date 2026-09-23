@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import HeaderInner from "../../../reuseable-components/HeaderInner";
 import Footer from "../../../reuseable-components/Footer";
 import "./Activity.css";
@@ -52,6 +54,7 @@ const ActivityBook = () => {
     register,
     handleSubmit,
     watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm({
     mode: "onBlur",
@@ -301,10 +304,7 @@ const ActivityBook = () => {
       const expiryMonth = expiry.slice(0, 2);
       const expiryYear = expiry.slice(2, 4);
 
-      const paymentRemaining =
-        Number(latestBookingData.payable) ||
-        Number(latestBookingData.publicPrice) ||
-        0;
+      const paymentRemaining = Number(latestBookingData.ourPrice);
 
       const response = await activityOrderPlace({
         body: {
@@ -338,75 +338,80 @@ const ActivityBook = () => {
 
       console.log("activityOrderPlace RESPONSE:", response);
 
-      const paymentUrl = response?.data?.paynow?.result?.url;
+      // const paymentUrl = response?.data?.paynow?.result?.url;
 
-      if (
-        response?.data?.paynow?.success &&
-        response?.data?.paynow?.result?.succeed &&
-        paymentUrl
-      ) {
-        const paymentRedirectData = {
-          bookingDate: latestBookingData.startDate || "",
-          activityCode: latestBookingData.activityCode || "",
-          gradeCode:
-            latestBookingData.gradeCode ||
-            latestBookingData.grade?.gradeCode ||
-            latestBookingData.grade_code ||
-            "",
+      // if (paymentUrl) {
+      //   const paymentRedirectData = {
+      //     bookingDate: latestBookingData.startDate || "",
+      //     activityCode: latestBookingData.activityCode || "",
+      //     gradeCode:
+      //       latestBookingData.gradeCode ||
+      //       latestBookingData.grade?.gradeCode ||
+      //       latestBookingData.grade_code ||
+      //       "",
+      //     orderId:
+      //       response?.data?.paynow?.result?.orderId ||
+      //       response?.data?.paynow?.result?.paymentIntentId ||
+      //       orderId,
+      //     startTime: latestBookingData.startTime || "",
+      //     primaryTraveller: {
+      //       firstName: primaryTraveler.firstName || "",
+      //       type: primaryTraveler.ageBand || "Adult",
+      //       title: primaryTraveler.title || "",
+      //       lastName: primaryTraveler.lastName || "",
+      //       email: primaryTraveler.email || "",
+      //       contactNo: primaryTraveler.phone || "",
+      //     },
+      //     ageBandCount: (formData.travelers || []).reduce((acc, traveler) => {
+      //       const ageBand = traveler.ageBand || traveler.type;
 
-          orderId:
-            response?.data?.paynow?.result?.orderId ||
-            response?.data?.paynow?.result?.paymentIntentId ||
-            orderId,
+      //       if (ageBand) {
+      //         acc[ageBand] = (acc[ageBand] || 0) + 1;
+      //       }
 
-          startTime: latestBookingData.startTime || "",
+      //       return acc;
+      //     }, {}),
+      //     bookingQuestionAnswers:
+      //       latestBookingData.bookingQuestionAnswers || [],
+      //     languageGuide: latestBookingData.languageGuide || {
+      //       type: "GUIDE",
+      //       language: "en",
+      //       legacyGuide: "en/SERVICE_GUIDE",
+      //     },
+      //   };
 
-          primaryTraveller: {
-            firstName: primaryTraveler.firstName || "",
-            type: primaryTraveler.ageBand || "Adult",
-            title: primaryTraveler.title || "",
-            lastName: primaryTraveler.lastName || "",
-            email: primaryTraveler.email || "",
-            contactNo: primaryTraveler.phone || "",
-          },
+      //   sessionStorage.setItem(
+      //     "activityPaymentRedirectData",
+      //     JSON.stringify(paymentRedirectData),
+      //   );
 
-          ageBandCount: (formData.travelers || []).reduce((acc, traveler) => {
-            const ageBand = traveler.ageBand || traveler.type;
+      //   console.log("Redirecting to:", paymentUrl);
 
-            if (ageBand) {
-              acc[ageBand] = (acc[ageBand] || 0) + 1;
-            }
-
-            return acc;
-          }, {}),
-
-          bookingQuestionAnswers:
-            latestBookingData.bookingQuestionAnswers || [],
-
-          languageGuide: latestBookingData.languageGuide || {
-            type: "GUIDE",
-            language: "en",
-            legacyGuide: "en/SERVICE_GUIDE",
-          },
-        };
-
-        sessionStorage.setItem(
-          "activityPaymentRedirectData",
-          JSON.stringify(paymentRedirectData),
-        );
-
-        window.location.href = paymentUrl;
-        return;
-      }
+      //   window.location.href = paymentUrl;
+      //   return;
+      // }
 
       console.log("Payment URL not found:", response);
     } catch (error) {
       console.log("activityOrderPlace ERROR:", error);
     }
   };
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
+
   return (
     <>
-      {loading && <CarLoader />}
+      {loading && (
+        <div className="activityDetailsUi__loading">
+          <div className="activityDetailsUi__loader"></div>
+          <p>Processing payment please wait...</p>
+        </div>
+      )}
       <div className="activity-book-page">
         <HeaderInner />
 
@@ -655,14 +660,47 @@ const ActivityBook = () => {
                                 Date of Birth <span>*</span>
                               </label>
 
-                              <input
-                                type="date"
-                                max={new Date().toISOString().split("T")[0]}
-                                {...register(`travelers.${index}.birthDate`, {
+                              <Controller
+                                control={control}
+                                name={`travelers.${index}.birthDate`}
+                                rules={{
                                   required: "Birth date is required",
                                   validate: (value) =>
                                     validateBirthDate(value, traveler.type),
-                                })}
+                                }}
+                                render={({ field }) => (
+                                  <DatePicker
+                                    selected={
+                                      field.value
+                                        ? new Date(`${field.value}T00:00:00`)
+                                        : null
+                                    }
+                                    onChange={(date) => {
+                                      if (!date) {
+                                        field.onChange("");
+                                        return;
+                                      }
+
+                                      const year = date.getFullYear();
+                                      const month = String(
+                                        date.getMonth() + 1,
+                                      ).padStart(2, "0");
+                                      const day = String(
+                                        date.getDate(),
+                                      ).padStart(2, "0");
+
+                                      field.onChange(`${year}-${month}-${day}`);
+                                    }}
+                                    dateFormat="dd/MM/yyyy"
+                                    placeholderText="DD/MM/YYYY"
+                                    maxDate={new Date()}
+                                    showMonthDropdown
+                                    showYearDropdown
+                                    dropdownMode="select"
+                                    className="activity-book-date-picker"
+                                    autoComplete="off"
+                                  />
+                                )}
                               />
 
                               {errors.travelers?.[index]?.birthDate && (
@@ -1194,23 +1232,6 @@ const ActivityBook = () => {
                     </div>
                   </div>
 
-                  <div className="activity-book-payment-method">
-                    <div className="activity-book-payment-title">
-                      <div className="activity-book-card-icon">▣</div>
-
-                      <div>
-                        <strong>Credit / Debit Card</strong>
-                        <span>Secure card payment</span>
-                      </div>
-                    </div>
-
-                    <div className="activity-book-card-brands">
-                      <span>VISA</span>
-                      <span>MC</span>
-                      <span>AMEX</span>
-                    </div>
-                  </div>
-
                   <div className="activity-book-form-grid">
                     <div className="activity-book-field activity-book-field-full">
                       <label>
@@ -1228,6 +1249,12 @@ const ActivityBook = () => {
                           pattern: {
                             value: /^[A-Za-zÀ-ÿ\s'-]+$/,
                             message: "Please enter a valid cardholder name",
+                          },
+                          onChange: (e) => {
+                            e.target.value = e.target.value.replace(
+                              /[^A-Za-zÀ-ÿ\s'-]/g,
+                              "",
+                            );
                           },
                         })}
                         placeholder="Name as shown on card"

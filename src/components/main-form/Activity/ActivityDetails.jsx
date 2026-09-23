@@ -775,13 +775,7 @@ const ActivityDetails = () => {
       item?.availabilityDetails?.[0]?.totalPrice?.price ||
       {};
 
-    return (
-      Number(price?.showOurPrice) ||
-      Number(price?.ourPrice) ||
-      Number(price?.convertedCoin) ||
-      Number(price?.netPrice) ||
-      0
-    );
+    return Number(price?.showOurPrice) || 0;
   };
 
   const getItemPublicPrice = (item, detail) => {
@@ -933,7 +927,7 @@ const ActivityDetails = () => {
           : [],
       )
       .filter((detail) => detail?.available === true)
-      .map((detail) => Number(detail?.totalPrice?.price?.publicPrice))
+      .map((detail) => Number(detail?.totalPrice?.price?.showOurPrice))
       .filter((price) => Number.isFinite(price) && price > 0);
 
     const original = publicPrices.length ? Math.min(...publicPrices) : 0;
@@ -990,6 +984,13 @@ const ActivityDetails = () => {
         : currentIndex + 1,
     );
   };
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
 
   if (loading) {
     return (
@@ -1053,10 +1054,8 @@ const ActivityDetails = () => {
       children:
         (Number(appliedParticipants?.child) || 0) +
         (Number(appliedParticipants?.youth) || 0),
-      ourPrice:
-        price?.ourPrice || price?.showOurPrice || price?.convertedCoin || "",
-      payable:
-        price?.ourPrice || price?.showOurPrice || price?.convertedCoin || "",
+      ourPrice: Number(price?.showOurPrice) || 0,
+      payable: Number(price?.showOurPrice) || 0,
       publicPrice: price?.publicPrice || "",
       cancellationPolicy: cancellationPolicy?.description || "",
       startTime: detail?.startTime || "",

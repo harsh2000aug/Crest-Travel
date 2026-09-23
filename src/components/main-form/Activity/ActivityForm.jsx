@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +16,8 @@ const ActivityForm = () => {
   const [loadingLocations, setLoadingLocations] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState("");
   const [selectedDestinationId, setSelectedDestinationId] = useState("");
+  const [selectedLocationType, setSelectedLocationType] = useState("");
+  const [selectedActivityCode, setSelectedActivityCode] = useState("");
 
   const debounceTimer = useRef(null);
   const requestId = useRef(0);
@@ -108,9 +110,13 @@ const ActivityForm = () => {
 
     const locationName = getLocationName(location);
     const destinationId = location?.destinationId || "";
+    const locationType = location?.type || "";
+    const activityCode = location?.activityCode || "";
 
     setSelectedDestination(locationName);
     setSelectedDestinationId(destinationId);
+    setSelectedLocationType(locationType);
+    setSelectedActivityCode(activityCode);
 
     setValue("destination", locationName, {
       shouldValidate: true,
@@ -132,13 +138,39 @@ const ActivityForm = () => {
 
     const destination = encodeURIComponent(data.destination.trim());
     const destinationId = data.destinationId;
+
     const formattedFromDate = formatDate(fromDate);
     const formattedToDate = formatDate(toDate);
+
+    if (selectedLocationType === "product" && selectedActivityCode) {
+      navigate(
+        `/activity-details?activityCode=${encodeURIComponent(
+          selectedActivityCode,
+        )}&destinationId=${destinationId}&travelDate=${formattedFromDate}`,
+      );
+
+      return;
+    }
+
+    if (selectedLocationType === "destination") {
+      navigate(
+        `/activities?destination=${destination}&destinationId=${destinationId}&fromDate=${formattedFromDate}&toDate=${formattedToDate}`,
+      );
+
+      return;
+    }
 
     navigate(
       `/activities?destination=${destination}&destinationId=${destinationId}&fromDate=${formattedFromDate}&toDate=${formattedToDate}`,
     );
   };
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
 
   return (
     <form className="tripSearch__wrapper" onSubmit={handleSubmit(onSubmit)}>
