@@ -333,6 +333,7 @@ export const searchVacationResorts = ({ body }: any) =>
     uriEndPoint: allApi.vacationResortList.v1,
     body,
   });
+
 export const memberTripCoins = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.memberTripCoins.v1,
@@ -361,6 +362,16 @@ export const vacationAddOrder = ({ body }: any) =>
 export const vacvationPay = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.vacationPay.v1,
+    body,
+  });
+export const vacvationFiltersToApply = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.vacationFilters.v1,
+    body,
+  });
+export const vacationHold = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.vacationHold.v1,
     body,
   });
 export const crestBenefits = ({ body }: any) =>

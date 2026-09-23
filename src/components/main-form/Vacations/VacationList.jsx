@@ -29,6 +29,7 @@ import Footer from "../../../reuseable-components/Footer";
 import {
   searchVacationResorts,
   searchVacationResult,
+  vacvationFiltersToApply,
 } from "../../../store/Services/AllApi";
 import VacationLoader from "../../../reuseable-components/VacationLoader/VacationLoader";
 
@@ -181,7 +182,12 @@ const formatUnitType = (unitType) => {
     .replace(/\b\w/g, (character) => character.toUpperCase());
 };
 
-const VacationFilters = ({ hotels, currency, onFilteredHotelsChange }) => {
+const VacationFilters = ({
+  hotels,
+  currency,
+  filtersData,
+  onFilteredHotelsChange,
+}) => {
   const filterRef = useRef(null);
 
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -207,96 +213,45 @@ const VacationFilters = ({ hotels, currency, onFilteredHotelsChange }) => {
   }, []);
 
   const sizeOptions = useMemo(() => {
-    const optionMap = new Map();
-
-    hotels.forEach((hotel) => {
-      const value = hotel.unitType?.trim().toUpperCase();
-
-      if (!value || optionMap.has(value)) {
-        return;
-      }
-
-      optionMap.set(value, {
-        value,
-        label: formatUnitType(value),
-      });
-    });
-
-    return Array.from(optionMap.values()).sort((firstOption, secondOption) =>
-      firstOption.label.localeCompare(secondOption.label),
-    );
-  }, [hotels]);
-
-  const durationOptions = useMemo(() => {
-    return [
-      ...new Set(
-        hotels
-          .map((hotel) => Number(hotel.numberOfNights))
-          .filter(Number.isFinite),
-      ),
-    ].sort((first, second) => first - second);
-  }, [hotels]);
-
-  const occupancyOptions = useMemo(() => {
-    return [
-      ...new Set(
-        hotels
-          .map((hotel) => Number(hotel.maxOccupancy))
-          .filter(Number.isFinite),
-      ),
-    ].sort((first, second) => first - second);
-  }, [hotels]);
-
-  const priceRanges = useMemo(() => {
-    const prices = hotels
-      .map((hotel) => Number(hotel?.price?.ourPrice))
-      .filter(Number.isFinite);
-
-    if (prices.length === 0) {
-      return [];
-    }
-
-    const minimumPrice = Math.min(...prices);
-    const maximumPrice = Math.max(...prices);
-
-    if (minimumPrice === maximumPrice) {
-      return [
-        {
-          id: "price-0",
-          minimum: minimumPrice,
-          maximum: maximumPrice,
-          includeMaximum: true,
-          count: prices.length,
-        },
-      ];
-    }
-
-    const rangeSize = (maximumPrice - minimumPrice) / 3;
-
-    return Array.from({ length: 3 }, (_, index) => {
-      const minimum = minimumPrice + rangeSize * index;
-
-      const maximum =
-        index === 2 ? maximumPrice : minimumPrice + rangeSize * (index + 1);
-
-      const includeMaximum = index === 2;
-
-      const count = prices.filter((price) => {
-        return (
-          price >= minimum &&
-          (includeMaximum ? price <= maximum : price < maximum)
-        );
-      }).length;
+    return (filtersData?.unitTypes || []).filter(Boolean).map((unitType) => {
+      const value = unitType.trim().toUpperCase();
 
       return {
-        id: `price-${index}`,
-        minimum,
-        maximum,
-        includeMaximum,
-        count,
+        value,
+        label: formatUnitType(value),
       };
     });
-  }, [hotels]);
+  }, [filtersData]);
+
+  const durationOptions = useMemo(() => {
+    return (filtersData?.duration || [])
+      .map(Number)
+      .filter(Number.isFinite)
+      .sort((first, second) => first - second);
+  }, [filtersData]);
+
+  const occupancyOptions = useMemo(() => {
+    return (filtersData?.occupancy || [])
+      .map(Number)
+      .filter(Number.isFinite)
+      .sort((first, second) => first - second);
+  }, [filtersData]);
+
+  const priceRanges = useMemo(() => {
+    return (filtersData?.prices || [])
+      .map((price, index) => ({
+        id: `price-${index}`,
+        minimum: Number(price.min),
+        maximum: Number(price.max),
+        count: Number(price.count) || 0,
+        includeMaximum: index === (filtersData?.prices?.length || 0) - 1,
+      }))
+      .filter(
+        (priceRange) =>
+          Number.isFinite(priceRange.minimum) &&
+          Number.isFinite(priceRange.maximum),
+      );
+  }, [filtersData]);
 
   const formatFilterPrice = (price) => {
     return new Intl.NumberFormat("en-US", {
@@ -700,7 +655,7 @@ const VacationFilters = ({ hotels, currency, onFilteredHotelsChange }) => {
   );
 };
 
-const VacationList = () => {
+const VacationList = ({ vacationid }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const hotelPanelRef = useRef(null);
@@ -717,6 +672,12 @@ const VacationList = () => {
   const [selectedMapSpotKey, setSelectedMapSpotKey] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [totalCount, setTotalCount] = useState(0);
+  const [filtersData, setFiltersData] = useState({
+    unitTypes: [],
+    duration: [],
+    occupancy: [],
+    prices: [],
+  });
   const [selectedResortId, setSelectedResortId] = useState(null);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
@@ -833,7 +794,10 @@ const VacationList = () => {
 
     return Object.values(groups);
   }, [mapResorts]);
-
+  useEffect(() => {
+    const newCorrelationId = `crest-id-${vacationid}-${crypto.randomUUID()}-vacation`;
+    localStorage.setItem("CorelationIdOfVacation", newCorrelationId);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     let ignoreResponse = false;
 
@@ -870,10 +834,10 @@ const VacationList = () => {
         if (ignoreResponse) {
           return;
         }
-        localStorage.setItem(
-          "CorelationIdOfVacation",
-          mapResponse.correlationid,
-        );
+        // localStorage.setItem(
+        //   "CorelationIdOfVacation",
+        //   vacationid,
+        // );
 
         const mapResults =
           mapResponse?.data?.mapList?.result ||
@@ -1138,7 +1102,53 @@ const VacationList = () => {
   const loading = mapLoading || hotelPanelLoading;
 
   const filterSourceHotels = mapSpotHotels !== null ? mapSpotHotels : hotels;
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        const res = await vacvationFiltersToApply({
+          body: {
+            location: {
+              city,
+              state,
+              country,
+              latitude,
+              longitude,
+              type,
+            },
+            start_date: startDate,
+            end_date: endDate,
+          },
+        });
 
+        const filterResult =
+          res?.data?.resortListFilters?.result ||
+          res?.data?.data?.resortListFilters?.result ||
+          {};
+
+        setFiltersData({
+          unitTypes: filterResult?.unitTypes || [],
+          duration: filterResult?.duration || [],
+          occupancy: filterResult?.occupancy || [],
+          prices: filterResult?.prices || [],
+        });
+
+        if (filterResult?.currency) {
+          setCurrency(filterResult.currency);
+        }
+      } catch (error) {
+        console.log("error in fetching hotel filters", error);
+
+        setFiltersData({
+          unitTypes: [],
+          duration: [],
+          occupancy: [],
+          prices: [],
+        });
+      }
+    };
+
+    fetchFilters();
+  }, [city, state, country, latitude, longitude, type, startDate, endDate]);
   return (
     <div className="vacationListPage">
       <HeaderInner />
@@ -1149,6 +1159,7 @@ const VacationList = () => {
         key={`${searchKey}-${page}-${selectedMapSpotKey || "page-results"}`}
         hotels={filterSourceHotels}
         currency={currency}
+        filtersData={filtersData}
         onFilteredHotelsChange={setFilteredHotels}
       />
 
