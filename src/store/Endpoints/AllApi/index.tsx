@@ -522,6 +522,7 @@ export const allApi = {
       ...defaults.methods.POST,
       ...defaults.versions.v1,
       uri: "/alphavr/add-order",
+      vacationResortFinal: true,
     },
   },
   vacationPay: {
@@ -532,6 +533,23 @@ export const allApi = {
       vacationResortFinal: true,
     },
   },
+  vacationFilters: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphavr/resort-list-filters",
+      vacationResortFinal: true,
+    },
+  },
+  vacationHold: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphavr/hold",
+      vacationResortFinal: true,
+    },
+  },
+
   crestBenefits: {
     v1: {
       ...defaults.methods.POST,
