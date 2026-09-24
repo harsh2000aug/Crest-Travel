@@ -665,7 +665,7 @@ const VacationDetail = () => {
       endTime: formatTime(details?.checkoutTime),
       unitId: availability[0]?.unitRow[0]?.unit[0]?.unitId,
       roomType: `${group?.title}, Max Occupancy: ${displayedUnit.maxOccupancy}`,
-
+      supplierId: availability[0]?.unitRow[0]?.unit[0]?.supplierId,
       property: {
         id: details?.resortId || details?.id || resortId,
         image: images[0] || "",

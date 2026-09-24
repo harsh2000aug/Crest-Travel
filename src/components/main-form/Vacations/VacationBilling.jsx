@@ -225,7 +225,7 @@ const VacationBilling = () => {
       paymentMode: "CARD",
       image: bookingData.property.image || "",
       moduleId: 1557,
-      supplierId: 5346,
+      supplierId: Number(bookingData?.supplierId),
 
       startDate: formatApiDate(bookingData.startDate),
       endDate: formatApiDate(bookingData.endDate),
