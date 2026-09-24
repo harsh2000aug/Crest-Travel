@@ -27,8 +27,14 @@ const ActivityBook = () => {
   const languageGuides = Array.isArray(activityBookingData?.languageGuides)
     ? activityBookingData.languageGuides
     : [];
-  const bookingQuestions = Array.isArray(activityBookingData?.bookingQuestions)
-    ? activityBookingData.bookingQuestions
+  const storedBookingQuestions = JSON.parse(
+    sessionStorage.getItem("activityBookingQuestions") || "[]",
+  );
+
+  const bookingQuestions = Array.isArray(storedBookingQuestions)
+    ? storedBookingQuestions.filter(
+        (question) => question?.required === "MANDATORY",
+      )
     : [];
   const allowedAnswers = bookingQuestions.flatMap((question) =>
     Array.isArray(question?.allowedAnswers) ? question.allowedAnswers : [],
@@ -212,6 +218,58 @@ const ActivityBook = () => {
           "ADULT",
       }));
 
+      const bookingQuestionAnswers = [];
+
+      (formData.travelers || []).forEach((traveler, index) => {
+        const travelerNum = index + 1;
+
+        if (
+          bookingQuestions.some(
+            (question) => question?.id === "FULL_NAMES_FIRST",
+          )
+        ) {
+          bookingQuestionAnswers.push({
+            question: "FULL_NAMES_FIRST",
+            answer: traveler.firstName || "",
+            travelerNum,
+            unit: null,
+          });
+        }
+
+        if (
+          bookingQuestions.some(
+            (question) => question?.id === "FULL_NAMES_LAST",
+          )
+        ) {
+          bookingQuestionAnswers.push({
+            question: "FULL_NAMES_LAST",
+            answer: traveler.lastName || "",
+            travelerNum,
+            unit: null,
+          });
+        }
+
+        if (bookingQuestions.some((question) => question?.id === "AGEBAND")) {
+          bookingQuestionAnswers.push({
+            question: "AGEBAND",
+            answer: traveler.ageBand || traveler.type || "ADULT",
+            travelerNum,
+            unit: null,
+          });
+        }
+      });
+
+      if (
+        bookingQuestions.some((question) => question?.id === "PICKUP_POINT")
+      ) {
+        bookingQuestionAnswers.push({
+          question: "PICKUP_POINT",
+          answer: formData.pickupLocation || "",
+          travelerNum: null,
+          unit: "FREETEXT",
+        });
+      }
+
       const requestBody = {
         test: true,
         startDate: latestBookingData.startDate || "",
@@ -276,6 +334,7 @@ const ActivityBook = () => {
         itemId,
         formData,
         updatedBookingData,
+        bookingQuestionAnswers,
       );
 
       console.log("Final Payment Response:", paymentResponse);
@@ -290,13 +349,18 @@ const ActivityBook = () => {
     return value ? btoa(String(value)) : "";
   };
 
-  const handleAnkit = async (orderId, formData, latestBookingData) => {
+  const handleAnkit = async (
+    orderId,
+    formData,
+    latestBookingData,
+    bookingQuestionAnswers,
+  ) => {
     try {
       const primaryTraveler =
         formData.travelers?.find((traveler) => traveler.primary) ||
         formData.travelers?.[0] ||
         {};
-
+      console.log("primaryTraveler", primaryTraveler);
       const cardNumber = String(formData.cardNumber || "").replace(/\s/g, "");
 
       const expiry = String(formData.expiry || "").replace(/\D/g, "");
@@ -338,58 +402,60 @@ const ActivityBook = () => {
 
       console.log("activityOrderPlace RESPONSE:", response);
 
-      // const paymentUrl = response?.data?.paynow?.result?.url;
+      const paymentUrl = response?.data?.paynow?.result?.url;
 
-      // if (paymentUrl) {
-      //   const paymentRedirectData = {
-      //     bookingDate: latestBookingData.startDate || "",
-      //     activityCode: latestBookingData.activityCode || "",
-      //     gradeCode:
-      //       latestBookingData.gradeCode ||
-      //       latestBookingData.grade?.gradeCode ||
-      //       latestBookingData.grade_code ||
-      //       "",
-      //     orderId:
-      //       response?.data?.paynow?.result?.orderId ||
-      //       response?.data?.paynow?.result?.paymentIntentId ||
-      //       orderId,
-      //     startTime: latestBookingData.startTime || "",
-      //     primaryTraveller: {
-      //       firstName: primaryTraveler.firstName || "",
-      //       type: primaryTraveler.ageBand || "Adult",
-      //       title: primaryTraveler.title || "",
-      //       lastName: primaryTraveler.lastName || "",
-      //       email: primaryTraveler.email || "",
-      //       contactNo: primaryTraveler.phone || "",
-      //     },
-      //     ageBandCount: (formData.travelers || []).reduce((acc, traveler) => {
-      //       const ageBand = traveler.ageBand || traveler.type;
+      if (paymentUrl) {
+        const paymentRedirectData = {
+          bookingDate: latestBookingData.startDate || "",
+          activityCode: latestBookingData.activityCode || "",
+          gradeCode:
+            latestBookingData.gradeCode ||
+            latestBookingData.grade?.gradeCode ||
+            latestBookingData.grade_code ||
+            "",
+          orderId:
+            response?.data?.paynow?.result?.orderId ||
+            response?.data?.paynow?.result?.paymentIntentId ||
+            orderId,
+          startTime: latestBookingData.startTime || "",
+          primaryTraveller: {
+            firstName: primaryTraveler.firstName || "",
+            type: primaryTraveler.ageBand
+              ? primaryTraveler.ageBand.charAt(0).toUpperCase() +
+                primaryTraveler.ageBand.slice(1).toLowerCase()
+              : "Adult",
+            title: primaryTraveler.title || "",
+            lastName: primaryTraveler.lastName || "",
+            email: primaryTraveler.email || "",
+            contactNo: primaryTraveler.phone || "",
+          },
+          ageBandCount: (formData.travelers || []).reduce((acc, traveler) => {
+            const ageBand = traveler.ageBand || traveler.type;
 
-      //       if (ageBand) {
-      //         acc[ageBand] = (acc[ageBand] || 0) + 1;
-      //       }
+            if (ageBand) {
+              acc[ageBand] = (acc[ageBand] || 0) + 1;
+            }
 
-      //       return acc;
-      //     }, {}),
-      //     bookingQuestionAnswers:
-      //       latestBookingData.bookingQuestionAnswers || [],
-      //     languageGuide: latestBookingData.languageGuide || {
-      //       type: "GUIDE",
-      //       language: "en",
-      //       legacyGuide: "en/SERVICE_GUIDE",
-      //     },
-      //   };
+            return acc;
+          }, {}),
+          bookingQuestionAnswers: bookingQuestionAnswers,
+          languageGuide: latestBookingData.languageGuide || {
+            type: "GUIDE",
+            language: "en",
+            legacyGuide: "en/SERVICE_GUIDE",
+          },
+        };
 
-      //   sessionStorage.setItem(
-      //     "activityPaymentRedirectData",
-      //     JSON.stringify(paymentRedirectData),
-      //   );
+        sessionStorage.setItem(
+          "activityPaymentRedirectData",
+          JSON.stringify(paymentRedirectData),
+        );
 
-      //   console.log("Redirecting to:", paymentUrl);
+        console.log("Redirecting to:", paymentUrl);
 
-      //   window.location.href = paymentUrl;
-      //   return;
-      // }
+        window.location.href = paymentUrl;
+        return;
+      }
 
       console.log("Payment URL not found:", response);
     } catch (error) {
@@ -504,8 +570,6 @@ const ActivityBook = () => {
 
                 <section className="activity-book-card">
                   <div className="activity-book-section-header">
-                    <div className="activity-book-section-number">02</div>
-
                     <div>
                       <h2>Booking Details</h2>
                       <p>Enter the details of all travelers</p>
@@ -527,6 +591,18 @@ const ActivityBook = () => {
                       const travelerLabel = getTravelerLabel(traveler.type);
 
                       const isPrimary = traveler.primary === true;
+
+                      const hasFirstName = bookingQuestions.some(
+                        (question) => question?.id === "FULL_NAMES_FIRST",
+                      );
+
+                      const hasLastName = bookingQuestions.some(
+                        (question) => question?.id === "FULL_NAMES_LAST",
+                      );
+
+                      const hasAgeBand = bookingQuestions.some(
+                        (question) => question?.id === "AGEBAND",
+                      );
 
                       return (
                         <div
@@ -775,6 +851,39 @@ const ActivityBook = () => {
                   )}
                 </section>
 
+                {bookingQuestions.some(
+                  (question) => question?.id === "PICKUP_POINT",
+                ) && (
+                  <section className="activity-book-card">
+                    <div className="activity-book-section-header">
+                      <div>
+                        <h2>Pickup Details</h2>
+                        <p>Enter your pickup location</p>
+                      </div>
+                    </div>
+
+                    <div className="activity-book-field">
+                      <label>
+                        Pickup Location <span>*</span>
+                      </label>
+
+                      <input
+                        type="text"
+                        placeholder="Enter pickup location"
+                        {...register("pickupLocation", {
+                          required: "Pickup location is required",
+                        })}
+                      />
+
+                      {errors.pickupLocation && (
+                        <span className="activity-book-error">
+                          {errors.pickupLocation.message}
+                        </span>
+                      )}
+                    </div>
+                  </section>
+                )}
+
                 {languageGuides.length > 0 && (
                   <section className="activity-book-card">
                     <div className="activity-book-language-selection">
@@ -1018,8 +1127,6 @@ const ActivityBook = () => {
 
                 <section className="activity-book-card">
                   <div className="activity-book-section-header">
-                    <div className="activity-book-section-number">03</div>
-
                     <div>
                       <h2>Billing Address</h2>
                       <p>Enter the billing information for your payment</p>
@@ -1224,8 +1331,6 @@ const ActivityBook = () => {
 
                 <section className="activity-book-card">
                   <div className="activity-book-section-header">
-                    <div className="activity-book-section-number">04</div>
-
                     <div>
                       <h2>Card Details</h2>
                       <p>Enter your card details to complete payment</p>

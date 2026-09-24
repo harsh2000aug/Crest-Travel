@@ -4945,7 +4945,7 @@
   background: #ffffff;
   color: #26313d;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px !important;
   transition: 0.2s ease;
   box-sizing: border-box;
 }

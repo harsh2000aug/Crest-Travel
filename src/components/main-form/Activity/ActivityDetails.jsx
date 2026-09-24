@@ -1036,7 +1036,9 @@ const ActivityDetails = () => {
       : [];
 
     const bookingQuestions = Array.isArray(activityData?.bookingQuestions)
-      ? activityData.bookingQuestions
+      ? activityData.bookingQuestions.filter(
+          (question) => question?.required === "MANDATORY",
+        )
       : [];
     const selectedActivityData = {
       startDate: selectedDate || "",
