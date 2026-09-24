@@ -84,53 +84,109 @@ const VacationModifySearch = ({ totalCount }) => {
     currentType,
   ]);
 
-  const currentMonth = useMemo(() => {
+  // Builds every month card that falls between start_date and end_date
+  // (inclusive), so a saved multi-month range re-selects all of its months.
+  const currentMonths = useMemo(() => {
     if (!currentStartDate) {
-      return null;
+      return [];
     }
 
-    const monthValue = currentStartDate.slice(0, 7);
-    const existingMonth = months.find((month) => month.value === monthValue);
+    const startValue = currentStartDate.slice(0, 7);
+    const endValue = (currentEndDate || currentStartDate).slice(0, 7);
 
-    if (existingMonth) {
-      return {
-        ...existingMonth,
-        startDate: currentStartDate,
-        endDate: currentEndDate || existingMonth.endDate,
-      };
+    const [startYear, startMonthNumber] = startValue.split("-").map(Number);
+    const [endYear, endMonthNumber] = endValue.split("-").map(Number);
+
+    if (
+      !Number.isFinite(startYear) ||
+      !Number.isFinite(startMonthNumber) ||
+      !Number.isFinite(endYear) ||
+      !Number.isFinite(endMonthNumber)
+    ) {
+      return [];
     }
 
-    const date = new Date(`${currentStartDate}T00:00:00`);
+    const result = [];
+    let year = startYear;
+    let monthNumber = startMonthNumber;
 
-    if (Number.isNaN(date.getTime())) {
-      return null;
+    while (
+      year < endYear ||
+      (year === endYear && monthNumber <= endMonthNumber)
+    ) {
+      const valueStr = `${year}-${String(monthNumber).padStart(2, "0")}`;
+      const isFirstMonth = valueStr === startValue;
+      const isLastMonth = valueStr === endValue;
+      const existingMonth = months.find((month) => month.value === valueStr);
+
+      if (existingMonth) {
+        result.push({
+          ...existingMonth,
+          startDate: isFirstMonth ? currentStartDate : existingMonth.startDate,
+          endDate: isLastMonth
+            ? currentEndDate || existingMonth.endDate
+            : existingMonth.endDate,
+        });
+      } else {
+        const date = new Date(`${valueStr}-01T00:00:00`);
+
+        if (!Number.isNaN(date.getTime())) {
+          const lastDay = new Date(year, monthNumber, 0).getDate();
+
+          result.push({
+            value: valueStr,
+            label: date.toLocaleString("en-US", {
+              month: "long",
+              year: "numeric",
+            }),
+            shortMonth: date.toLocaleString("en-US", {
+              month: "short",
+            }),
+            shortYear: String(year).slice(-2),
+            startDate: isFirstMonth ? currentStartDate : `${valueStr}-01`,
+            endDate: isLastMonth
+              ? currentEndDate ||
+                `${valueStr}-${String(lastDay).padStart(2, "0")}`
+              : `${valueStr}-${String(lastDay).padStart(2, "0")}`,
+          });
+        }
+      }
+
+      monthNumber += 1;
+
+      if (monthNumber > 12) {
+        monthNumber = 1;
+        year += 1;
+      }
     }
 
-    return {
-      value: monthValue,
-      label: date.toLocaleString("en-US", {
-        month: "long",
-        year: "numeric",
-      }),
-      shortMonth: date.toLocaleString("en-US", {
-        month: "short",
-      }),
-      shortYear: String(date.getFullYear()).slice(-2),
-      startDate: currentStartDate,
-      endDate: currentEndDate,
-    };
+    return result;
   }, [currentStartDate, currentEndDate, months]);
 
   const destinationLabel = currentState
     ? [currentState, currentCountry].filter(Boolean).join(", ")
     : currentCountry || currentCity;
 
+  const buildDatesLabel = (monthsList) => {
+    if (monthsList.length === 0) return "";
+    if (monthsList.length === 1) return monthsList[0].label;
+
+    const first = monthsList[0];
+    const last = monthsList[monthsList.length - 1];
+
+    return `${first.shortMonth} ${first.shortYear} - ${last.shortMonth} ${last.shortYear}`;
+  };
+
   const [selectedLocation, setSelectedLocation] = useState(currentLocation);
 
-  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [selectedMonths, setSelectedMonths] = useState(currentMonths);
+
+  const sortedSelectedMonths = useMemo(() => {
+    return [...selectedMonths].sort((a, b) => (a.value > b.value ? 1 : -1));
+  }, [selectedMonths]);
 
   const currentMonthIndex = months.findIndex(
-    (month) => month.value === currentMonth?.value,
+    (month) => month.value === currentMonths[0]?.value,
   );
 
   const [visibleMonthStart, setVisibleMonthStart] = useState(() => {
@@ -152,7 +208,7 @@ const VacationModifySearch = ({ totalCount }) => {
   } = useForm({
     defaultValues: {
       destination: destinationLabel,
-      dates: currentMonth?.label || "",
+      dates: buildDatesLabel(currentMonths),
     },
   });
 
@@ -231,16 +287,33 @@ const VacationModifySearch = ({ totalCount }) => {
   };
 
   const handleMonthSelect = (month) => {
-    setSelectedMonth(month);
+    setSelectedMonths((previousMonths) => {
+      const alreadySelected = previousMonths.some(
+        (existingMonth) => existingMonth.value === month.value,
+      );
 
-    setValue("dates", month.label, {
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: true,
+      const updatedMonths = alreadySelected
+        ? previousMonths.filter(
+            (existingMonth) => existingMonth.value !== month.value,
+          )
+        : [...previousMonths, month];
+
+      const sortedUpdatedMonths = [...updatedMonths].sort((a, b) =>
+        a.value > b.value ? 1 : -1,
+      );
+
+      setValue("dates", buildDatesLabel(sortedUpdatedMonths), {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+
+      if (sortedUpdatedMonths.length > 0) {
+        clearErrors("dates");
+      }
+
+      return updatedMonths;
     });
-
-    clearErrors("dates");
-    setShowMonthDropdown(false);
   };
 
   const handleClearDestination = () => {
@@ -253,7 +326,7 @@ const VacationModifySearch = ({ totalCount }) => {
   };
 
   const handleClearMonth = () => {
-    setSelectedMonth(null);
+    setSelectedMonths([]);
     setValue("dates", "", {
       shouldDirty: true,
     });
@@ -272,11 +345,11 @@ const VacationModifySearch = ({ totalCount }) => {
 
   const handleCancel = () => {
     setSelectedLocation(currentLocation);
-    setSelectedMonth(currentMonth);
+    setSelectedMonths(currentMonths);
 
     reset({
       destination: destinationLabel,
-      dates: currentMonth?.label || "",
+      dates: buildDatesLabel(currentMonths),
     });
 
     setLocations([]);
@@ -286,9 +359,12 @@ const VacationModifySearch = ({ totalCount }) => {
   };
 
   const onSubmit = () => {
-    if (!selectedLocation || !selectedMonth) {
+    if (!selectedLocation || sortedSelectedMonths.length === 0) {
       return;
     }
+
+    const firstMonth = sortedSelectedMonths[0];
+    const lastMonth = sortedSelectedMonths[sortedSelectedMonths.length - 1];
 
     const updatedParams = new URLSearchParams(searchParams);
 
@@ -304,9 +380,9 @@ const VacationModifySearch = ({ totalCount }) => {
 
     updatedParams.set("type", selectedLocation.type || "");
 
-    updatedParams.set("start_date", selectedMonth.startDate);
+    updatedParams.set("start_date", firstMonth.startDate);
 
-    updatedParams.set("end_date", selectedMonth.endDate);
+    updatedParams.set("end_date", lastMonth.endDate);
 
     setSearchParams(updatedParams, {
       replace: true,
@@ -330,7 +406,7 @@ const VacationModifySearch = ({ totalCount }) => {
 
           <span className="vacationModify__summaryItem">
             <FaRegCalendarDays color="#fff" />
-            {currentMonth?.label || "Dates"}
+            {buildDatesLabel(currentMonths) || "Dates"}
           </span>
         </div>
 
@@ -477,7 +553,7 @@ const VacationModifySearch = ({ totalCount }) => {
               name="dates"
               control={control}
               rules={{
-                required: "Please select a month",
+                required: "Please select at least one month",
               }}
               render={({ field }) => (
                 <input
@@ -542,23 +618,38 @@ const VacationModifySearch = ({ totalCount }) => {
               </div>
 
               <div className="vacationModify__monthList">
-                {visibleMonths.map((month) => (
-                  <button
-                    type="button"
-                    key={month.value}
-                    className={`vacationModify__monthCard ${
-                      selectedMonth?.value === month.value
-                        ? "vacationModify__monthCard--selected"
-                        : ""
-                    }`}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => handleMonthSelect(month)}
-                  >
-                    <FaRegCalendarDays />
-                    <span>{month.shortMonth}</span>
-                    <span>{month.shortYear}</span>
-                  </button>
-                ))}
+                {visibleMonths.map((month) => {
+                  const isSelected = selectedMonths.some(
+                    (existingMonth) => existingMonth.value === month.value,
+                  );
+
+                  return (
+                    <button
+                      type="button"
+                      key={month.value}
+                      className={`vacationModify__monthCard ${
+                        isSelected ? "vacationModify__monthCard--selected" : ""
+                      }`}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => handleMonthSelect(month)}
+                    >
+                      <FaRegCalendarDays />
+                      <span>{month.shortMonth}</span>
+                      <span>{month.shortYear}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="vacationModify__monthFooter">
+                <button
+                  type="button"
+                  className="vacationForm__monthDone"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => setShowMonthDropdown(false)}
+                >
+                  Done
+                </button>
               </div>
             </div>
           )}

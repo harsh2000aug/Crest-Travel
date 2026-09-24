@@ -49,13 +49,14 @@ import CarPayment from "./components/main-form/CarRental/CarPayment/CarPayment";
 import CarBookingDetails from "./components/main-form/CarRental/CarBookingDetails/CarBookingDetails";
 import ActivityPayment from "./components/main-form/Activity/ActivityPayment/ActivityPayment";
 import FlightBookingDetails from "./components/FlightResultPage/FlightBookingDetails/FlightBookingDetails";
+import VacationPaymentStatus from "./components/main-form/Vacations/VacationPaymentStatus/VacationPaymentStatus";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
   const token = localStorage.getItem("accessToken");
   const storedemail = useAtomValue(tokenAtom);
   const location = useLocation();
-
+  const [memberIdforVacation, setMemberIdForVacation] = useState("");
   useEffect(() => {
     const handleNewMemberDetails = async () => {
       const email = localStorage.getItem("Email");
@@ -73,6 +74,7 @@ function App() {
         });
 
         setPersonDetails(res?.data?.get?.result);
+        setMemberIdForVacation(res?.data?.get?.result?.id);
         localStorage.setItem(
           "personDetails",
           JSON.stringify(res?.data?.get?.result),
@@ -105,6 +107,8 @@ function App() {
         <Route path="/payment/status" element={<PaymentStatus />} />
         <Route path="/hotel-payment" element={<HotelPaymentStatus />} />
         <Route path="/flight-payment" element={<FlightPaymentStatus />} />
+        <Route path="/vacation-payment" element={<VacationPaymentStatus />} />
+
         <Route path="/car-payment" element={<CarPayment />} />
         <Route path="/payment-redirect" element={<ActivityPayment />} />
 
@@ -149,7 +153,10 @@ function App() {
           <Route path="/activities" element={<ActivityArea />} />
           <Route path="/activity-details" element={<ActivityDetails />} />
           <Route path="/activity-book" element={<ActivityBook />} />
-          <Route path="/vacation-list" element={<VacationList />} />
+          <Route
+            path="/vacation-list"
+            element={<VacationList vacationid={memberIdforVacation} />}
+          />
           <Route path="/vacation-details" element={<VacationDetail />} />
           <Route path="/vacation-billing" element={<VacationBilling />} />
           <Route

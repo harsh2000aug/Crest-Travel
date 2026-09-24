@@ -427,7 +427,7 @@ const CarBook = () => {
             number: String(data?.cardNumber || "").replace(/\s/g, ""),
             code: data?.cvv || "",
             em: expiryMonth || "",
-            ey: expiryYear || "",
+            ey: expiryYear,
             line1: data?.address || "",
             city: data?.city || "",
             state: data?.state || "",

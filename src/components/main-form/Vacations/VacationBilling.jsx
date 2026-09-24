@@ -3,7 +3,11 @@ import { useForm } from "react-hook-form";
 import "./VacationBilling.css";
 import HeaderInner from "../../../reuseable-components/HeaderInner";
 import Footer from "../../../reuseable-components/Footer";
-import { vacationAddOrder, vacvationPay } from "../../../store/Services/AllApi";
+import {
+  vacationAddOrder,
+  vacationHold,
+  vacvationPay,
+} from "../../../store/Services/AllApi";
 
 const formatSummaryDate = (value) => {
   if (!value) {
@@ -221,7 +225,7 @@ const VacationBilling = () => {
       paymentMode: "CARD",
       image: bookingData.property.image || "",
       moduleId: 1557,
-      supplierId: 5346,
+      supplierId: Number(bookingData?.supplierId),
 
       startDate: formatApiDate(bookingData.startDate),
       endDate: formatApiDate(bookingData.endDate),
@@ -250,6 +254,21 @@ const VacationBilling = () => {
         rate: Number(bookingData.price?.rate ?? 1),
         ourPrice: Number(bookingData.price?.ourPrice ?? 0),
         payable: Number(bookingData.price?.payable ?? 0),
+        currencySymbol: "$",
+        publicPrice: 0,
+        netPrice: 0,
+        marginRatio: 0,
+        margin: 0,
+        parentMarginRatio: 0,
+        parentMargin: 0,
+        marginDiff: 0,
+        merchantFeeRatio: 0,
+        merchantFee: 0,
+        saving: 0,
+        savingRatio: 0,
+        tripcoins: 0,
+        tripcoinAmount: 0,
+        externalLoyaltyCoins: 0,
       },
 
       billing: {
@@ -312,9 +331,9 @@ const VacationBilling = () => {
     const paymentInput = {
       orderid: orderId,
 
-      success: `https://it.alphatravelclub.link/car/${orderId}/paymentSuccessful`,
+      success: `${window.location.origin}/vacation-payment?status=success`,
 
-      fail: `https://it.alphatravelclub.link/car/${orderId}/bookingFailed`,
+      fail: `${window.location.origin}/vacation-payment?status=fail`,
 
       mode: "CARD",
 
@@ -356,6 +375,7 @@ const VacationBilling = () => {
         paymentResult?.message || "Payment redirect URL was not returned.",
       );
     }
+    await vacationHoldFinal(orderId);
 
     setIsPaymentRedirecting(true);
 
@@ -364,6 +384,24 @@ const VacationBilling = () => {
     window.location.assign(paymentUrl);
 
     return response;
+  };
+
+  const vacationHoldFinal = async (itemId) => {
+    console.log("Calling vacation hold with itemId:", itemId);
+
+    try {
+      const res = await vacationHold({
+        body: {
+          input: {
+            resortId: bookingData?.property?.id,
+            unitId: bookingData?.unitId,
+            itemid: itemId,
+          },
+        },
+      });
+    } catch (error) {
+      console.log("error in vacation hold api", error);
+    }
   };
 
   return (

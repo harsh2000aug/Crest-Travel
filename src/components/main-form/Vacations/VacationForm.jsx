@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 const VacationForm = () => {
   const [locations, setLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [selectedMonths, setSelectedMonths] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
@@ -64,6 +64,11 @@ const VacationForm = () => {
   }, []);
 
   const visibleMonths = months.slice(visibleMonthStart, visibleMonthStart + 4);
+
+  // Months sorted chronologically (value is YYYY-MM so string sort works)
+  const sortedSelectedMonths = useMemo(() => {
+    return [...selectedMonths].sort((a, b) => (a.value > b.value ? 1 : -1));
+  }, [selectedMonths]);
 
   useEffect(() => {
     if (selectedLocation) {
@@ -135,15 +140,36 @@ const VacationForm = () => {
     setShowSuggestions(false);
   };
 
-  const handleMonthSelect = (month) => {
-    setValue("dates", month.label, {
-      shouldValidate: true,
-      shouldDirty: true,
-      shouldTouch: true,
-    });
+  const buildDatesLabel = (monthsList) => {
+    if (monthsList.length === 0) return "";
+    if (monthsList.length === 1) return monthsList[0].label;
 
-    setSelectedMonth(month);
-    setShowMonthDropdown(false);
+    const first = monthsList[0];
+    const last = monthsList[monthsList.length - 1];
+
+    return `${first.shortMonth} ${first.shortYear} - ${last.shortMonth} ${last.shortYear}`;
+  };
+
+  const handleMonthSelect = (month) => {
+    setSelectedMonths((previous) => {
+      const alreadySelected = previous.some((m) => m.value === month.value);
+
+      const updated = alreadySelected
+        ? previous.filter((m) => m.value !== month.value)
+        : [...previous, month];
+
+      const sortedUpdated = [...updated].sort((a, b) =>
+        a.value > b.value ? 1 : -1,
+      );
+
+      setValue("dates", buildDatesLabel(sortedUpdated), {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+
+      return updated;
+    });
   };
 
   const handlePreviousMonths = () => {
@@ -157,9 +183,12 @@ const VacationForm = () => {
   };
 
   const onSubmit = () => {
-    if (!selectedLocation || !selectedMonth) {
+    if (!selectedLocation || sortedSelectedMonths.length === 0) {
       return;
     }
+
+    const firstMonth = sortedSelectedMonths[0];
+    const lastMonth = sortedSelectedMonths[sortedSelectedMonths.length - 1];
 
     const params = new URLSearchParams({
       city: selectedLocation.city,
@@ -168,8 +197,8 @@ const VacationForm = () => {
       latitude: String(selectedLocation.latitude),
       longitude: String(selectedLocation.longitude),
       type: selectedLocation.type,
-      start_date: selectedMonth.startDate,
-      end_date: selectedMonth.endDate,
+      start_date: firstMonth.startDate,
+      end_date: lastMonth.endDate,
     });
 
     navigate(`/vacation-list?${params.toString()}`);
@@ -301,7 +330,7 @@ const VacationForm = () => {
               name="dates"
               control={control}
               rules={{
-                required: "Please select a month",
+                required: "Please select at least one month",
               }}
               render={({ field }) => (
                 <input
@@ -352,23 +381,38 @@ const VacationForm = () => {
               </div>
 
               <div className="vacationForm__monthList">
-                {visibleMonths.map((month) => (
-                  <button
-                    type="button"
-                    key={month.value}
-                    className={`vacationForm__monthCard ${
-                      selectedMonth?.value === month.value
-                        ? "vacationForm__monthCard--selected"
-                        : ""
-                    }`}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleMonthSelect(month)}
-                  >
-                    <FaRegCalendarDays />
-                    <span>{month.shortMonth}</span>
-                    <span>{month.shortYear}</span>
-                  </button>
-                ))}
+                {visibleMonths.map((month) => {
+                  const isSelected = selectedMonths.some(
+                    (m) => m.value === month.value,
+                  );
+
+                  return (
+                    <button
+                      type="button"
+                      key={month.value}
+                      className={`vacationForm__monthCard ${
+                        isSelected ? "vacationForm__monthCard--selected" : ""
+                      }`}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => handleMonthSelect(month)}
+                    >
+                      <FaRegCalendarDays />
+                      <span>{month.shortMonth}</span>
+                      <span>{month.shortYear}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="vacationForm__monthFooter">
+                <button
+                  type="button"
+                  className="vacationForm__monthDone"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setShowMonthDropdown(false)}
+                >
+                  Done
+                </button>
               </div>
             </div>
           )}

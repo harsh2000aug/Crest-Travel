@@ -442,7 +442,6 @@ const VacationDetail = () => {
 
         try {
           const availabilityResult = await fetchVacationData();
-
           if (!ignoreResponse) {
             setAvailability(availabilityResult);
           }
@@ -475,6 +474,7 @@ const VacationDetail = () => {
       ignoreResponse = true;
     };
   }, [resortId, checkInDate, checkOutDate, fetchVacationData]);
+
   const images = useMemo(() => {
     const largeImages = details?.images?.largeImages || [];
     const smallImages = details?.images?.smallImages || [];
@@ -663,9 +663,9 @@ const VacationDetail = () => {
       endDate: formatBookingDate(selectedEndDate),
       startTime: formatTime(details?.checkinTime),
       endTime: formatTime(details?.checkoutTime),
-
+      unitId: availability[0]?.unitRow[0]?.unit[0]?.unitId,
       roomType: `${group?.title}, Max Occupancy: ${displayedUnit.maxOccupancy}`,
-
+      supplierId: availability[0]?.unitRow[0]?.unit[0]?.supplierId,
       property: {
         id: details?.resortId || details?.id || resortId,
         image: images[0] || "",
@@ -707,7 +707,7 @@ const VacationDetail = () => {
       </div>
     );
   }
-
+  console.log("pichkuu", availability[0]?.unitRow[0]?.unit[0]?.unitId);
   return (
     <div className="vacationDetailPage">
       <HeaderInner />
