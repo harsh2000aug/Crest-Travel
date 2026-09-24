@@ -281,6 +281,26 @@ export const activityBook = ({ body }: any) =>
     uriEndPoint: allApi.activityBook.v1,
     body,
   });
+export const activityUpcoming = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityUpcoming.v1,
+    body,
+  });
+export const activityInfo = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityInfo.v1,
+    body,
+  });
+export const activityRefund = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityRefund.v1,
+    body,
+  });
+export const activityCancel = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityCancel.v1,
+    body,
+  });
 export const forgotPasswordChange = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.forgotPasswordChange.v1,

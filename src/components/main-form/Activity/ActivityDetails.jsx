@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import HeaderInner from "../../../reuseable-components/HeaderInner";
 import Footer from "../../../reuseable-components/Footer";
 import {
@@ -10,7 +10,6 @@ import {
 } from "../../../store/Services/AllApi";
 import "./Activity.css";
 import Calendar from "react-calendar";
-
 const activityDetailCache = new Map();
 const activityReviewsCache = new Map();
 const activityCalendarCache = new Map();
@@ -116,7 +115,7 @@ const renderStars = (rating, size = "normal") => {
 
 const ActivityDetails = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-
+  const navigate = useNavigate();
   const [activityData, setActivityData] = useState(null);
   const [reviewsData, setReviewsData] = useState(null);
   const [calendarData, setCalendarData] = useState([]);
@@ -181,8 +180,8 @@ const ActivityDetails = () => {
       label: labels[band] || band,
       startAge: Number(ageBand?.startAge),
       endAge: Number(ageBand?.endAge),
-      minTravelers: Number(ageBand?.minTravelers) || 0,
-      maxTravelers: Number(ageBand?.maxTravelers) || 10,
+      minTravelers: Number(ageBand?.minTravelers),
+      maxTravelers: Number(ageBand?.maxTravelers),
     };
   };
 
@@ -645,7 +644,10 @@ const ActivityDetails = () => {
         0,
       );
 
-      if (total > 10) {
+      const maxTravelersPerBooking =
+        Number(activityData?.bookingRequirements?.maxTravelersPerBooking) || 15;
+
+      if (total > maxTravelersPerBooking) {
         return previous;
       }
 
@@ -654,14 +656,6 @@ const ActivityDetails = () => {
   };
 
   const applyParticipants = () => {
-    const nextAppliedParticipants = {};
-
-    activityAgeBands.forEach((ageBand) => {
-      nextAppliedParticipants[ageBand.type] =
-        Number(participants[ageBand.type]) || ageBand.minTravelers;
-    });
-
-    setAppliedParticipants(nextAppliedParticipants);
     setParticipantsOpen(false);
   };
 
@@ -714,6 +708,13 @@ const ActivityDetails = () => {
 
     const nextDate = formatDateToApi(selectedDate);
 
+    const nextAppliedParticipants = {};
+
+    activityAgeBands.forEach((ageBand) => {
+      nextAppliedParticipants[ageBand.type] =
+        Number(participants[ageBand.type]) || ageBand.minTravelers;
+    });
+
     setSearchParams(
       {
         activityCode,
@@ -722,7 +723,9 @@ const ActivityDetails = () => {
       { replace: true },
     );
 
-    const result = await loadAvailability(nextDate, appliedParticipants);
+    setAppliedParticipants(nextAppliedParticipants);
+
+    const result = await loadAvailability(nextDate, nextAppliedParticipants);
 
     if (!result) {
       return;
@@ -1072,57 +1075,31 @@ const ActivityDetails = () => {
     };
 
     const adultCount = Number(appliedParticipants?.adult) || 0;
-    const childCount =
-      (Number(appliedParticipants?.child) || 0) +
-      (Number(appliedParticipants?.youth) || 0);
+    const childCount = Number(appliedParticipants?.child) || 0;
+    const youthCount = Number(appliedParticipants?.youth) || 0;
     const infantCount = Number(appliedParticipants?.infant) || 0;
+    const seniorCount = Number(appliedParticipants?.senior) || 0;
 
     const guests = [];
 
-    for (let index = 0; index < adultCount; index += 1) {
-      guests.push({
-        primary: index === 0,
-        title: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        covered: false,
-        birthDate: "",
-        gender: "",
-        type: "ADULT",
-      });
-    }
+    activityAgeBands.forEach((ageBand) => {
+      const count = Number(appliedParticipants?.[ageBand.type]) || 0;
 
-    for (let index = 0; index < childCount; index += 1) {
-      guests.push({
-        primary: false,
-        title: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        covered: false,
-        birthDate: "",
-        gender: "",
-        type: "CHILD",
-      });
-    }
-
-    for (let index = 0; index < infantCount; index += 1) {
-      guests.push({
-        primary: false,
-        title: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        covered: false,
-        birthDate: "",
-        gender: "",
-        type: "INFANT",
-      });
-    }
+      for (let index = 0; index < count; index += 1) {
+        guests.push({
+          primary: guests.length === 0,
+          title: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          covered: false,
+          birthDate: "",
+          gender: "",
+          type: ageBand.ageBand,
+        });
+      }
+    });
 
     selectedActivityData.guests = guests;
 
@@ -1143,7 +1120,7 @@ const ActivityDetails = () => {
       startTime: detail?.startTime || "",
     });
 
-    window.location.href = `/activity-book?${params.toString()}`;
+    navigate(`/activity-book?${params.toString()}`);
   };
 
   return (
@@ -1933,7 +1910,6 @@ const ActivityDetails = () => {
                   <div className="activityDetailsUi__participantsPopup">
                     <div className="activityDetailsUi__participantsHeader">
                       <h3>Select Participants</h3>
-                      <p>You Can select upto 10 Participants</p>
                     </div>
 
                     {(activityData?.pricingInfo?.ageBands || []).map(
@@ -1963,9 +1939,9 @@ const ActivityDetails = () => {
 
                         const startAge = Number(ageBand?.startAge);
                         const endAge = Number(ageBand?.endAge);
-                        const min = Number(ageBand?.minTravelers) || 0;
-                        const max = Number(ageBand?.maxTravelers) || 10;
-                        const currentCount = Number(participants[type]) || 0;
+                        const min = Number(ageBand?.minTravelers);
+                        const max = Number(ageBand?.maxTravelers);
+                        const currentCount = Number(participants[type]);
 
                         return (
                           <div

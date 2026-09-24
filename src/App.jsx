@@ -50,6 +50,7 @@ import CarBookingDetails from "./components/main-form/CarRental/CarBookingDetail
 import ActivityPayment from "./components/main-form/Activity/ActivityPayment/ActivityPayment";
 import FlightBookingDetails from "./components/FlightResultPage/FlightBookingDetails/FlightBookingDetails";
 import VacationPaymentStatus from "./components/main-form/Vacations/VacationPaymentStatus/VacationPaymentStatus";
+import ActivityBookingDetails from "./components/main-form/Activity/ActivityBookingDetails/ActivityBookingDetails";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -164,6 +165,10 @@ function App() {
             element={<HotelBookingsDetails />}
           />
           <Route path="/car-booking-details" element={<CarBookingDetails />} />
+          <Route
+            path="/activity-booking-details"
+            element={<ActivityBookingDetails />}
+          />
         </Route>
 
         <Route

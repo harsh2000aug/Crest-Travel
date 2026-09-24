@@ -10,7 +10,6 @@ import {
   activityOrder,
   activityOrderPlace,
 } from "../../../store/Services/AllApi";
-import CarLoader from "../../../reuseable-components/CarLoader/CarLoader";
 
 const ActivityBook = () => {
   const [searchParams] = useSearchParams();
@@ -36,6 +35,24 @@ const ActivityBook = () => {
         (question) => question?.required === "MANDATORY",
       )
     : [];
+  const hasMandatoryQuestion = (questionId) =>
+    bookingQuestions.some((question) => question?.id === questionId);
+
+  const getMandatoryQuestion = (questionId) =>
+    bookingQuestions.find((question) => question?.id === questionId);
+
+  const getBookingQuestionKey = (questionId) => {
+    const keyMap = {
+      FULL_NAMES_FIRST: "bookingFirstName",
+      FULL_NAMES_LAST: "bookingLastName",
+      AGEBAND: "bookingAgeBand",
+      DATE_OF_BIRTH: "bookingDateOfBirth",
+    };
+
+    return keyMap[questionId] || `booking_${questionId}`;
+  };
+
+  const ageBandQuestion = getMandatoryQuestion("AGEBAND");
   const allowedAnswers = bookingQuestions.flatMap((question) =>
     Array.isArray(question?.allowedAnswers) ? question.allowedAnswers : [],
   );
@@ -45,6 +62,8 @@ const ActivityBook = () => {
 
   const getTravelerLabel = (type) => {
     if (type === "ADULT") return "Adult";
+    if (type === "SENIOR") return "Senior";
+    if (type === "YOUTH") return "Youth";
     if (type === "CHILD") return "Child";
     if (type === "INFANT") return "Infant";
     return "Traveler";
@@ -75,6 +94,10 @@ const ActivityBook = () => {
         ageBand: traveler.type || "",
         gender: "",
         birthDate: "",
+        bookingFirstName: "",
+        bookingLastName: "",
+        bookingAgeBand: traveler.type || "",
+        bookingDateOfBirth: "",
       })),
       languageGuide: "",
       allowedAnswer: "",
@@ -223,41 +246,30 @@ const ActivityBook = () => {
       (formData.travelers || []).forEach((traveler, index) => {
         const travelerNum = index + 1;
 
-        if (
-          bookingQuestions.some(
-            (question) => question?.id === "FULL_NAMES_FIRST",
-          )
-        ) {
-          bookingQuestionAnswers.push({
-            question: "FULL_NAMES_FIRST",
-            answer: traveler.firstName || "",
-            travelerNum,
-            unit: null,
-          });
-        }
+        bookingQuestions
+          .filter((question) => question?.group === "PER_TRAVELER")
+          .forEach((question) => {
+            const fieldKey = getBookingQuestionKey(question.id);
 
-        if (
-          bookingQuestions.some(
-            (question) => question?.id === "FULL_NAMES_LAST",
-          )
-        ) {
-          bookingQuestionAnswers.push({
-            question: "FULL_NAMES_LAST",
-            answer: traveler.lastName || "",
-            travelerNum,
-            unit: null,
+            bookingQuestionAnswers.push({
+              question: question.id,
+              answer: traveler[fieldKey] || "",
+              travelerNum,
+              unit: null,
+            });
           });
-        }
-
-        if (bookingQuestions.some((question) => question?.id === "AGEBAND")) {
-          bookingQuestionAnswers.push({
-            question: "AGEBAND",
-            answer: traveler.ageBand || traveler.type || "ADULT",
-            travelerNum,
-            unit: null,
-          });
-        }
       });
+
+      if (
+        bookingQuestions.some((question) => question?.id === "PICKUP_POINT")
+      ) {
+        bookingQuestionAnswers.push({
+          question: "PICKUP_POINT",
+          answer: formData.pickupLocation || "",
+          travelerNum: null,
+          unit: "FREETEXT",
+        });
+      }
 
       if (
         bookingQuestions.some((question) => question?.id === "PICKUP_POINT")
@@ -592,18 +604,6 @@ const ActivityBook = () => {
 
                       const isPrimary = traveler.primary === true;
 
-                      const hasFirstName = bookingQuestions.some(
-                        (question) => question?.id === "FULL_NAMES_FIRST",
-                      );
-
-                      const hasLastName = bookingQuestions.some(
-                        (question) => question?.id === "FULL_NAMES_LAST",
-                      );
-
-                      const hasAgeBand = bookingQuestions.some(
-                        (question) => question?.id === "AGEBAND",
-                      );
-
                       return (
                         <div
                           key={`${traveler.type}-${index}`}
@@ -851,6 +851,205 @@ const ActivityBook = () => {
                   )}
                 </section>
 
+                {bookingQuestions.some(
+                  (question) => question?.group === "PER_TRAVELER",
+                ) && (
+                  <section className="activity-book-card">
+                    <div className="activity-book-section-header">
+                      <div>
+                        <h2>Required Activity Information</h2>
+                        <p>Enter the required information for all travelers</p>
+                      </div>
+                    </div>
+
+                    {travelers.map((traveler, index) => {
+                      const travelerNumber = getTravelerNumber(
+                        traveler.type,
+                        index,
+                      );
+                      const travelerLabel = getTravelerLabel(traveler.type);
+
+                      return (
+                        <div
+                          key={`mandatory-${traveler.type}-${index}`}
+                          className="activity-book-traveler-box"
+                        >
+                          <div className="activity-book-traveler-heading">
+                            <div>
+                              <h3>
+                                {travelerLabel} {travelerNumber}
+                              </h3>
+                              <span>{travelerLabel}</span>
+                            </div>
+                          </div>
+
+                          <div className="activity-book-form-grid">
+                            {bookingQuestions
+                              .filter(
+                                (question) =>
+                                  question?.group === "PER_TRAVELER",
+                              )
+                              .map((question) => {
+                                const fieldKey = getBookingQuestionKey(
+                                  question.id,
+                                );
+                                const fieldName = `travelers.${index}.${fieldKey}`;
+                                const fieldError =
+                                  errors.travelers?.[index]?.[fieldKey];
+
+                                if (question.type === "DATE") {
+                                  return (
+                                    <div
+                                      className="activity-book-field"
+                                      key={question.id}
+                                    >
+                                      <label>
+                                        {question.label} <span>*</span>
+                                      </label>
+
+                                      <Controller
+                                        control={control}
+                                        name={fieldName}
+                                        rules={{
+                                          required: `${question.label} is required`,
+                                        }}
+                                        render={({ field }) => (
+                                          <DatePicker
+                                            selected={
+                                              field.value
+                                                ? new Date(
+                                                    `${field.value}T00:00:00`,
+                                                  )
+                                                : null
+                                            }
+                                            onChange={(date) => {
+                                              if (!date) {
+                                                field.onChange("");
+                                                return;
+                                              }
+
+                                              const year = date.getFullYear();
+                                              const month = String(
+                                                date.getMonth() + 1,
+                                              ).padStart(2, "0");
+                                              const day = String(
+                                                date.getDate(),
+                                              ).padStart(2, "0");
+
+                                              field.onChange(
+                                                `${year}-${month}-${day}`,
+                                              );
+                                            }}
+                                            dateFormat="dd/MM/yyyy"
+                                            placeholderText="DD/MM/YYYY"
+                                            maxDate={new Date()}
+                                            showMonthDropdown
+                                            showYearDropdown
+                                            dropdownMode="select"
+                                            className="activity-book-date-picker"
+                                            autoComplete="off"
+                                          />
+                                        )}
+                                      />
+
+                                      {fieldError && (
+                                        <span className="activity-book-error">
+                                          {fieldError.message}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                }
+
+                                if (
+                                  Array.isArray(question?.allowedAnswers) &&
+                                  question.allowedAnswers.length > 0
+                                ) {
+                                  return (
+                                    <div
+                                      className="activity-book-field"
+                                      key={question.id}
+                                    >
+                                      <label>
+                                        {question.label} <span>*</span>
+                                      </label>
+
+                                      <select
+                                        {...register(fieldName, {
+                                          required: `${question.label} is required`,
+                                        })}
+                                      >
+                                        <option value="">
+                                          Select {question.label}
+                                        </option>
+
+                                        {question.allowedAnswers.map(
+                                          (answer, answerIndex) => {
+                                            const answerValue =
+                                              typeof answer === "object"
+                                                ? answer?.answer || ""
+                                                : answer || "";
+
+                                            return (
+                                              <option
+                                                key={`${question.id}-${answerValue}-${answerIndex}`}
+                                                value={answerValue}
+                                              >
+                                                {answerValue}
+                                              </option>
+                                            );
+                                          },
+                                        )}
+                                      </select>
+
+                                      {fieldError && (
+                                        <span className="activity-book-error">
+                                          {fieldError.message}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <div
+                                    className="activity-book-field"
+                                    key={question.id}
+                                  >
+                                    <label>
+                                      {question.label} <span>*</span>
+                                    </label>
+
+                                    <input
+                                      type="text"
+                                      maxLength={
+                                        question.maxLength || undefined
+                                      }
+                                      {...register(fieldName, {
+                                        required: `${question.label} is required`,
+                                        maxLength: question.maxLength
+                                          ? {
+                                              value: question.maxLength,
+                                              message: `Maximum ${question.maxLength} characters allowed`,
+                                            }
+                                          : undefined,
+                                      })}
+                                    />
+
+                                    {fieldError && (
+                                      <span className="activity-book-error">
+                                        {fieldError.message}
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </section>
+                )}
                 {bookingQuestions.some(
                   (question) => question?.id === "PICKUP_POINT",
                 ) && (

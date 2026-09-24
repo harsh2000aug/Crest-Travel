@@ -635,7 +635,7 @@ const HotelBookingDetails = () => {
               {cancellable && !isCancelled && (
                 <button
                   type="button"
-                  className="cancef-flight-btn"
+                  className="your-cancel-button-class"
                   onClick={handleCancelClick}
                 >
                   Cancel Booking
