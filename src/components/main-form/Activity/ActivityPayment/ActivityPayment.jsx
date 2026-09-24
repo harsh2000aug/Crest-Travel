@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { activityBook } from "../../../../store/Services/AllApi";
 import "./ActivityPayment.css";
+
 const ActivityPaymentRedirect = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("Processing your booking...");
 
@@ -36,7 +36,6 @@ const ActivityPaymentRedirect = () => {
           gradeCode: storedData.gradeCode || "",
           orderId: storedData.orderId || "",
           startTime: storedData.startTime || "",
-
           primaryTraveller: {
             firstName: storedData.primaryTraveller?.firstName || "",
             type: storedData.primaryTraveller?.type || "Adult",
@@ -45,11 +44,8 @@ const ActivityPaymentRedirect = () => {
             email: storedData.primaryTraveller?.email || "",
             contactNo: storedData.primaryTraveller?.contactNo || "",
           },
-
           ageBandCount: storedData.ageBandCount || {},
-
           bookingQuestionAnswers: storedData.bookingQuestionAnswers || [],
-
           languageGuide: storedData.languageGuide || {
             type: "GUIDE",
             language: "en",
@@ -65,22 +61,29 @@ const ActivityPaymentRedirect = () => {
 
         console.log("Activity Final Booking RESPONSE:", response);
 
-        const success =
-          response?.data?.success === true ||
-          response?.data?.booking?.success === true ||
-          response?.data?.result?.success === true;
+        const bookResponse = response?.data?.book;
+
+        const success = bookResponse?.success === true;
 
         if (success) {
-          setMessage("Booking confirmed successfully.");
+          const bookingResult = bookResponse?.result;
+
+          console.log("Activity Booking Confirmed:", bookingResult);
 
           sessionStorage.removeItem("activityPaymentRedirectData");
+
+          setMessage(
+            bookingResult?.bookingRef
+              ? `Booking confirmed successfully. Booking Ref: ${bookingResult.bookingRef}`
+              : "Booking confirmed successfully.",
+          );
 
           setTimeout(() => {
             navigate("/my-bookings");
           }, 2000);
         } else {
           setMessage(
-            response?.data?.message ||
+            bookResponse?.message ||
               "Payment was successful but booking confirmation failed.",
           );
         }
@@ -107,9 +110,25 @@ const ActivityPaymentRedirect = () => {
           <p>Please don't close or refresh this page.</p>
         </>
       ) : (
-        <>
+        <div
+          className={`activity-payment-status ${
+            searchParams.get("status") === "success"
+              ? "activity-payment-success"
+              : "activity-payment-failure"
+          }`}
+        >
+          <div className="activity-payment-status-icon">
+            {searchParams.get("status") === "success" ? "✓" : "!"}
+          </div>
+
           <h2>{message}</h2>
-        </>
+
+          {searchParams.get("status") === "success" ? (
+            <p>Your booking has been confirmed successfully.</p>
+          ) : (
+            <p>Your payment could not be completed. Please try again.</p>
+          )}
+        </div>
       )}
     </div>
   );
