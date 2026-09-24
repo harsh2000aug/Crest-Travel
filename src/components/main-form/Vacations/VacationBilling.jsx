@@ -375,7 +375,7 @@ const VacationBilling = () => {
         paymentResult?.message || "Payment redirect URL was not returned.",
       );
     }
-    await vacationHoldFinal(orderId);
+    await vacationHoldFinal(orderId, formData);
 
     setIsPaymentRedirecting(true);
 
@@ -386,9 +386,7 @@ const VacationBilling = () => {
     return response;
   };
 
-  const vacationHoldFinal = async (itemId) => {
-    console.log("Calling vacation hold with itemId:", itemId);
-
+  const vacationHoldFinal = async (itemId, formData) => {
     try {
       const res = await vacationHold({
         body: {
@@ -399,8 +397,39 @@ const VacationBilling = () => {
           },
         },
       });
+
+      const holdResult = res?.data?.hold?.result;
+
+      const holdData = {
+        input: {
+          resortId: bookingData?.property?.id,
+          unitId: bookingData?.unitId,
+          itemid: itemId,
+          holdId: holdResult?.holdId || "",
+          holdInfo: holdResult?.holdInfo || {},
+          traveler: {
+            firstName: formData.firstName.trim(),
+            lastName: formData.lastName.trim(),
+            line1: formData.address.trim(),
+            line2: formData.apartment.trim(),
+            city: formData.city.trim(),
+            state: formData.state.trim(),
+            country: getCountryCode(formData.country),
+            postalCode: formData.postalCode.trim(),
+            callingCode: "+91",
+            areaCode: "",
+            phone: `+91 ${formData.phone.trim()}`,
+            email: formData.email.trim(),
+          },
+        },
+      };
+
+      sessionStorage.setItem("vacationHoldData", JSON.stringify(holdData));
+
+      return holdResult;
     } catch (error) {
       console.log("error in vacation hold api", error);
+      return null;
     }
   };
 

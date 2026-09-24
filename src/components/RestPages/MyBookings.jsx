@@ -19,8 +19,10 @@ import {
   carOrders,
   hotelUpcomingOrder,
   upcomingFlight,
+  vacationUpcoming,
 } from "../../store/Services/AllApi";
 import { useNavigate } from "react-router-dom";
+import { CiHome } from "react-icons/ci";
 
 const sidebarItems = [
   {
@@ -44,9 +46,9 @@ const sidebarItems = [
     icon: <FaUmbrellaBeach />,
   },
   {
-    id: "buses",
-    title: "Bus",
-    icon: <FaBus />,
+    id: "vacations",
+    title: "Vacation Rental",
+    icon: <CiHome />,
   },
   {
     id: "cruises",
@@ -92,7 +94,7 @@ const MyBookings = () => {
       totalPages: 1,
       hasNextPage: false,
     },
-    buses: {
+    vacations: {
       currentPage: 0,
       totalPages: 1,
       hasNextPage: false,
@@ -109,6 +111,7 @@ const MyBookings = () => {
     },
   });
   const [flightBookings, setFlightBookings] = useState([]);
+  const [vacationBookings, setVacationBookings] = useState([]);
   const currentPage = pagination[activeMenu].currentPage;
   const totalPages = pagination[activeMenu].totalPages;
   const hasNextPage = pagination[activeMenu].hasNextPage;
@@ -129,8 +132,8 @@ const MyBookings = () => {
     hotels: upcomingBookings,
     cars: carBookings,
     flights: flightBookings,
-    activities: activityBookings,
-    buses: [],
+    activities: [],
+    vacations: vacationBookings,
     cruises: [],
     tickets: [],
   };
@@ -668,6 +671,11 @@ const MyBookings = () => {
   useEffect(() => {
     const fetchActivity = async () => {
       if (activeMenu !== "activities") return;
+  // vacation upcoming
+  // vacation upcoming
+  useEffect(() => {
+    const fetchVacationInfo = async () => {
+      if (activeMenu !== "vacations") return;
 
       setLoading(true);
 
@@ -679,7 +687,7 @@ const MyBookings = () => {
               ? "CANCELLED"
               : "COMPLETED";
 
-        const res = await activityUpcoming({
+        const res = await vacationUpcoming({
           body: {
             memberid: localStorage.getItem("bookingId"),
             status: apiStatus,
@@ -688,67 +696,62 @@ const MyBookings = () => {
               end: "2028-12-30",
             },
             limit: PAGE_LIMIT,
-            offset: pagination.activities.currentPage * PAGE_LIMIT,
-            supplierid: 0,
+            offset: pagination.vacations.currentPage * PAGE_LIMIT,
           },
         });
+
+        console.log("vacationUpcoming Response:", res);
 
         const orders = [...(res?.orders || [])].sort(
           (a, b) => new Date(b.createdat) - new Date(a.createdat),
         );
 
-        const mappedActivityBookings = orders.map((order) => {
-          const activityData = order?.booking_data || {};
-
-          const selectedGrade =
-            activityData?.availability?.availability?.bookableItems?.find(
-              (item) => item.gradeCode === activityData.gradeCode,
-            );
-
-          const status =
+        const mappedVacationBookings = orders.map((order) => ({
+          id: order.orderid,
+          type: "vacations",
+          status:
             activeTab === "Upcoming"
               ? "Upcoming"
               : activeTab === "Cancelled"
                 ? "Cancelled"
-                : "Completed";
+                : "Completed",
+          resortName: order.property_name,
+          city: order.property_city || "",
+          roomType: order.room_type || "",
+          checkIn: new Date(order.start_date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          checkOut: new Date(order.end_date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          guests: order?.adults,
+          bookingId: order.confirmation_number,
+          amount: `${order.currencysymbol || "$"}${Number(order.our_price || 0).toFixed(2)}`,
+          image: order?.image,
+          orderStatus: order.orderstatus,
+          cancellable: order?.cancellable === true,
+        }));
 
-          return {
-            id: order.orderid,
-            type: "activities",
-            status,
-            activityName: order.property_name || "Activity",
-            image: order.image || dummy,
-            activityCode: activityData.activityCode || "",
-            gradeName: selectedGrade?.title || "",
-            travelDate:
-              activityData.startDate || order.start_date?.split("T")[0] || "",
-            startTime: activityData.startTime || order.start_time || "",
-            travellers: order.traveller_count ?? order.adults ?? 0,
-            bookingId: order.confirmation_number || order.orderid,
-            orderStatus: order.orderstatus || "",
-            amount: `${order.currencysymbol || "$"}${Number(
-              order.our_price ?? order.total ?? 0,
-            ).toFixed(2)}`,
-            ticketUrl: order.ticket_url || "",
-          };
-        });
-
-        setActivityBookings(mappedActivityBookings);
+        setVacationBookings(mappedVacationBookings);
 
         const totalCount = Number(res?.count || 0);
         const calculatedTotalPages = Math.ceil(totalCount / PAGE_LIMIT);
 
-        updatePagination("activities", {
+        updatePagination("vacations", {
           totalPages: calculatedTotalPages || 1,
           hasNextPage:
-            pagination.activities.currentPage < calculatedTotalPages - 1,
+            pagination.vacations.currentPage < calculatedTotalPages - 1,
         });
       } catch (error) {
-        console.error("ACTIVITY BOOKINGS ERROR:", error);
+        console.error("Error fetching vacation bookings:", error);
 
-        setActivityBookings([]);
+        setVacationBookings([]);
 
-        updatePagination("activities", {
+        updatePagination("vacations", {
           totalPages: 1,
           hasNextPage: false,
         });
@@ -757,24 +760,20 @@ const MyBookings = () => {
       }
     };
 
-    fetchActivity();
-  }, [activeMenu, activeTab, pagination.activities.currentPage]);
-
-  const handleActivityClick = (booking) => {
+    fetchVacationInfo();
+  }, [activeMenu, activeTab, pagination.vacations.currentPage]);
+  const handleVacationBookingClick = (booking) => {
     if (!booking?.id) return;
 
-    navigate(
-      `/activity-booking-details?orderid=${encodeURIComponent(booking.id)}`,
+    sessionStorage.setItem(
+      "vacationBookingCancellable",
+      JSON.stringify(booking.cancellable),
     );
+
+    sessionStorage.setItem("vacationBookingStatus", booking.status);
+
+    navigate(`/vacation-booking-details?id=${encodeURIComponent(booking.id)}`);
   };
-
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-    });
-  });
-
   return (
     <div>
       {loading && (
@@ -1356,16 +1355,16 @@ const MyBookings = () => {
                         </div>
                       </div>
                     </div>
-                  ) : booking.type === "activities" ? (
+                  ) : booking.type === "vacations" ? (
                     <div
                       className="voyage-booking-card"
                       key={booking.id}
-                      onClick={() => handleActivityClick(booking)}
+                      onClick={() => handleVacationBookingClick(booking)}
                     >
                       <div className="voyage-booking-image">
                         <img
                           src={booking.image || dummy}
-                          alt={booking.activityName}
+                          alt={booking.resortName}
                         />
 
                         <span className="voyage-booking-status">
@@ -1374,49 +1373,33 @@ const MyBookings = () => {
                       </div>
 
                       <div className="voyage-booking-body">
-                        <h3>{booking.activityName}</h3>
+                        <h3>{booking.resortName}</h3>
 
-                        {booking.gradeName && <p>{booking.gradeName}</p>}
+                        <p>{booking.city}</p>
+
+                        {booking.roomType && (
+                          <p className="voyage-booking-roomtype">
+                            {booking.roomType}
+                          </p>
+                        )}
 
                         <div className="voyage-booking-row">
-                          <span>Travel Date and Time</span>
-                          <strong>
-                            {booking.travelDate
-                              ? new Date(
-                                  `${booking.travelDate}T00:00:00`,
-                                ).toLocaleDateString("en-GB", {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric",
-                                })
-                              : "-"}{" "}
-                            at {booking.startTime || "-"}
-                          </strong>
+                          <span>Check In</span>
+                          <strong>{booking.checkIn}</strong>
                         </div>
 
                         <div className="voyage-booking-row">
-                          <span>Travellers</span>
-                          <strong>{booking.travellers}</strong>
+                          <span>Check Out</span>
+                          <strong>{booking.checkOut}</strong>
                         </div>
 
                         <div className="voyage-booking-row">
-                          <span>Booking Status</span>
-                          <strong>{booking.orderStatus || "-"}</strong>
+                          <span>Guests</span>
+                          <strong>{booking.guests}</strong>
                         </div>
 
                         <div className="voyage-booking-footer">
                           <h2>{booking.amount}</h2>
-
-                          {booking.ticketUrl && (
-                            <a
-                              href={booking.ticketUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              View Ticket
-                            </a>
-                          )}
                         </div>
                       </div>
                     </div>
