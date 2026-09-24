@@ -379,6 +379,21 @@ export const vacationHold = ({ body }: any) =>
     uriEndPoint: allApi.vacationHold.v1,
     body,
   });
+export const vacationBook = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.vacationBook.v1,
+    body,
+  });
+export const vacationUpcoming = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.getVacationUpcoming.v1,
+    body,
+  });
+export const vacationUpcomingDetails = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.getVacationUpcomingDetails.v1,
+    body,
+  });
 export const crestBenefits = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.crestBenefits.v1,

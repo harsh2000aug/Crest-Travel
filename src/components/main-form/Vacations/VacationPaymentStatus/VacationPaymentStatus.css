@@ -1,0 +1,196 @@
+.vacationPaymentStatus {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  /* background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); */
+}
+
+.vacationPaymentStatus__card {
+  width: 100%;
+  max-width: 440px;
+  padding: 48px 36px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  animation: vacationPaymentStatus-pop 0.4s ease;
+}
+
+@keyframes vacationPaymentStatus-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.vacationPaymentStatus__title {
+  margin: 4px 0 12px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.vacationPaymentStatus__message {
+  margin: 0 0 20px;
+  color: #6b7280;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Pending spinner */
+.vacationPaymentStatus__spinnerWrap {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 24px;
+}
+
+.vacationPaymentStatus__spinnerRing {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  border-top-color: #2c5364;
+  animation: vacationPaymentStatus-spin 1.1s linear infinite;
+}
+
+.vacationPaymentStatus__spinnerRing:nth-child(2) {
+  inset: 10px;
+  border-top-color: #4e9de0;
+  animation-duration: 0.9s;
+  animation-direction: reverse;
+}
+
+.vacationPaymentStatus__spinnerRing:nth-child(3) {
+  inset: 20px;
+  border-top-color: #91c9f7;
+  animation-duration: 1.4s;
+}
+
+@keyframes vacationPaymentStatus-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Success / failed icon circles */
+.vacationPaymentStatus__iconWrap {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 20px;
+}
+
+.vacationPaymentStatus__checkIcon,
+.vacationPaymentStatus__crossIcon {
+  width: 100%;
+  height: 100%;
+}
+
+.vacationPaymentStatus__checkCircle {
+  stroke: #22c55e;
+  stroke-width: 3;
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: vacationPaymentStatus-drawCircle 0.6s ease forwards;
+}
+
+.vacationPaymentStatus__checkMark {
+  stroke: #22c55e;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: vacationPaymentStatus-drawMark 0.4s ease 0.5s forwards;
+}
+
+.vacationPaymentStatus__crossCircle {
+  stroke: #ef4444;
+  stroke-width: 3;
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: vacationPaymentStatus-drawCircle 0.6s ease forwards;
+}
+
+.vacationPaymentStatus__crossMark {
+  stroke: #ef4444;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 52;
+  stroke-dashoffset: 52;
+  animation: vacationPaymentStatus-drawMark 0.4s ease 0.5s forwards;
+}
+
+@keyframes vacationPaymentStatus-drawCircle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes vacationPaymentStatus-drawMark {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Success details box */
+.vacationPaymentStatus__details {
+  margin: 0 0 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  text-align: left;
+}
+
+.vacationPaymentStatus__detailRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 14px;
+  color: #166534;
+}
+
+.vacationPaymentStatus__detailRow strong {
+  color: #14532d;
+}
+
+.vacationPaymentStatus__redirectNote {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.vacationPaymentStatus__button {
+  width: 100%;
+  padding: 13px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.vacationPaymentStatus__button:hover {
+  transform: translateY(-2px);
+}
+
+.vacationPaymentStatus__button--success {
+  background: #22c55e;
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+}
+
+.vacationPaymentStatus__button--failed {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+}

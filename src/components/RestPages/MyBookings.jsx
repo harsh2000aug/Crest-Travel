@@ -18,8 +18,10 @@ import {
   carOrders,
   hotelUpcomingOrder,
   upcomingFlight,
+  vacationUpcoming,
 } from "../../store/Services/AllApi";
 import { useNavigate } from "react-router-dom";
+import { CiHome } from "react-icons/ci";
 
 const sidebarItems = [
   {
@@ -43,9 +45,9 @@ const sidebarItems = [
     icon: <FaUmbrellaBeach />,
   },
   {
-    id: "buses",
-    title: "Bus",
-    icon: <FaBus />,
+    id: "vacations",
+    title: "Vacation Rental",
+    icon: <CiHome />,
   },
   {
     id: "cruises",
@@ -90,7 +92,7 @@ const MyBookings = () => {
       totalPages: 1,
       hasNextPage: false,
     },
-    buses: {
+    vacations: {
       currentPage: 0,
       totalPages: 1,
       hasNextPage: false,
@@ -107,6 +109,7 @@ const MyBookings = () => {
     },
   });
   const [flightBookings, setFlightBookings] = useState([]);
+  const [vacationBookings, setVacationBookings] = useState([]);
   const currentPage = pagination[activeMenu].currentPage;
   const totalPages = pagination[activeMenu].totalPages;
   const hasNextPage = pagination[activeMenu].hasNextPage;
@@ -132,7 +135,7 @@ const MyBookings = () => {
     cars: carBookings,
     flights: flightBookings,
     activities: [],
-    buses: [],
+    vacations: vacationBookings,
     cruises: [],
     tickets: [],
   };
@@ -662,6 +665,109 @@ const MyBookings = () => {
 
     fetchFlightInfo();
   }, [activeMenu, activeTab, pagination.flights.currentPage]);
+  // vacation upcoming
+  // vacation upcoming
+  useEffect(() => {
+    const fetchVacationInfo = async () => {
+      if (activeMenu !== "vacations") return;
+
+      setLoading(true);
+
+      try {
+        const apiStatus =
+          activeTab === "Upcoming"
+            ? "UPCOMING"
+            : activeTab === "Cancelled"
+              ? "CANCELLED"
+              : "COMPLETED";
+
+        const res = await vacationUpcoming({
+          body: {
+            memberid: localStorage.getItem("bookingId"),
+            status: apiStatus,
+            travelDate: {
+              start: "2026-09-01",
+              end: "2028-12-30",
+            },
+            limit: PAGE_LIMIT,
+            offset: pagination.vacations.currentPage * PAGE_LIMIT,
+          },
+        });
+
+        console.log("vacationUpcoming Response:", res);
+
+        const orders = [...(res?.orders || [])].sort(
+          (a, b) => new Date(b.createdat) - new Date(a.createdat),
+        );
+
+        const mappedVacationBookings = orders.map((order) => ({
+          id: order.orderid,
+          type: "vacations",
+          status:
+            activeTab === "Upcoming"
+              ? "Upcoming"
+              : activeTab === "Cancelled"
+                ? "Cancelled"
+                : "Completed",
+          resortName: order.property_name,
+          city: order.property_city || "",
+          roomType: order.room_type || "",
+          checkIn: new Date(order.start_date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          checkOut: new Date(order.end_date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          guests: order?.adults,
+          bookingId: order.confirmation_number,
+          amount: `${order.currencysymbol || "$"}${Number(order.our_price || 0).toFixed(2)}`,
+          image: order?.image,
+          orderStatus: order.orderstatus,
+          cancellable: order?.cancellable === true,
+        }));
+
+        setVacationBookings(mappedVacationBookings);
+
+        const totalCount = Number(res?.count || 0);
+        const calculatedTotalPages = Math.ceil(totalCount / PAGE_LIMIT);
+
+        updatePagination("vacations", {
+          totalPages: calculatedTotalPages || 1,
+          hasNextPage:
+            pagination.vacations.currentPage < calculatedTotalPages - 1,
+        });
+      } catch (error) {
+        console.error("Error fetching vacation bookings:", error);
+
+        setVacationBookings([]);
+
+        updatePagination("vacations", {
+          totalPages: 1,
+          hasNextPage: false,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVacationInfo();
+  }, [activeMenu, activeTab, pagination.vacations.currentPage]);
+  const handleVacationBookingClick = (booking) => {
+    if (!booking?.id) return;
+
+    sessionStorage.setItem(
+      "vacationBookingCancellable",
+      JSON.stringify(booking.cancellable),
+    );
+
+    sessionStorage.setItem("vacationBookingStatus", booking.status);
+
+    navigate(`/vacation-booking-details?id=${encodeURIComponent(booking.id)}`);
+  };
   return (
     <div>
       {loading && (
@@ -1240,6 +1346,54 @@ const MyBookings = () => {
                               {booking.amount}
                             </strong>
                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : booking.type === "vacations" ? (
+                    <div
+                      className="voyage-booking-card"
+                      key={booking.id}
+                      onClick={() => handleVacationBookingClick(booking)}
+                    >
+                      <div className="voyage-booking-image">
+                        <img
+                          src={booking.image || dummy}
+                          alt={booking.resortName}
+                        />
+
+                        <span className="voyage-booking-status">
+                          {booking.status}
+                        </span>
+                      </div>
+
+                      <div className="voyage-booking-body">
+                        <h3>{booking.resortName}</h3>
+
+                        <p>{booking.city}</p>
+
+                        {booking.roomType && (
+                          <p className="voyage-booking-roomtype">
+                            {booking.roomType}
+                          </p>
+                        )}
+
+                        <div className="voyage-booking-row">
+                          <span>Check In</span>
+                          <strong>{booking.checkIn}</strong>
+                        </div>
+
+                        <div className="voyage-booking-row">
+                          <span>Check Out</span>
+                          <strong>{booking.checkOut}</strong>
+                        </div>
+
+                        <div className="voyage-booking-row">
+                          <span>Guests</span>
+                          <strong>{booking.guests}</strong>
+                        </div>
+
+                        <div className="voyage-booking-footer">
+                          <h2>{booking.amount}</h2>
                         </div>
                       </div>
                     </div>

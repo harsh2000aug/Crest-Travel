@@ -663,9 +663,9 @@ const VacationDetail = () => {
       endDate: formatBookingDate(selectedEndDate),
       startTime: formatTime(details?.checkinTime),
       endTime: formatTime(details?.checkoutTime),
-      unitId: availability[0]?.unitRow[0]?.unit[0]?.unitId,
+      unitId: displayedUnit?.unitId,
       roomType: `${group?.title}, Max Occupancy: ${displayedUnit.maxOccupancy}`,
-      supplierId: availability[0]?.unitRow[0]?.unit[0]?.supplierId,
+      supplierId: displayedUnit?.supplierId,
       property: {
         id: details?.resortId || details?.id || resortId,
         image: images[0] || "",
@@ -898,13 +898,11 @@ const VacationDetail = () => {
                   }
 
                   const unitStartDate = parseAvailabilityDate(unit.checkInDate);
-                  const unitEndDate = parseAvailabilityDate(unit.checkOutDate);
 
                   return (
                     unitStartDate &&
-                    unitEndDate &&
-                    selectedStartDate >= unitStartDate &&
-                    selectedStartDate <= unitEndDate
+                    getCalendarDayNumber(unitStartDate) ===
+                      getCalendarDayNumber(selectedStartDate)
                   );
                 });
                 const displayedUnit = selectedUnit || units[0];
