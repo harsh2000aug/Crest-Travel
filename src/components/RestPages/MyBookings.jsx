@@ -667,7 +667,13 @@ const MyBookings = () => {
 
     fetchFlightInfo();
   }, [activeMenu, activeTab, pagination.flights.currentPage]);
+  const handleFlightBookingClick = (booking) => {
+    if (!booking?.id) return;
 
+    sessionStorage.setItem("flightBookingStatus", booking.status);
+
+    navigate(`/flight-bookingdet?id=${encodeURIComponent(booking.id)}`);
+  };
   // vacation upcoming
   useEffect(() => {
     const fetchVacationInfo = async () => {

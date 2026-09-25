@@ -10,7 +10,8 @@ const FlightPaymentStatus = () => {
   const [bookingStatus, setBookingStatus] = useState(false);
   const [bookingError, setBookingError] = useState("");
   const navigate = useNavigate();
-
+  const savedData1 = sessionStorage.getItem("flightPaymentData");
+  const paymentDatafinal = JSON.parse(savedData1);
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -75,7 +76,7 @@ const FlightPaymentStatus = () => {
     if (!bookingStatus) return;
 
     const timer = setTimeout(() => {
-      navigate("/home");
+      navigate(`/flight-bookingdet?id=${paymentDatafinal.input.orderid}`);
     }, 5000);
 
     return () => clearTimeout(timer);
