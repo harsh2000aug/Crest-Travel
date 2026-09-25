@@ -177,3 +177,117 @@
     font-size: 14px;
   }
 }
+
+.activity-payment-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 20px;
+}
+
+.activity-payment-popup {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 35px 30px 30px;
+  text-align: center;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+}
+
+.activity-payment-popup-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  line-height: 32px;
+  cursor: pointer;
+}
+
+.activity-payment-popup-icon {
+  width: 55px;
+  height: 55px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff3cd;
+  color: #856404;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.activity-payment-popup h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+}
+
+.activity-payment-popup-message {
+  margin: 0 0 15px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.activity-payment-popup-support-text {
+  margin: 0 0 22px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #666;
+}
+
+.activity-payment-popup-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.activity-payment-popup-email,
+.activity-payment-popup-phone {
+  color: #1d5fd1;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.activity-payment-popup-email:hover,
+.activity-payment-popup-phone:hover {
+  text-decoration: underline;
+}
+
+.activity-payment-popup-ok {
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  background: #1d5fd1;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .activity-payment-popup {
+    max-width: 100%;
+    padding: 32px 20px 25px;
+  }
+
+  .activity-payment-popup h2 {
+    font-size: 20px;
+  }
+}

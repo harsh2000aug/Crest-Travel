@@ -50,6 +50,7 @@ import CarBookingDetails from "./components/main-form/CarRental/CarBookingDetail
 import ActivityPayment from "./components/main-form/Activity/ActivityPayment/ActivityPayment";
 import FlightBookingDetails from "./components/FlightResultPage/FlightBookingDetails/FlightBookingDetails";
 import VacationPaymentStatus from "./components/main-form/Vacations/VacationPaymentStatus/VacationPaymentStatus";
+import ActivityBookingDetails from "./components/main-form/Activity/ActivityBookingDetails/ActivityBookingDetails";
 import VacationBookingDetails from "./components/main-form/Vacations/VacationBookingDetails/VacationBookingDetails";
 
 function App() {
@@ -168,6 +169,10 @@ function App() {
           <Route
             path="/vacation-booking-details"
             element={<VacationBookingDetails />}
+          />
+          <Route
+            path="/activity-booking-details"
+            element={<ActivityBookingDetails />}
           />
         </Route>
 

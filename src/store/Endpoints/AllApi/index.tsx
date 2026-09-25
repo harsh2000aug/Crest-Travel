@@ -465,6 +465,34 @@ export const allApi = {
       uri: "/alphaactivity/book",
     },
   },
+  activityUpcoming: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/get-order-booking",
+    },
+  },
+  activityInfo: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/booking-info",
+    },
+  },
+  activityRefund: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/cancel-details",
+    },
+  },
+  activityCancel: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/cancel",
+    },
+  },
   forgotPasswordChange: {
     v1: {
       ...defaults.methods.POST,
