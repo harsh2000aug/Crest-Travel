@@ -10,17 +10,14 @@ const ActivityPaymentRedirect = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("Processing your booking...");
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
     const completeActivityBooking = async () => {
       const paymentStatus = searchParams.get("status");
+      const isPaymentSuccess = paymentStatus === "success";
 
-      if (paymentStatus !== "success") {
-        setBookingSuccess(false);
-        setLoading(false);
-        setMessage("Payment was not successful.");
-        return;
-      }
+      setPaymentSuccess(isPaymentSuccess);
 
       try {
         const storedData = JSON.parse(
@@ -51,15 +48,21 @@ const ActivityPaymentRedirect = () => {
           },
 
           ageBandCount: storedData.ageBandCount || {},
-          bookingQuestionAnswers: storedData.bookingQuestionAnswers || [],
+          bookingQuestionAnswers: Array.from(
+            new Map(
+              (storedData.bookingQuestionAnswers || []).map((item) => [
+                `${item.question}_${item.travelerNum}_${item.unit}`,
+                item,
+              ]),
+            ).values(),
+          ),
 
-          languageGuide: storedData.languageGuide || {
-            type: "GUIDE",
-            language: "en",
-            legacyGuide: "en/SERVICE_GUIDE",
-          },
+          ...(storedData.languageGuide
+            ? { languageGuide: storedData.languageGuide }
+            : {}),
         };
 
+        console.log("Payment Status:", paymentStatus);
         console.log("Activity Final Booking REQUEST:", requestBody);
 
         const response = await activityBook({
@@ -71,15 +74,18 @@ const ActivityPaymentRedirect = () => {
         const bookResponse = response?.data?.book;
 
         const apiSuccess = bookResponse?.success === true;
-
         const bookingResult = bookResponse?.result;
-
         const bookingStatus = bookingResult?.status;
 
         console.log("Booking API success:", apiSuccess);
         console.log("Booking status:", bookingStatus);
 
-        if (apiSuccess && bookingStatus !== "FAILED") {
+        const isBookingSuccess =
+          apiSuccess &&
+          bookingStatus !== "FAILED" &&
+          bookingStatus !== "CANCELLED";
+
+        if (isBookingSuccess) {
           setBookingSuccess(true);
 
           console.log("Activity Booking Confirmed:", bookingResult);
@@ -98,19 +104,32 @@ const ActivityPaymentRedirect = () => {
         } else {
           setBookingSuccess(false);
 
-          setMessage(
-            bookResponse?.message ||
-              "Payment was successful but booking confirmation failed.",
-          );
+          if (!isPaymentSuccess) {
+            setMessage(
+              bookResponse?.message ||
+                "Payment was not successful and the activity booking could not be confirmed.",
+            );
+          } else {
+            setMessage(
+              bookResponse?.message ||
+                "Payment was successful but booking confirmation failed.",
+            );
+          }
         }
       } catch (error) {
         console.log("Activity Final Booking ERROR:", error);
 
         setBookingSuccess(false);
 
-        setMessage(
-          "Payment was successful but we could not confirm your booking.",
-        );
+        if (!isPaymentSuccess) {
+          setMessage(
+            "Payment was not successful and we could not confirm your booking.",
+          );
+        } else {
+          setMessage(
+            "Payment was successful but we could not confirm your booking.",
+          );
+        }
       } finally {
         setLoading(false);
       }
@@ -145,8 +164,9 @@ const ActivityPaymentRedirect = () => {
             <p>Your booking has been confirmed successfully.</p>
           ) : (
             <p>
-              Your payment was successful, but the activity booking could not be
-              confirmed.
+              {paymentSuccess
+                ? "Your payment was not successful, so the activity booking could not be confirmed."
+                : "Your payment was not successful, so the activity booking could not be confirmed."}
             </p>
           )}
         </div>

@@ -149,6 +149,13 @@ const ActivityDetails = () => {
     infant: 0,
   });
 
+  const [availabilityParticipants, setAvailabilityParticipants] = useState({
+    adult: 1,
+    youth: 0,
+    child: 0,
+    infant: 0,
+  });
+
   const participantsRef = useRef(null);
   const calendarRef = useRef(null);
 
@@ -656,6 +663,10 @@ const ActivityDetails = () => {
   };
 
   const applyParticipants = () => {
+    setAppliedParticipants({
+      ...participants,
+    });
+
     setParticipantsOpen(false);
   };
 
@@ -723,13 +734,14 @@ const ActivityDetails = () => {
       { replace: true },
     );
 
-    setAppliedParticipants(nextAppliedParticipants);
-
     const result = await loadAvailability(nextDate, nextAppliedParticipants);
 
     if (!result) {
       return;
     }
+
+    setAppliedParticipants(nextAppliedParticipants);
+    setAvailabilityParticipants(nextAppliedParticipants);
 
     requestAnimationFrame(() => {
       const element = document.getElementById(
@@ -790,14 +802,18 @@ const ActivityDetails = () => {
     return Number(price?.publicPrice) || 0;
   };
 
+  const availabilityTotalParticipants = Object.values(
+    availabilityParticipants,
+  ).reduce((sum, value) => sum + Number(value || 0), 0);
+
   const getItemPerPersonPrice = (item, detail) => {
     const totalPrice = getItemPrice(item, detail);
 
-    if (!totalParticipants) {
+    if (!availabilityTotalParticipants) {
       return 0;
     }
 
-    return totalPrice / totalParticipants;
+    return totalPrice / availabilityTotalParticipants;
   };
 
   const getSelectedDetail = (item) => {
@@ -1333,48 +1349,53 @@ const ActivityDetails = () => {
                                       </span>
                                     )} */}
 
-                                    <div className="activityDetailsUi__timeSelect">
-                                      <span className="activityDetailsUi__timeLabel">
-                                        Select Time
-                                      </span>
-
-                                      <div className="activityDetailsUi__timeSelectInner">
-                                        <span className="activityDetailsUi__timeIcon">
-                                          ◷
+                                    {availableDetails.some(
+                                      (detail) => detail?.startTime,
+                                    ) && (
+                                      <div className="activityDetailsUi__timeSelect">
+                                        <span className="activityDetailsUi__timeLabel">
+                                          Select Time
                                         </span>
 
-                                        <span className="activityDetailsUi__timeDivider"></span>
+                                        <div className="activityDetailsUi__timeSelectInner">
+                                          <span className="activityDetailsUi__timeIcon">
+                                            ◷
+                                          </span>
 
-                                        <select
-                                          value={
-                                            selectedTimes[gradeKey] ||
-                                            availableDetails[0]?.startTime ||
-                                            ""
-                                          }
-                                          onChange={(event) =>
-                                            setSelectedTimes((previous) => ({
-                                              ...previous,
-                                              [gradeKey]: event.target.value,
-                                            }))
-                                          }
-                                          className="activityDetailsUi__timeDropdown"
-                                          disabled={
-                                            availableDetails.length === 0
-                                          }
-                                        >
-                                          {availableDetails.map(
-                                            (detail, detailIndex) => (
-                                              <option
-                                                key={`${detail.startTime}-${detailIndex}`}
-                                                value={detail.startTime}
-                                              >
-                                                {formatTime(detail.startTime)}
-                                              </option>
-                                            ),
-                                          )}
-                                        </select>
+                                          <span className="activityDetailsUi__timeDivider"></span>
+
+                                          <select
+                                            value={
+                                              selectedTimes[gradeKey] ||
+                                              availableDetails.find(
+                                                (detail) => detail?.startTime,
+                                              )?.startTime ||
+                                              ""
+                                            }
+                                            onChange={(event) =>
+                                              setSelectedTimes((previous) => ({
+                                                ...previous,
+                                                [gradeKey]: event.target.value,
+                                              }))
+                                            }
+                                            className="activityDetailsUi__timeDropdown"
+                                          >
+                                            {availableDetails
+                                              .filter(
+                                                (detail) => detail?.startTime,
+                                              )
+                                              .map((detail, detailIndex) => (
+                                                <option
+                                                  key={`${detail.startTime}-${detailIndex}`}
+                                                  value={detail.startTime}
+                                                >
+                                                  {formatTime(detail.startTime)}
+                                                </option>
+                                              ))}
+                                          </select>
+                                        </div>
                                       </div>
-                                    </div>
+                                    )}
 
                                     {availableDetails.length === 0 && (
                                       <span className="activityDetailsUi__empty">
@@ -1397,7 +1418,8 @@ const ActivityDetails = () => {
                                     </strong>
 
                                     <span>
-                                      {totalParticipants} Participants ×{" "}
+                                      {availabilityTotalParticipants}{" "}
+                                      Participants ×{" "}
                                       {itemPerPersonPrice.toFixed(2)}
                                     </span>
 

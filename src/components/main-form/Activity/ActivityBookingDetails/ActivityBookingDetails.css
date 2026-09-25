@@ -370,19 +370,14 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.hbd-confirmation-cancelled {
-  border-color: #fecaca;
-  background: #fff7f7;
-}
-
 .hbd-confirmation-content-cancel h1 {
   color: #b42318;
 }
 
 .hbd-confirmation-status-cancelled {
-  color: #b42318;
-  background: #fee4e2;
-  border-color: #fecdca;
+  color: #fee4e2;
+  background: #b42318;
+  border-color: #b42318;
 }
 
 .activity-booking-cancelled-button {
