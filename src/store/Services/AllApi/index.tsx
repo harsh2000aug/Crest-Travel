@@ -281,6 +281,26 @@ export const activityBook = ({ body }: any) =>
     uriEndPoint: allApi.activityBook.v1,
     body,
   });
+export const activityUpcoming = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityUpcoming.v1,
+    body,
+  });
+export const activityInfo = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityInfo.v1,
+    body,
+  });
+export const activityRefund = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityRefund.v1,
+    body,
+  });
+export const activityCancel = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.activityCancel.v1,
+    body,
+  });
 export const forgotPasswordChange = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.forgotPasswordChange.v1,
@@ -377,6 +397,21 @@ export const vacvationFiltersToApply = ({ body }: any) =>
 export const vacationHold = ({ body }: any) =>
   callApi({
     uriEndPoint: allApi.vacationHold.v1,
+    body,
+  });
+export const vacationBook = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.vacationBook.v1,
+    body,
+  });
+export const vacationUpcoming = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.getVacationUpcoming.v1,
+    body,
+  });
+export const vacationUpcomingDetails = ({ body }: any) =>
+  callApi({
+    uriEndPoint: allApi.getVacationUpcomingDetails.v1,
     body,
   });
 export const crestBenefits = ({ body }: any) =>

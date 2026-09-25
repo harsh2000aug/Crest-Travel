@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import HeaderInner from "../../../reuseable-components/HeaderInner";
 import Footer from "../../../reuseable-components/Footer";
 import {
@@ -10,7 +10,6 @@ import {
 } from "../../../store/Services/AllApi";
 import "./Activity.css";
 import Calendar from "react-calendar";
-
 const activityDetailCache = new Map();
 const activityReviewsCache = new Map();
 const activityCalendarCache = new Map();
@@ -116,7 +115,7 @@ const renderStars = (rating, size = "normal") => {
 
 const ActivityDetails = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-
+  const navigate = useNavigate();
   const [activityData, setActivityData] = useState(null);
   const [reviewsData, setReviewsData] = useState(null);
   const [calendarData, setCalendarData] = useState([]);
@@ -144,6 +143,13 @@ const ActivityDetails = () => {
   });
 
   const [appliedParticipants, setAppliedParticipants] = useState({
+    adult: 1,
+    youth: 0,
+    child: 0,
+    infant: 0,
+  });
+
+  const [availabilityParticipants, setAvailabilityParticipants] = useState({
     adult: 1,
     youth: 0,
     child: 0,
@@ -181,8 +187,8 @@ const ActivityDetails = () => {
       label: labels[band] || band,
       startAge: Number(ageBand?.startAge),
       endAge: Number(ageBand?.endAge),
-      minTravelers: Number(ageBand?.minTravelers) || 0,
-      maxTravelers: Number(ageBand?.maxTravelers) || 10,
+      minTravelers: Number(ageBand?.minTravelers),
+      maxTravelers: Number(ageBand?.maxTravelers),
     };
   };
 
@@ -645,7 +651,10 @@ const ActivityDetails = () => {
         0,
       );
 
-      if (total > 10) {
+      const maxTravelersPerBooking =
+        Number(activityData?.bookingRequirements?.maxTravelersPerBooking) || 15;
+
+      if (total > maxTravelersPerBooking) {
         return previous;
       }
 
@@ -654,14 +663,10 @@ const ActivityDetails = () => {
   };
 
   const applyParticipants = () => {
-    const nextAppliedParticipants = {};
-
-    activityAgeBands.forEach((ageBand) => {
-      nextAppliedParticipants[ageBand.type] =
-        Number(participants[ageBand.type]) || ageBand.minTravelers;
+    setAppliedParticipants({
+      ...participants,
     });
 
-    setAppliedParticipants(nextAppliedParticipants);
     setParticipantsOpen(false);
   };
 
@@ -714,6 +719,13 @@ const ActivityDetails = () => {
 
     const nextDate = formatDateToApi(selectedDate);
 
+    const nextAppliedParticipants = {};
+
+    activityAgeBands.forEach((ageBand) => {
+      nextAppliedParticipants[ageBand.type] =
+        Number(participants[ageBand.type]) || ageBand.minTravelers;
+    });
+
     setSearchParams(
       {
         activityCode,
@@ -722,11 +734,14 @@ const ActivityDetails = () => {
       { replace: true },
     );
 
-    const result = await loadAvailability(nextDate, appliedParticipants);
+    const result = await loadAvailability(nextDate, nextAppliedParticipants);
 
     if (!result) {
       return;
     }
+
+    setAppliedParticipants(nextAppliedParticipants);
+    setAvailabilityParticipants(nextAppliedParticipants);
 
     requestAnimationFrame(() => {
       const element = document.getElementById(
@@ -787,14 +802,18 @@ const ActivityDetails = () => {
     return Number(price?.publicPrice) || 0;
   };
 
+  const availabilityTotalParticipants = Object.values(
+    availabilityParticipants,
+  ).reduce((sum, value) => sum + Number(value || 0), 0);
+
   const getItemPerPersonPrice = (item, detail) => {
     const totalPrice = getItemPrice(item, detail);
 
-    if (!totalParticipants) {
+    if (!availabilityTotalParticipants) {
       return 0;
     }
 
-    return totalPrice / totalParticipants;
+    return totalPrice / availabilityTotalParticipants;
   };
 
   const getSelectedDetail = (item) => {
@@ -1072,57 +1091,31 @@ const ActivityDetails = () => {
     };
 
     const adultCount = Number(appliedParticipants?.adult) || 0;
-    const childCount =
-      (Number(appliedParticipants?.child) || 0) +
-      (Number(appliedParticipants?.youth) || 0);
+    const childCount = Number(appliedParticipants?.child) || 0;
+    const youthCount = Number(appliedParticipants?.youth) || 0;
     const infantCount = Number(appliedParticipants?.infant) || 0;
+    const seniorCount = Number(appliedParticipants?.senior) || 0;
 
     const guests = [];
 
-    for (let index = 0; index < adultCount; index += 1) {
-      guests.push({
-        primary: index === 0,
-        title: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        covered: false,
-        birthDate: "",
-        gender: "",
-        type: "ADULT",
-      });
-    }
+    activityAgeBands.forEach((ageBand) => {
+      const count = Number(appliedParticipants?.[ageBand.type]) || 0;
 
-    for (let index = 0; index < childCount; index += 1) {
-      guests.push({
-        primary: false,
-        title: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        covered: false,
-        birthDate: "",
-        gender: "",
-        type: "CHILD",
-      });
-    }
-
-    for (let index = 0; index < infantCount; index += 1) {
-      guests.push({
-        primary: false,
-        title: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        covered: false,
-        birthDate: "",
-        gender: "",
-        type: "INFANT",
-      });
-    }
+      for (let index = 0; index < count; index += 1) {
+        guests.push({
+          primary: guests.length === 0,
+          title: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          covered: false,
+          birthDate: "",
+          gender: "",
+          type: ageBand.ageBand,
+        });
+      }
+    });
 
     selectedActivityData.guests = guests;
 
@@ -1143,7 +1136,7 @@ const ActivityDetails = () => {
       startTime: detail?.startTime || "",
     });
 
-    window.location.href = `/activity-book?${params.toString()}`;
+    navigate(`/activity-book?${params.toString()}`);
   };
 
   return (
@@ -1356,48 +1349,53 @@ const ActivityDetails = () => {
                                       </span>
                                     )} */}
 
-                                    <div className="activityDetailsUi__timeSelect">
-                                      <span className="activityDetailsUi__timeLabel">
-                                        Select Time
-                                      </span>
-
-                                      <div className="activityDetailsUi__timeSelectInner">
-                                        <span className="activityDetailsUi__timeIcon">
-                                          ◷
+                                    {availableDetails.some(
+                                      (detail) => detail?.startTime,
+                                    ) && (
+                                      <div className="activityDetailsUi__timeSelect">
+                                        <span className="activityDetailsUi__timeLabel">
+                                          Select Time
                                         </span>
 
-                                        <span className="activityDetailsUi__timeDivider"></span>
+                                        <div className="activityDetailsUi__timeSelectInner">
+                                          <span className="activityDetailsUi__timeIcon">
+                                            ◷
+                                          </span>
 
-                                        <select
-                                          value={
-                                            selectedTimes[gradeKey] ||
-                                            availableDetails[0]?.startTime ||
-                                            ""
-                                          }
-                                          onChange={(event) =>
-                                            setSelectedTimes((previous) => ({
-                                              ...previous,
-                                              [gradeKey]: event.target.value,
-                                            }))
-                                          }
-                                          className="activityDetailsUi__timeDropdown"
-                                          disabled={
-                                            availableDetails.length === 0
-                                          }
-                                        >
-                                          {availableDetails.map(
-                                            (detail, detailIndex) => (
-                                              <option
-                                                key={`${detail.startTime}-${detailIndex}`}
-                                                value={detail.startTime}
-                                              >
-                                                {formatTime(detail.startTime)}
-                                              </option>
-                                            ),
-                                          )}
-                                        </select>
+                                          <span className="activityDetailsUi__timeDivider"></span>
+
+                                          <select
+                                            value={
+                                              selectedTimes[gradeKey] ||
+                                              availableDetails.find(
+                                                (detail) => detail?.startTime,
+                                              )?.startTime ||
+                                              ""
+                                            }
+                                            onChange={(event) =>
+                                              setSelectedTimes((previous) => ({
+                                                ...previous,
+                                                [gradeKey]: event.target.value,
+                                              }))
+                                            }
+                                            className="activityDetailsUi__timeDropdown"
+                                          >
+                                            {availableDetails
+                                              .filter(
+                                                (detail) => detail?.startTime,
+                                              )
+                                              .map((detail, detailIndex) => (
+                                                <option
+                                                  key={`${detail.startTime}-${detailIndex}`}
+                                                  value={detail.startTime}
+                                                >
+                                                  {formatTime(detail.startTime)}
+                                                </option>
+                                              ))}
+                                          </select>
+                                        </div>
                                       </div>
-                                    </div>
+                                    )}
 
                                     {availableDetails.length === 0 && (
                                       <span className="activityDetailsUi__empty">
@@ -1420,7 +1418,8 @@ const ActivityDetails = () => {
                                     </strong>
 
                                     <span>
-                                      {totalParticipants} Participants ×{" "}
+                                      {availabilityTotalParticipants}{" "}
+                                      Participants ×{" "}
                                       {itemPerPersonPrice.toFixed(2)}
                                     </span>
 
@@ -1933,7 +1932,6 @@ const ActivityDetails = () => {
                   <div className="activityDetailsUi__participantsPopup">
                     <div className="activityDetailsUi__participantsHeader">
                       <h3>Select Participants</h3>
-                      <p>You Can select upto 10 Participants</p>
                     </div>
 
                     {(activityData?.pricingInfo?.ageBands || []).map(
@@ -1963,9 +1961,9 @@ const ActivityDetails = () => {
 
                         const startAge = Number(ageBand?.startAge);
                         const endAge = Number(ageBand?.endAge);
-                        const min = Number(ageBand?.minTravelers) || 0;
-                        const max = Number(ageBand?.maxTravelers) || 10;
-                        const currentCount = Number(participants[type]) || 0;
+                        const min = Number(ageBand?.minTravelers);
+                        const max = Number(ageBand?.maxTravelers);
+                        const currentCount = Number(participants[type]);
 
                         return (
                           <div

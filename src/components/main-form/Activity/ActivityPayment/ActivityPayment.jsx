@@ -6,18 +6,18 @@ import "./ActivityPayment.css";
 const ActivityPaymentRedirect = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("Processing your booking...");
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
     const completeActivityBooking = async () => {
-      const status = searchParams.get("status");
+      const paymentStatus = searchParams.get("status");
+      const isPaymentSuccess = paymentStatus === "success";
 
-      if (status !== "success") {
-        setLoading(false);
-        setMessage("Payment was not successful.");
-        return;
-      }
+      setPaymentSuccess(isPaymentSuccess);
 
       try {
         const storedData = JSON.parse(
@@ -25,6 +25,7 @@ const ActivityPaymentRedirect = () => {
         );
 
         if (!storedData?.orderId) {
+          setBookingSuccess(false);
           setLoading(false);
           setMessage("Booking information not found.");
           return;
@@ -36,6 +37,7 @@ const ActivityPaymentRedirect = () => {
           gradeCode: storedData.gradeCode || "",
           orderId: storedData.orderId || "",
           startTime: storedData.startTime || "",
+
           primaryTraveller: {
             firstName: storedData.primaryTraveller?.firstName || "",
             type: storedData.primaryTraveller?.type || "Adult",
@@ -44,15 +46,23 @@ const ActivityPaymentRedirect = () => {
             email: storedData.primaryTraveller?.email || "",
             contactNo: storedData.primaryTraveller?.contactNo || "",
           },
+
           ageBandCount: storedData.ageBandCount || {},
-          bookingQuestionAnswers: storedData.bookingQuestionAnswers || [],
-          languageGuide: storedData.languageGuide || {
-            type: "GUIDE",
-            language: "en",
-            legacyGuide: "en/SERVICE_GUIDE",
-          },
+          bookingQuestionAnswers: Array.from(
+            new Map(
+              (storedData.bookingQuestionAnswers || []).map((item) => [
+                `${item.question}_${item.travelerNum}_${item.unit}`,
+                item,
+              ]),
+            ).values(),
+          ),
+
+          ...(storedData.languageGuide
+            ? { languageGuide: storedData.languageGuide }
+            : {}),
         };
 
+        console.log("Payment Status:", paymentStatus);
         console.log("Activity Final Booking REQUEST:", requestBody);
 
         const response = await activityBook({
@@ -63,10 +73,20 @@ const ActivityPaymentRedirect = () => {
 
         const bookResponse = response?.data?.book;
 
-        const success = bookResponse?.success === true;
+        const apiSuccess = bookResponse?.success === true;
+        const bookingResult = bookResponse?.result;
+        const bookingStatus = bookingResult?.status;
 
-        if (success) {
-          const bookingResult = bookResponse?.result;
+        console.log("Booking API success:", apiSuccess);
+        console.log("Booking status:", bookingStatus);
+
+        const isBookingSuccess =
+          apiSuccess &&
+          bookingStatus !== "FAILED" &&
+          bookingStatus !== "CANCELLED";
+
+        if (isBookingSuccess) {
+          setBookingSuccess(true);
 
           console.log("Activity Booking Confirmed:", bookingResult);
 
@@ -82,17 +102,34 @@ const ActivityPaymentRedirect = () => {
             navigate("/my-bookings");
           }, 2000);
         } else {
-          setMessage(
-            bookResponse?.message ||
-              "Payment was successful but booking confirmation failed.",
-          );
+          setBookingSuccess(false);
+
+          if (!isPaymentSuccess) {
+            setMessage(
+              bookResponse?.message ||
+                "Payment was not successful and the activity booking could not be confirmed.",
+            );
+          } else {
+            setMessage(
+              bookResponse?.message ||
+                "Payment was successful but booking confirmation failed.",
+            );
+          }
         }
       } catch (error) {
         console.log("Activity Final Booking ERROR:", error);
 
-        setMessage(
-          "Payment was successful but we could not confirm your booking.",
-        );
+        setBookingSuccess(false);
+
+        if (!isPaymentSuccess) {
+          setMessage(
+            "Payment was not successful and we could not confirm your booking.",
+          );
+        } else {
+          setMessage(
+            "Payment was successful but we could not confirm your booking.",
+          );
+        }
       } finally {
         setLoading(false);
       }
@@ -112,21 +149,25 @@ const ActivityPaymentRedirect = () => {
       ) : (
         <div
           className={`activity-payment-status ${
-            searchParams.get("status") === "success"
+            bookingSuccess
               ? "activity-payment-success"
               : "activity-payment-failure"
           }`}
         >
           <div className="activity-payment-status-icon">
-            {searchParams.get("status") === "success" ? "✓" : "!"}
+            {bookingSuccess ? "✓" : "!"}
           </div>
 
           <h2>{message}</h2>
 
-          {searchParams.get("status") === "success" ? (
+          {bookingSuccess ? (
             <p>Your booking has been confirmed successfully.</p>
           ) : (
-            <p>Your payment could not be completed. Please try again.</p>
+            <p>
+              {paymentSuccess
+                ? "Your payment was not successful, so the activity booking could not be confirmed."
+                : "Your payment was not successful, so the activity booking could not be confirmed."}
+            </p>
           )}
         </div>
       )}

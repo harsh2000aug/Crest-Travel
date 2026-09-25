@@ -260,7 +260,7 @@ const ActivityArea = () => {
   };
 
   useEffect(() => {
-    const fetchFilters = async () => {
+    const initializePage = async () => {
       try {
         setFilterLoading(true);
 
@@ -269,35 +269,98 @@ const ActivityArea = () => {
         });
 
         const result = response?.data?.getActivityFilters?.result;
-        if (result) {
-          const minPrice = Number(result?.price?.min || 0);
-          const maxPrice = Number(result?.price?.max || 500);
 
-          setFilterData({
-            rating: Array.isArray(result?.rating) ? result.rating : [],
-            price: {
-              min: minPrice,
-              max: maxPrice,
-            },
-            duration: Array.isArray(result?.duration) ? result.duration : [],
-            categories: Array.isArray(result?.categories)
-              ? result.categories
-              : [],
-          });
+        const minPrice = Number(result?.price?.min || 0);
+        const maxPrice = Number(result?.price?.max || 500);
 
-          setSelectedPrice({
+        const newFilterData = {
+          rating: Array.isArray(result?.rating) ? result.rating : [],
+          price: {
             min: minPrice,
             max: maxPrice,
-          });
+          },
+          duration: Array.isArray(result?.duration) ? result.duration : [],
+          categories: Array.isArray(result?.categories)
+            ? result.categories
+            : [],
+        };
+
+        setFilterData(newFilterData);
+
+        setSelectedPrice({
+          min: minPrice,
+          max: maxPrice,
+        });
+
+        if (
+          !initialDestination ||
+          !initialDestinationId ||
+          !initialFromDate ||
+          !initialToDate
+        ) {
+          setLoading(false);
+          return;
         }
+
+        await fetchActivities({
+          destination: initialDestination,
+          destinationId: initialDestinationId,
+          fromDate: initialFromDate,
+          toDate: initialToDate,
+          rating: null,
+          price: {
+            min: minPrice,
+            max: maxPrice,
+          },
+          duration: null,
+          categories: [],
+        });
       } catch (error) {
         console.log("Activity Filter API Error:", error);
+
+        setFilterData({
+          rating: [],
+          price: {
+            min: 0,
+            max: 500,
+          },
+          duration: [],
+          categories: [],
+        });
+
+        setSelectedPrice({
+          min: 0,
+          max: 500,
+        });
+
+        if (
+          initialDestination &&
+          initialDestinationId &&
+          initialFromDate &&
+          initialToDate
+        ) {
+          await fetchActivities({
+            destination: initialDestination,
+            destinationId: initialDestinationId,
+            fromDate: initialFromDate,
+            toDate: initialToDate,
+            rating: null,
+            price: {
+              min: 0,
+              max: 500,
+            },
+            duration: null,
+            categories: [],
+          });
+        } else {
+          setLoading(false);
+        }
       } finally {
         setFilterLoading(false);
       }
     };
 
-    fetchFilters();
+    initializePage();
   }, []);
 
   useEffect(() => {

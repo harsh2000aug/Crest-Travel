@@ -465,6 +465,34 @@ export const allApi = {
       uri: "/alphaactivity/book",
     },
   },
+  activityUpcoming: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/get-order-booking",
+    },
+  },
+  activityInfo: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/booking-info",
+    },
+  },
+  activityRefund: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/cancel-details",
+    },
+  },
+  activityCancel: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphaactivity/cancel",
+    },
+  },
   forgotPasswordChange: {
     v1: {
       ...defaults.methods.POST,
@@ -549,7 +577,28 @@ export const allApi = {
       vacationResortFinal: true,
     },
   },
-
+  vacationBook: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphavr/book",
+      vacationResortFinal: true,
+    },
+  },
+  getVacationUpcoming: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphavr/get-orders",
+    },
+  },
+  getVacationUpcomingDetails: {
+    v1: {
+      ...defaults.methods.POST,
+      ...defaults.versions.v1,
+      uri: "/alphavr/get-booking-info",
+    },
+  },
   crestBenefits: {
     v1: {
       ...defaults.methods.POST,

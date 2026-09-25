@@ -8,18 +8,23 @@ import {
   FaUmbrellaBeach,
   FaShip,
   FaCar,
-  FaBus,
   FaTicketAlt,
   FaChevronLeft,
   FaChevronRight,
   FaRegSadTear,
+  FaHome,
 } from "react-icons/fa";
+import { FaEarthAsia } from "react-icons/fa6";
+
 import {
+  activityUpcoming,
   carOrders,
   hotelUpcomingOrder,
   upcomingFlight,
+  vacationUpcoming,
 } from "../../store/Services/AllApi";
 import { useNavigate } from "react-router-dom";
+import { CiHome } from "react-icons/ci";
 
 const sidebarItems = [
   {
@@ -43,14 +48,19 @@ const sidebarItems = [
     icon: <FaUmbrellaBeach />,
   },
   {
-    id: "buses",
-    title: "Bus",
-    icon: <FaBus />,
+    id: "vacations",
+    title: "Vacation Rental",
+    icon: <FaHome />,
   },
   {
     id: "cruises",
     title: "Cruises",
     icon: <FaShip />,
+  },
+  {
+    id: "tours",
+    title: "Tours",
+    icon: <FaEarthAsia />,
   },
   {
     id: "tickets",
@@ -69,6 +79,7 @@ const MyBookings = () => {
   const [upcomingBookings, setUpcomingBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [carBookings, setCarBookings] = useState([]);
+  const [activityBookings, setActivityBookings] = useState([]);
   const [pagination, setPagination] = useState({
     hotels: {
       currentPage: 0,
@@ -90,7 +101,7 @@ const MyBookings = () => {
       totalPages: 1,
       hasNextPage: false,
     },
-    buses: {
+    vacations: {
       currentPage: 0,
       totalPages: 1,
       hasNextPage: false,
@@ -107,6 +118,7 @@ const MyBookings = () => {
     },
   });
   const [flightBookings, setFlightBookings] = useState([]);
+  const [vacationBookings, setVacationBookings] = useState([]);
   const currentPage = pagination[activeMenu].currentPage;
   const totalPages = pagination[activeMenu].totalPages;
   const hasNextPage = pagination[activeMenu].hasNextPage;
@@ -120,19 +132,15 @@ const MyBookings = () => {
       },
     }));
   };
-  const handleFlightBookingClick = (booking) => {
-    if (!booking?.id) return;
 
-    navigate(`/flight-bookingdet?id=${encodeURIComponent(booking.id)}`);
-  };
   const PAGE_LIMIT = 10;
 
   const bookingsBySection = {
     hotels: upcomingBookings,
     cars: carBookings,
     flights: flightBookings,
-    activities: [],
-    buses: [],
+    activities: activityBookings,
+    vacations: vacationBookings,
     cruises: [],
     tickets: [],
   };
@@ -140,6 +148,8 @@ const MyBookings = () => {
   const filteredBookings = (bookingsBySection[activeMenu] || []).filter(
     (item) => item.status === activeTab,
   );
+
+  //hotel bookings
 
   useEffect(() => {
     const fetchUpcomingBookings = async () => {
@@ -237,6 +247,8 @@ const MyBookings = () => {
 
     navigate(`/hotel-booking-details?id=${encodeURIComponent(booking.id)}`);
   };
+
+  // car bookings
 
   useEffect(() => {
     const fetchCarInfo = async () => {
@@ -432,13 +444,6 @@ const MyBookings = () => {
     navigate(`/car-booking-details?orderid=${encodeURIComponent(booking.id)}`);
   };
 
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-    });
-  });
-  // flight upcoming
   // flight bookings
   useEffect(() => {
     const fetchFlightInfo = async () => {
@@ -662,6 +667,215 @@ const MyBookings = () => {
 
     fetchFlightInfo();
   }, [activeMenu, activeTab, pagination.flights.currentPage]);
+
+  // vacation upcoming
+  useEffect(() => {
+    const fetchVacationInfo = async () => {
+      if (activeMenu !== "vacations") return;
+
+      setLoading(true);
+
+      try {
+        const apiStatus =
+          activeTab === "Upcoming"
+            ? "UPCOMING"
+            : activeTab === "Cancelled"
+              ? "CANCELLED"
+              : "COMPLETED";
+
+        const res = await vacationUpcoming({
+          body: {
+            memberid: localStorage.getItem("bookingId"),
+            status: apiStatus,
+            travelDate: {
+              start: "2026-09-01",
+              end: "2028-12-30",
+            },
+            limit: PAGE_LIMIT,
+            offset: pagination.vacations.currentPage * PAGE_LIMIT,
+          },
+        });
+
+        console.log("vacationUpcoming Response:", res);
+
+        const orders = [...(res?.orders || [])].sort(
+          (a, b) => new Date(b.createdat) - new Date(a.createdat),
+        );
+
+        const mappedVacationBookings = orders.map((order) => ({
+          id: order.orderid,
+          type: "vacations",
+          status:
+            activeTab === "Upcoming"
+              ? "Upcoming"
+              : activeTab === "Cancelled"
+                ? "Cancelled"
+                : "Completed",
+          resortName: order.property_name,
+          city: order.property_city || "",
+          roomType: order.room_type || "",
+          checkIn: new Date(order.start_date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          checkOut: new Date(order.end_date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          guests: order?.adults,
+          bookingId: order.confirmation_number,
+          amount: `${order.currencysymbol || "$"}${Number(order.our_price || 0).toFixed(2)}`,
+          image: order?.image,
+          orderStatus: order.orderstatus,
+          cancellable: order?.cancellable === true,
+        }));
+
+        setVacationBookings(mappedVacationBookings);
+
+        const totalCount = Number(res?.count || 0);
+        const calculatedTotalPages = Math.ceil(totalCount / PAGE_LIMIT);
+
+        updatePagination("vacations", {
+          totalPages: calculatedTotalPages || 1,
+          hasNextPage:
+            pagination.vacations.currentPage < calculatedTotalPages - 1,
+        });
+      } catch (error) {
+        console.error("Error fetching vacation bookings:", error);
+
+        setVacationBookings([]);
+
+        updatePagination("vacations", {
+          totalPages: 1,
+          hasNextPage: false,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVacationInfo();
+  }, [activeMenu, activeTab, pagination.vacations.currentPage]);
+
+  const handleVacationBookingClick = (booking) => {
+    if (!booking?.id) return;
+
+    sessionStorage.setItem(
+      "vacationBookingCancellable",
+      JSON.stringify(booking.cancellable),
+    );
+
+    sessionStorage.setItem("vacationBookingStatus", booking.status);
+
+    navigate(`/vacation-booking-details?id=${encodeURIComponent(booking.id)}`);
+  };
+
+  // activity area
+
+  useEffect(() => {
+    const fetchActivity = async () => {
+      if (activeMenu !== "activities") return;
+
+      setLoading(true);
+
+      try {
+        const apiStatus =
+          activeTab === "Upcoming"
+            ? "UPCOMING"
+            : activeTab === "Cancelled"
+              ? "CANCELLED"
+              : "COMPLETED";
+
+        const res = await activityUpcoming({
+          body: {
+            memberid: localStorage.getItem("bookingId"),
+            status: apiStatus,
+            travelDate: {
+              start: "2026-09-01",
+              end: "2028-12-30",
+            },
+            limit: PAGE_LIMIT,
+            offset: pagination.activities.currentPage * PAGE_LIMIT,
+            supplierid: 0,
+          },
+        });
+
+        const orders = [...(res?.orders || [])].sort(
+          (a, b) => new Date(b.createdat) - new Date(a.createdat),
+        );
+
+        const mappedActivityBookings = orders.map((order) => {
+          const activityData = order?.booking_data || {};
+
+          const selectedGrade =
+            activityData?.availability?.availability?.bookableItems?.find(
+              (item) => item.gradeCode === activityData.gradeCode,
+            );
+
+          const status =
+            activeTab === "Upcoming"
+              ? "Upcoming"
+              : activeTab === "Cancelled"
+                ? "Cancelled"
+                : "Completed";
+
+          return {
+            id: order.orderid,
+            type: "activities",
+            status,
+            activityName: order.property_name || "Activity",
+            image: order.image || dummy,
+            activityCode: activityData.activityCode || "",
+            gradeName: selectedGrade?.title || "",
+            travelDate:
+              activityData.startDate || order.start_date?.split("T")[0] || "",
+            startTime: activityData.startTime || order.start_time || "",
+            travellers: order.traveller_count ?? order.adults ?? 0,
+            bookingId: order.confirmation_number || order.orderid,
+            orderStatus: order.orderstatus || "",
+            amount: `${order.currencysymbol || "$"}${Number(
+              order.our_price ?? order.total ?? 0,
+            ).toFixed(2)}`,
+            ticketUrl: order.ticket_url || "",
+          };
+        });
+
+        setActivityBookings(mappedActivityBookings);
+
+        const totalCount = Number(res?.count || 0);
+        const calculatedTotalPages = Math.ceil(totalCount / PAGE_LIMIT);
+
+        updatePagination("activities", {
+          totalPages: calculatedTotalPages || 1,
+          hasNextPage:
+            pagination.activities.currentPage < calculatedTotalPages - 1,
+        });
+      } catch (error) {
+        console.error("ACTIVITY BOOKINGS ERROR:", error);
+
+        setActivityBookings([]);
+
+        updatePagination("activities", {
+          totalPages: 1,
+          hasNextPage: false,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivity();
+  }, [activeMenu, activeTab, pagination.activities.currentPage]);
+
+  const handleActivityClick = (booking) => {
+    if (!booking?.id) return;
+
+    navigate(
+      `/activity-booking-details?orderid=${encodeURIComponent(booking.id)}`,
+    );
+  };
   return (
     <div>
       {loading && (
@@ -1240,6 +1454,118 @@ const MyBookings = () => {
                               {booking.amount}
                             </strong>
                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : booking.type === "vacations" ? (
+                    <div
+                      className="voyage-booking-card"
+                      key={booking.id}
+                      onClick={() => handleVacationBookingClick(booking)}
+                    >
+                      <div className="voyage-booking-image">
+                        <img
+                          src={booking.image || dummy}
+                          alt={booking.resortName}
+                        />
+
+                        <span className="voyage-booking-status">
+                          {booking.status}
+                        </span>
+                      </div>
+
+                      <div className="voyage-booking-body">
+                        <h3>{booking.resortName}</h3>
+
+                        <p>{booking.city}</p>
+
+                        {booking.roomType && (
+                          <p className="voyage-booking-roomtype">
+                            {booking.roomType}
+                          </p>
+                        )}
+
+                        <div className="voyage-booking-row">
+                          <span>Check In</span>
+                          <strong>{booking.checkIn}</strong>
+                        </div>
+
+                        <div className="voyage-booking-row">
+                          <span>Check Out</span>
+                          <strong>{booking.checkOut}</strong>
+                        </div>
+
+                        <div className="voyage-booking-row">
+                          <span>Guests</span>
+                          <strong>{booking.guests}</strong>
+                        </div>
+
+                        <div className="voyage-booking-footer">
+                          <h2>{booking.amount}</h2>
+                        </div>
+                      </div>
+                    </div>
+                  ) : booking.type === "activities" ? (
+                    <div
+                      className="voyage-booking-card"
+                      key={booking.id}
+                      onClick={() => handleActivityClick(booking)}
+                    >
+                      <div className="voyage-booking-image">
+                        <img
+                          src={booking.image || dummy}
+                          alt={booking.activityName}
+                        />
+
+                        <span className="voyage-booking-status">
+                          {booking.status}
+                        </span>
+                      </div>
+
+                      <div className="voyage-booking-body">
+                        <h3>{booking.activityName}</h3>
+
+                        {booking.gradeName && <p>{booking.gradeName}</p>}
+
+                        <div className="voyage-booking-row">
+                          <span>Travel Date and Time</span>
+                          <strong>
+                            {booking.travelDate
+                              ? new Date(
+                                  `${booking.travelDate}T00:00:00`,
+                                ).toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "-"}{" "}
+                            at {booking.startTime || "-"}
+                          </strong>
+                        </div>
+
+                        <div className="voyage-booking-row">
+                          <span>Travellers</span>
+                          <strong>{booking.travellers}</strong>
+                        </div>
+
+                        <div className="voyage-booking-row">
+                          <span>Booking Status</span>
+                          <strong>{booking.orderStatus || "-"}</strong>
+                        </div>
+
+                        <div className="voyage-booking-footer">
+                          <h2>{booking.amount}</h2>
+
+                          {booking.ticketUrl && (
+                            <a
+                              href={booking.ticketUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              View Ticket
+                            </a>
+                          )}
                         </div>
                       </div>
                     </div>

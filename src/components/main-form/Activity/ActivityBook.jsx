@@ -5,46 +5,89 @@ import "react-datepicker/dist/react-datepicker.css";
 import HeaderInner from "../../../reuseable-components/HeaderInner";
 import Footer from "../../../reuseable-components/Footer";
 import "./Activity.css";
-import { useSearchParams } from "react-router-dom";
 import {
   activityOrder,
   activityOrderPlace,
 } from "../../../store/Services/AllApi";
-import CarLoader from "../../../reuseable-components/CarLoader/CarLoader";
 
 const ActivityBook = () => {
-  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [bookingQuestions, setBookingQuestions] = useState([]);
+
   const storedBookingData = JSON.parse(
     sessionStorage.getItem("activityBookingData") || "{}",
   );
+
   const activityBookingData = JSON.parse(
     sessionStorage.getItem("activityBookingData") || "{}",
   );
 
-  const gradeCode = activityBookingData?.gradeCode || "";
-
   const languageGuides = Array.isArray(activityBookingData?.languageGuides)
     ? activityBookingData.languageGuides
     : [];
-  const storedBookingQuestions = JSON.parse(
-    sessionStorage.getItem("activityBookingQuestions") || "[]",
-  );
 
-  const bookingQuestions = Array.isArray(storedBookingQuestions)
-    ? storedBookingQuestions.filter(
-        (question) => question?.required === "MANDATORY",
+  useEffect(() => {
+    try {
+      const storedActivityBookingData = JSON.parse(
+        sessionStorage.getItem("activityBookingData") || "{}",
+      );
+
+      const questions = Array.isArray(
+        storedActivityBookingData?.bookingQuestions,
       )
-    : [];
-  const allowedAnswers = bookingQuestions.flatMap((question) =>
-    Array.isArray(question?.allowedAnswers) ? question.allowedAnswers : [],
-  );
-  const travelers = Array.isArray(storedBookingData.guests)
+        ? storedActivityBookingData.bookingQuestions
+        : [];
+
+      setBookingQuestions(
+        questions.filter((question) => question?.required === "MANDATORY"),
+      );
+    } catch (error) {
+      console.error("Error parsing activityBookingData:", error);
+      setBookingQuestions([]);
+    }
+  }, []);
+
+  const getRelatedQuestions = (question, selectedAnswer) => {
+    if (!question?.allowedAnswers || !selectedAnswer) {
+      return [];
+    }
+
+    const selectedOption = question.allowedAnswers.find((option) => {
+      const answerValue = typeof option === "object" ? option?.answer : option;
+
+      return answerValue === selectedAnswer;
+    });
+
+    return Array.isArray(selectedOption?.relatedQuestions)
+      ? selectedOption.relatedQuestions
+      : [];
+  };
+
+  const hasMandatoryQuestion = (questionId) =>
+    bookingQuestions.some((question) => question?.id === questionId);
+
+  const getMandatoryQuestion = (questionId) =>
+    bookingQuestions.find((question) => question?.id === questionId);
+
+  const getBookingQuestionKey = (questionId) => {
+    const keyMap = {
+      FULL_NAMES_FIRST: "bookingFirstName",
+      FULL_NAMES_LAST: "bookingLastName",
+      AGEBAND: "bookingAgeBand",
+      DATE_OF_BIRTH: "bookingDateOfBirth",
+    };
+
+    return keyMap[questionId] || `booking_${questionId}`;
+  };
+
+  const travelers = Array.isArray(storedBookingData?.guests)
     ? storedBookingData.guests
     : [];
 
   const getTravelerLabel = (type) => {
     if (type === "ADULT") return "Adult";
+    if (type === "SENIOR") return "Senior";
+    if (type === "YOUTH") return "Youth";
     if (type === "CHILD") return "Child";
     if (type === "INFANT") return "Infant";
     return "Traveler";
@@ -59,8 +102,8 @@ const ActivityBook = () => {
   const {
     register,
     handleSubmit,
-    watch,
     control,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     mode: "onBlur",
@@ -75,11 +118,15 @@ const ActivityBook = () => {
         ageBand: traveler.type || "",
         gender: "",
         birthDate: "",
+        bookingFirstName: "",
+        bookingLastName: "",
+        bookingAgeBand: traveler.type || "",
+        bookingDateOfBirth: "",
       })),
+
+      bookingQuestions: {},
+
       languageGuide: "",
-      allowedAnswer: "",
-      languageGuide: "",
-      allowedAnswer: "",
       arrivalTime: "",
       pickupLocation: "",
       dropoffAddress: "",
@@ -101,10 +148,13 @@ const ActivityBook = () => {
     },
   });
 
+  const bookingQuestionValues = watch("bookingQuestions");
+
   const normalizeCardNumber = (value) => String(value || "").replace(/\D/g, "");
 
   const handleCardNumberInput = (event) => {
     const input = event.target;
+
     const numbers = normalizeCardNumber(input.value).slice(0, 16);
 
     input.value = numbers.replace(/(.{4})/g, "$1 ").trim();
@@ -173,8 +223,29 @@ const ActivityBook = () => {
     return true;
   };
 
+  const getQuestionAnswer = (answer) => {
+    if (typeof answer === "object") {
+      return answer?.answer || "";
+    }
+
+    return answer || "";
+  };
+
+  const buildQuestionAnswer = (question, answer, travelerNum = null) => {
+    return {
+      question: question.id,
+      answer: answer || "",
+      travelerNum,
+      unit:
+        Array.isArray(question?.units) && question.units.length > 0
+          ? question.units[0]
+          : null,
+    };
+  };
+
   const handlePayment = async (formData) => {
     setLoading(true);
+
     try {
       const latestBookingData = JSON.parse(
         sessionStorage.getItem("activityBookingData") || "{}",
@@ -186,8 +257,9 @@ const ActivityBook = () => {
 
       const updatedBookingData = {
         ...latestBookingData,
-        languageGuide: selectedLanguageGuide,
-        allowedAnswer: formData?.allowedAnswer || "",
+        ...(selectedLanguageGuide
+          ? { languageGuide: selectedLanguageGuide }
+          : {}),
       };
 
       sessionStorage.setItem(
@@ -200,67 +272,104 @@ const ActivityBook = () => {
         formData.travelers?.[0] ||
         {};
 
-      const guests = (formData.travelers || []).map((traveler, index) => ({
-        primary:
-          traveler.primary === true ||
-          latestBookingData.guests?.[index]?.primary === true,
-        title: traveler.title || "",
-        firstName: traveler.firstName || "",
-        lastName: traveler.lastName || "",
-        email: traveler.email || "",
-        phone: traveler.phone || "",
-        covered: false,
-        birthDate: traveler.birthDate || "",
-        gender: traveler.gender || "",
-        type:
+      const guestTypeMap = {
+        ADULT: "ADULT",
+        SENIOR: "ADULT",
+        YOUTH: "CHILD",
+        CHILD: "CHILD",
+        INFANT: "INFANT",
+      };
+
+      const guests = (formData.travelers || []).map((traveler, index) => {
+        const originalType =
           traveler.ageBand ||
           latestBookingData.guests?.[index]?.type ||
-          "ADULT",
-      }));
+          "ADULT";
+
+        const normalizedType =
+          guestTypeMap[String(originalType).toUpperCase()] || "ADULT";
+
+        return {
+          primary:
+            traveler.primary === true ||
+            latestBookingData.guests?.[index]?.primary === true,
+          title: traveler.title || "",
+          firstName: traveler.firstName || "",
+          lastName: traveler.lastName || "",
+          email: traveler.email || "",
+          phone: traveler.phone || "",
+          covered: false,
+          birthDate: traveler.birthDate || "",
+          gender: traveler.gender || "",
+          type: normalizedType,
+        };
+      });
 
       const bookingQuestionAnswers = [];
+
+      const bookingAgeBandMap = {
+        ADULT: "ADULT",
+        SENIOR: "ADULT",
+        YOUTH: "CHILD",
+        CHILD: "CHILD",
+        INFANT: "INFANT",
+      };
 
       (formData.travelers || []).forEach((traveler, index) => {
         const travelerNum = index + 1;
 
-        if (
-          bookingQuestions.some(
-            (question) => question?.id === "FULL_NAMES_FIRST",
-          )
-        ) {
-          bookingQuestionAnswers.push({
-            question: "FULL_NAMES_FIRST",
-            answer: traveler.firstName || "",
-            travelerNum,
-            unit: null,
-          });
-        }
+        bookingQuestions
+          .filter((question) => question?.group === "PER_TRAVELER")
+          .forEach((question) => {
+            const fieldKey = getBookingQuestionKey(question.id);
 
-        if (
-          bookingQuestions.some(
-            (question) => question?.id === "FULL_NAMES_LAST",
-          )
-        ) {
-          bookingQuestionAnswers.push({
-            question: "FULL_NAMES_LAST",
-            answer: traveler.lastName || "",
-            travelerNum,
-            unit: null,
-          });
-        }
+            const originalAnswer = traveler[fieldKey] || "";
 
-        if (bookingQuestions.some((question) => question?.id === "AGEBAND")) {
-          bookingQuestionAnswers.push({
-            question: "AGEBAND",
-            answer: traveler.ageBand || traveler.type || "ADULT",
-            travelerNum,
-            unit: null,
+            const answer =
+              question.id === "AGEBAND"
+                ? bookingAgeBandMap[String(originalAnswer).toUpperCase()] ||
+                  "ADULT"
+                : originalAnswer;
+
+            bookingQuestionAnswers.push(
+              buildQuestionAnswer(question, answer, travelerNum),
+            );
           });
-        }
+      });
+
+      const perBookingQuestions = bookingQuestions.filter(
+        (question) => question?.group === "PER_BOOKING",
+      );
+
+      perBookingQuestions.forEach((question) => {
+        const answer = formData?.bookingQuestions?.[question.id] || "";
+
+        bookingQuestionAnswers.push(
+          buildQuestionAnswer(question, answer, null),
+        );
+
+        const relatedQuestions = getRelatedQuestions(question, answer);
+
+        relatedQuestions.forEach((relatedQuestion) => {
+          const relatedAnswer =
+            formData?.bookingQuestions?.[relatedQuestion.id] || "";
+
+          bookingQuestionAnswers.push({
+            question: relatedQuestion.id,
+            answer: relatedAnswer,
+            travelerNum: null,
+            unit:
+              Array.isArray(relatedQuestion?.units) &&
+              relatedQuestion.units.length > 0
+                ? relatedQuestion.units[0]
+                : null,
+          });
+        });
       });
 
       if (
-        bookingQuestions.some((question) => question?.id === "PICKUP_POINT")
+        bookingQuestions.some((question) => question?.id === "PICKUP_POINT") &&
+        !bookingQuestionAnswers.some((item) => item.question === "PICKUP_POINT")
       ) {
         bookingQuestionAnswers.push({
           question: "PICKUP_POINT",
@@ -313,7 +422,12 @@ const ActivityBook = () => {
         gradeCode: latestBookingData?.gradeCode || "",
       };
 
-      console.log("activityOrder REQUEST:", requestBody);
+      console.log(
+        "FINAL BOOKING QUESTION ANSWERS:",
+        JSON.stringify(bookingQuestionAnswers, null, 2),
+      );
+
+      console.log("FINAL REQUEST BODY:", JSON.stringify(requestBody, null, 2));
 
       const res = await activityOrder({
         body: requestBody,
@@ -327,8 +441,6 @@ const ActivityBook = () => {
         console.log("Activity order itemId not found:", res);
         return;
       }
-
-      console.log("Activity Order Item ID:", itemId);
 
       const paymentResponse = await handleAnkit(
         itemId,
@@ -345,10 +457,6 @@ const ActivityBook = () => {
     }
   };
 
-  const encodeValue = (value) => {
-    return value ? btoa(String(value)) : "";
-  };
-
   const handleAnkit = async (
     orderId,
     formData,
@@ -360,7 +468,7 @@ const ActivityBook = () => {
         formData.travelers?.find((traveler) => traveler.primary) ||
         formData.travelers?.[0] ||
         {};
-      console.log("primaryTraveler", primaryTraveler);
+
       const cardNumber = String(formData.cardNumber || "").replace(/\s/g, "");
 
       const expiry = String(formData.expiry || "").replace(/\D/g, "");
@@ -407,43 +515,74 @@ const ActivityBook = () => {
       if (paymentUrl) {
         const paymentRedirectData = {
           bookingDate: latestBookingData.startDate || "",
+
           activityCode: latestBookingData.activityCode || "",
+
           gradeCode:
             latestBookingData.gradeCode ||
             latestBookingData.grade?.gradeCode ||
             latestBookingData.grade_code ||
             "",
+
           orderId:
             response?.data?.paynow?.result?.orderId ||
             response?.data?.paynow?.result?.paymentIntentId ||
             orderId,
+
           startTime: latestBookingData.startTime || "",
+
           primaryTraveller: {
             firstName: primaryTraveler.firstName || "",
-            type: primaryTraveler.ageBand
-              ? primaryTraveler.ageBand.charAt(0).toUpperCase() +
-                primaryTraveler.ageBand.slice(1).toLowerCase()
-              : "Adult",
+
+            type: (() => {
+              const ageBandMap = {
+                ADULT: "Adult",
+                SENIOR: "Adult",
+                YOUTH: "Child",
+                CHILD: "Child",
+                INFANT: "Infant",
+              };
+
+              const ageBand =
+                primaryTraveler.ageBand || primaryTraveler.type || "ADULT";
+
+              return ageBandMap[ageBand] || "Adult";
+            })(),
+
             title: primaryTraveler.title || "",
+
             lastName: primaryTraveler.lastName || "",
+
             email: primaryTraveler.email || "",
+
             contactNo: primaryTraveler.phone || "",
           },
+
           ageBandCount: (formData.travelers || []).reduce((acc, traveler) => {
             const ageBand = traveler.ageBand || traveler.type;
 
-            if (ageBand) {
-              acc[ageBand] = (acc[ageBand] || 0) + 1;
-            }
+            const ageBandMap = {
+              ADULT: "ADULT",
+              SENIOR: "ADULT",
+              YOUTH: "CHILD",
+              CHILD: "CHILD",
+              INFANT: "INFANT",
+            };
+
+            const mappedAgeBand = ageBandMap[ageBand] || "ADULT";
+
+            acc[mappedAgeBand] = (acc[mappedAgeBand] || 0) + 1;
 
             return acc;
           }, {}),
-          bookingQuestionAnswers: bookingQuestionAnswers,
-          languageGuide: latestBookingData.languageGuide || {
-            type: "GUIDE",
-            language: "en",
-            legacyGuide: "en/SERVICE_GUIDE",
-          },
+
+          bookingQuestionAnswers,
+
+          ...(latestBookingData?.languageGuide
+            ? {
+                languageGuide: latestBookingData.languageGuide,
+              }
+            : {}),
         };
 
         sessionStorage.setItem(
@@ -454,6 +593,7 @@ const ActivityBook = () => {
         console.log("Redirecting to:", paymentUrl);
 
         window.location.href = paymentUrl;
+
         return;
       }
 
@@ -478,6 +618,7 @@ const ActivityBook = () => {
           <p>Processing payment please wait...</p>
         </div>
       )}
+
       <div className="activity-book-page">
         <HeaderInner />
 
@@ -591,18 +732,6 @@ const ActivityBook = () => {
                       const travelerLabel = getTravelerLabel(traveler.type);
 
                       const isPrimary = traveler.primary === true;
-
-                      const hasFirstName = bookingQuestions.some(
-                        (question) => question?.id === "FULL_NAMES_FIRST",
-                      );
-
-                      const hasLastName = bookingQuestions.some(
-                        (question) => question?.id === "FULL_NAMES_LAST",
-                      );
-
-                      const hasAgeBand = bookingQuestions.some(
-                        (question) => question?.id === "AGEBAND",
-                      );
 
                       return (
                         <div
@@ -758,9 +887,11 @@ const ActivityBook = () => {
                                       }
 
                                       const year = date.getFullYear();
+
                                       const month = String(
                                         date.getMonth() + 1,
                                       ).padStart(2, "0");
+
                                       const day = String(
                                         date.getDate(),
                                       ).padStart(2, "0");
@@ -852,12 +983,448 @@ const ActivityBook = () => {
                 </section>
 
                 {bookingQuestions.some(
-                  (question) => question?.id === "PICKUP_POINT",
+                  (question) => question?.group === "PER_TRAVELER",
+                ) && (
+                  <section className="activity-book-card">
+                    <div className="activity-book-section-header">
+                      <div>
+                        <h2>Required Activity Information</h2>
+
+                        <p>Enter the required information for all travelers</p>
+                      </div>
+                    </div>
+
+                    {travelers.map((traveler, index) => {
+                      const travelerNumber = getTravelerNumber(
+                        traveler.type,
+                        index,
+                      );
+
+                      const travelerLabel = getTravelerLabel(traveler.type);
+
+                      return (
+                        <div
+                          key={`mandatory-${traveler.type}-${index}`}
+                          className="activity-book-traveler-box"
+                        >
+                          <div className="activity-book-traveler-heading">
+                            <div>
+                              <h3>
+                                {travelerLabel} {travelerNumber}
+                              </h3>
+
+                              <span>{travelerLabel}</span>
+                            </div>
+                          </div>
+
+                          <div className="activity-book-form-grid">
+                            {bookingQuestions
+                              .filter(
+                                (question) =>
+                                  question?.group === "PER_TRAVELER" &&
+                                  question?.required === "MANDATORY",
+                              )
+                              .map((question) => {
+                                const fieldKey = getBookingQuestionKey(
+                                  question.id,
+                                );
+
+                                const fieldName = `travelers.${index}.${fieldKey}`;
+
+                                const fieldError =
+                                  errors.travelers?.[index]?.[fieldKey];
+
+                                const hasAllowedAnswers =
+                                  Array.isArray(question?.allowedAnswers) &&
+                                  question.allowedAnswers.length > 0;
+
+                                if (hasAllowedAnswers) {
+                                  return (
+                                    <div
+                                      className="activity-book-field"
+                                      key={question.id}
+                                    >
+                                      <label>
+                                        {question.label} <span>*</span>
+                                      </label>
+
+                                      <select
+                                        {...register(fieldName, {
+                                          required: `${question.label} is required`,
+                                        })}
+                                      >
+                                        <option value="">
+                                          Select {question.label}
+                                        </option>
+
+                                        {question.allowedAnswers.map(
+                                          (answer, answerIndex) => {
+                                            const answerValue =
+                                              getQuestionAnswer(answer);
+
+                                            return (
+                                              <option
+                                                key={`${question.id}-${answerValue}-${answerIndex}`}
+                                                value={answerValue}
+                                              >
+                                                {answerValue}
+                                              </option>
+                                            );
+                                          },
+                                        )}
+                                      </select>
+
+                                      {fieldError && (
+                                        <span className="activity-book-error">
+                                          {fieldError.message}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                }
+
+                                if (question.type === "DATE") {
+                                  return (
+                                    <div
+                                      className="activity-book-field"
+                                      key={question.id}
+                                    >
+                                      <label>
+                                        {question.label} <span>*</span>
+                                      </label>
+
+                                      <Controller
+                                        control={control}
+                                        name={fieldName}
+                                        rules={{
+                                          required: `${question.label} is required`,
+                                        }}
+                                        render={({ field }) => (
+                                          <DatePicker
+                                            selected={
+                                              field.value
+                                                ? new Date(
+                                                    `${field.value}T00:00:00`,
+                                                  )
+                                                : null
+                                            }
+                                            onChange={(date) => {
+                                              if (!date) {
+                                                field.onChange("");
+                                                return;
+                                              }
+
+                                              const year = date.getFullYear();
+
+                                              const month = String(
+                                                date.getMonth() + 1,
+                                              ).padStart(2, "0");
+
+                                              const day = String(
+                                                date.getDate(),
+                                              ).padStart(2, "0");
+
+                                              field.onChange(
+                                                `${year}-${month}-${day}`,
+                                              );
+                                            }}
+                                            dateFormat="dd/MM/yyyy"
+                                            placeholderText="DD/MM/YYYY"
+                                            maxDate={new Date()}
+                                            showMonthDropdown
+                                            showYearDropdown
+                                            dropdownMode="select"
+                                            className="activity-book-date-picker"
+                                            autoComplete="off"
+                                          />
+                                        )}
+                                      />
+
+                                      {fieldError && (
+                                        <span className="activity-book-error">
+                                          {fieldError.message}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <div
+                                    className="activity-book-field"
+                                    key={question.id}
+                                  >
+                                    <label>
+                                      {question.label} <span>*</span>
+                                    </label>
+
+                                    <input
+                                      type="text"
+                                      maxLength={
+                                        question.maxLength || undefined
+                                      }
+                                      placeholder={question.hint || ""}
+                                      {...register(fieldName, {
+                                        required: `${question.label} is required`,
+                                        maxLength: question.maxLength
+                                          ? {
+                                              value: question.maxLength,
+                                              message: `Maximum ${question.maxLength} characters allowed`,
+                                            }
+                                          : undefined,
+                                      })}
+                                    />
+
+                                    {fieldError && (
+                                      <span className="activity-book-error">
+                                        {fieldError.message}
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </section>
+                )}
+
+                {bookingQuestions.some(
+                  (question) => question?.group === "PER_BOOKING",
+                ) && (
+                  <section className="activity-book-card">
+                    <div className="activity-book-section-header">
+                      <div>
+                        <h2>Booking Information</h2>
+
+                        <p>Enter the required information for your activity</p>
+                      </div>
+                    </div>
+
+                    <div className="activity-book-form-grid">
+                      {bookingQuestions
+                        .filter((question) => question?.group === "PER_BOOKING")
+                        .map((question) => {
+                          const fieldName = `bookingQuestions.${question.id}`;
+
+                          const fieldError =
+                            errors.bookingQuestions?.[question.id];
+
+                          const selectedAnswer =
+                            bookingQuestionValues?.[question.id] || "";
+
+                          const hasAllowedAnswers =
+                            Array.isArray(question?.allowedAnswers) &&
+                            question.allowedAnswers.length > 0;
+
+                          return (
+                            <React.Fragment key={question.id}>
+                              <div className="activity-book-field">
+                                <label>
+                                  {question.label}{" "}
+                                  {question.required === "MANDATORY" && (
+                                    <span>*</span>
+                                  )}
+                                </label>
+
+                                {hasAllowedAnswers ? (
+                                  <select
+                                    {...register(fieldName, {
+                                      required:
+                                        question.required === "MANDATORY"
+                                          ? `${question.label} is required`
+                                          : false,
+                                    })}
+                                  >
+                                    <option value="">
+                                      Select {question.label}
+                                    </option>
+
+                                    {question.allowedAnswers.map(
+                                      (answer, answerIndex) => {
+                                        const answerValue =
+                                          getQuestionAnswer(answer);
+
+                                        return (
+                                          <option
+                                            key={`${question.id}-${answerValue}-${answerIndex}`}
+                                            value={answerValue}
+                                          >
+                                            {answerValue}
+                                          </option>
+                                        );
+                                      },
+                                    )}
+                                  </select>
+                                ) : question.type === "DATE" ? (
+                                  <input
+                                    type="date"
+                                    {...register(fieldName, {
+                                      required:
+                                        question.required === "MANDATORY"
+                                          ? `${question.label} is required`
+                                          : false,
+                                    })}
+                                  />
+                                ) : question.type === "TIME" ? (
+                                  <input
+                                    type="time"
+                                    {...register(fieldName, {
+                                      required:
+                                        question.required === "MANDATORY"
+                                          ? `${question.label} is required`
+                                          : false,
+                                    })}
+                                  />
+                                ) : (
+                                  <input
+                                    type="text"
+                                    maxLength={question.maxLength || undefined}
+                                    placeholder={question.hint || ""}
+                                    {...register(fieldName, {
+                                      required:
+                                        question.required === "MANDATORY"
+                                          ? `${question.label} is required`
+                                          : false,
+                                    })}
+                                  />
+                                )}
+
+                                {fieldError && (
+                                  <span className="activity-book-error">
+                                    {fieldError.message}
+                                  </span>
+                                )}
+                              </div>
+
+                              {selectedAnswer &&
+                                getRelatedQuestions(
+                                  question,
+                                  selectedAnswer,
+                                ).map((relatedQuestion) => {
+                                  const relatedFieldName = `bookingQuestions.${relatedQuestion.id}`;
+
+                                  const relatedFieldError =
+                                    errors.bookingQuestions?.[
+                                      relatedQuestion.id
+                                    ];
+
+                                  const hasRelatedAllowedAnswers =
+                                    Array.isArray(
+                                      relatedQuestion?.allowedAnswers,
+                                    ) &&
+                                    relatedQuestion.allowedAnswers.length > 0;
+
+                                  return (
+                                    <div
+                                      className="activity-book-field"
+                                      key={`${question.id}-${relatedQuestion.id}`}
+                                    >
+                                      <label>
+                                        {relatedQuestion.label}{" "}
+                                        {relatedQuestion.required ===
+                                          "CONDITIONAL" && <span>*</span>}
+                                      </label>
+
+                                      {hasRelatedAllowedAnswers ? (
+                                        <select
+                                          {...register(relatedFieldName, {
+                                            required:
+                                              relatedQuestion.required ===
+                                              "CONDITIONAL"
+                                                ? `${relatedQuestion.label} is required`
+                                                : false,
+                                          })}
+                                        >
+                                          <option value="">
+                                            Select {relatedQuestion.label}
+                                          </option>
+
+                                          {relatedQuestion.allowedAnswers.map(
+                                            (answer, answerIndex) => {
+                                              const answerValue =
+                                                getQuestionAnswer(answer);
+
+                                              return (
+                                                <option
+                                                  key={`${relatedQuestion.id}-${answerValue}-${answerIndex}`}
+                                                  value={answerValue}
+                                                >
+                                                  {answerValue}
+                                                </option>
+                                              );
+                                            },
+                                          )}
+                                        </select>
+                                      ) : relatedQuestion.type === "DATE" ? (
+                                        <input
+                                          type="date"
+                                          {...register(relatedFieldName, {
+                                            required:
+                                              relatedQuestion.required ===
+                                              "CONDITIONAL"
+                                                ? `${relatedQuestion.label} is required`
+                                                : false,
+                                          })}
+                                        />
+                                      ) : relatedQuestion.type === "TIME" ? (
+                                        <input
+                                          type="time"
+                                          {...register(relatedFieldName, {
+                                            required:
+                                              relatedQuestion.required ===
+                                              "CONDITIONAL"
+                                                ? `${relatedQuestion.label} is required`
+                                                : false,
+                                          })}
+                                        />
+                                      ) : (
+                                        <input
+                                          type="text"
+                                          maxLength={
+                                            relatedQuestion.maxLength ||
+                                            undefined
+                                          }
+                                          placeholder={
+                                            relatedQuestion.hint || ""
+                                          }
+                                          {...register(relatedFieldName, {
+                                            required:
+                                              relatedQuestion.required ===
+                                              "CONDITIONAL"
+                                                ? `${relatedQuestion.label} is required`
+                                                : false,
+                                          })}
+                                        />
+                                      )}
+
+                                      {relatedFieldError && (
+                                        <span className="activity-book-error">
+                                          {relatedFieldError.message}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                            </React.Fragment>
+                          );
+                        })}
+                    </div>
+                  </section>
+                )}
+
+                {bookingQuestions.some(
+                  (question) =>
+                    question?.id === "PICKUP_POINT" &&
+                    (!Array.isArray(question?.allowedAnswers) ||
+                      question.allowedAnswers.length === 0),
                 ) && (
                   <section className="activity-book-card">
                     <div className="activity-book-section-header">
                       <div>
                         <h2>Pickup Details</h2>
+
                         <p>Enter your pickup location</p>
                       </div>
                     </div>
@@ -938,197 +1505,11 @@ const ActivityBook = () => {
                   </section>
                 )}
 
-                {allowedAnswers.length > 0 && (
-                  <section className="activity-book-card">
-                    <div className="activity-book-language-selection">
-                      <div className="activity-book-field">
-                        <label>
-                          Booking Info <span>*</span>
-                        </label>
-
-                        <select
-                          {...register("allowedAnswer", {
-                            required: "Please select booking info",
-                          })}
-                        >
-                          <option value="">Select booking info</option>
-
-                          {allowedAnswers.map((answer, index) => (
-                            <option
-                              key={`${answer?.answer}-${index}`}
-                              value={answer?.answer || ""}
-                            >
-                              {answer?.answer || ""}
-                            </option>
-                          ))}
-                        </select>
-
-                        {errors.allowedAnswer && (
-                          <span className="activity-book-error">
-                            {errors.allowedAnswer.message}
-                          </span>
-                        )}
-                      </div>
-
-                      {watch("allowedAnswer") === "AIR" && (
-                        <div className="activity-book-air-fields">
-                          <div className="activity-book-field">
-                            <input
-                              type="text"
-                              placeholder="Arrival time*"
-                              maxLength={100}
-                              {...register("arrivalTime", {
-                                required: "Arrival time is required",
-                              })}
-                            />
-                            <span className="activity-book-character-count">
-                              {watch("arrivalTime")?.length || 0}/100
-                            </span>
-                          </div>
-
-                          <div className="activity-book-field">
-                            <input
-                              type="text"
-                              placeholder="Pickup location*"
-                              maxLength={1000}
-                              {...register("pickupLocation", {
-                                required: "Pickup location is required",
-                              })}
-                            />
-                            <span className="activity-book-character-count">
-                              {watch("pickupLocation")?.length || 0}/1000
-                            </span>
-                          </div>
-
-                          <div className="activity-book-field">
-                            <input
-                              type="text"
-                              placeholder="Dropoff address*"
-                              maxLength={1000}
-                              {...register("dropoffAddress", {
-                                required: "Dropoff address is required",
-                              })}
-                            />
-                            <span className="activity-book-character-count">
-                              {watch("dropoffAddress")?.length || 0}/1000
-                            </span>
-                          </div>
-
-                          <div className="activity-book-field">
-                            <input
-                              type="text"
-                              placeholder="Arrival flight number*"
-                              maxLength={255}
-                              {...register("arrivalFlightNumber", {
-                                required: "Arrival flight number is required",
-                              })}
-                            />
-                            <span className="activity-book-character-count">
-                              {watch("arrivalFlightNumber")?.length || 0}/255
-                            </span>
-                          </div>
-
-                          <div className="activity-book-field">
-                            <input
-                              type="text"
-                              placeholder="Name of arrival airline*"
-                              maxLength={255}
-                              {...register("arrivalAirline", {
-                                required: "Arrival airline is required",
-                              })}
-                            />
-                            <span className="activity-book-character-count">
-                              {watch("arrivalAirline")?.length || 0}/255
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {watch("allowedAnswer") === "SEA" && (
-                        <div className="activity-book-air-fields">
-                          <div className="activity-book-field">
-                            <input
-                              type="text"
-                              placeholder="Pickup location*"
-                              maxLength={1000}
-                              {...register("pickupLocation", {
-                                required: "Pickup location is required",
-                              })}
-                            />
-                            <span className="activity-book-character-count">
-                              {watch("pickupLocation")?.length || 0}/1000
-                            </span>
-                          </div>
-
-                          <div className="activity-book-field">
-                            <input
-                              type="text"
-                              placeholder="Disembarkation time*"
-                              maxLength={100}
-                              {...register("disembarkationTime", {
-                                required: "Disembarkation time is required",
-                              })}
-                            />
-                            <span className="activity-book-character-count">
-                              {watch("disembarkationTime")?.length || 0}/100
-                            </span>
-                          </div>
-
-                          <div className="activity-book-field">
-                            <input
-                              type="text"
-                              placeholder="Name of cruise ship*"
-                              maxLength={255}
-                              {...register("cruiseShipName", {
-                                required: "Name of cruise ship is required",
-                              })}
-                            />
-                            <span className="activity-book-character-count">
-                              {watch("cruiseShipName")?.length || 0}/255
-                            </span>
-                          </div>
-
-                          <div className="activity-book-field">
-                            <input
-                              type="text"
-                              placeholder="Dropoff address*"
-                              maxLength={1000}
-                              {...register("dropoffAddress", {
-                                required: "Dropoff address is required",
-                              })}
-                            />
-                            <span className="activity-book-character-count">
-                              {watch("dropoffAddress")?.length || 0}/1000
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {watch("allowedAnswer") === "OTHER" && (
-                        <div className="activity-book-other-fields">
-                          <div className="activity-book-field">
-                            <input
-                              type="text"
-                              placeholder="Pickup location*"
-                              maxLength={1000}
-                              {...register("pickupLocation", {
-                                required: "Pickup location is required",
-                              })}
-                            />
-                            <span className="activity-book-character-count">
-                              {watch("pickupLocation")?.length || 0}/1000
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </section>
-                )}
-
                 <section className="activity-book-card">
                   <div className="activity-book-section-header">
                     <div>
                       <h2>Billing Address</h2>
+
                       <p>Enter the billing information for your payment</p>
                     </div>
                   </div>
@@ -1244,56 +1625,15 @@ const ActivityBook = () => {
                         })}
                       >
                         <option value="">Select country</option>
-                        <option value="AF">Afghanistan</option>
-                        <option value="AL">Albania</option>
-                        <option value="DZ">Algeria</option>
-                        <option value="AD">Andorra</option>
-                        <option value="AO">Angola</option>
-                        <option value="AR">Argentina</option>
-                        <option value="AU">Australia</option>
-                        <option value="AT">Austria</option>
-                        <option value="BD">Bangladesh</option>
-                        <option value="BE">Belgium</option>
-                        <option value="BR">Brazil</option>
+                        <option value="IN">India</option>
+                        <option value="US">United States</option>
+                        <option value="GB">United Kingdom</option>
+                        <option value="AE">United Arab Emirates</option>
                         <option value="CA">Canada</option>
-                        <option value="CN">China</option>
-                        <option value="DK">Denmark</option>
-                        <option value="EG">Egypt</option>
-                        <option value="FI">Finland</option>
+                        <option value="AU">Australia</option>
+                        <option value="SG">Singapore</option>
                         <option value="FR">France</option>
                         <option value="DE">Germany</option>
-                        <option value="GR">Greece</option>
-                        <option value="HK">Hong Kong</option>
-                        <option value="IN">India</option>
-                        <option value="ID">Indonesia</option>
-                        <option value="IE">Ireland</option>
-                        <option value="IT">Italy</option>
-                        <option value="JP">Japan</option>
-                        <option value="MY">Malaysia</option>
-                        <option value="MV">Maldives</option>
-                        <option value="MX">Mexico</option>
-                        <option value="NP">Nepal</option>
-                        <option value="NL">Netherlands</option>
-                        <option value="NZ">New Zealand</option>
-                        <option value="NO">Norway</option>
-                        <option value="PK">Pakistan</option>
-                        <option value="PH">Philippines</option>
-                        <option value="PT">Portugal</option>
-                        <option value="QA">Qatar</option>
-                        <option value="RU">Russia</option>
-                        <option value="SA">Saudi Arabia</option>
-                        <option value="SG">Singapore</option>
-                        <option value="ZA">South Africa</option>
-                        <option value="ES">Spain</option>
-                        <option value="LK">Sri Lanka</option>
-                        <option value="SE">Sweden</option>
-                        <option value="CH">Switzerland</option>
-                        <option value="TH">Thailand</option>
-                        <option value="TR">Turkey</option>
-                        <option value="AE">United Arab Emirates</option>
-                        <option value="GB">United Kingdom</option>
-                        <option value="US">United States</option>
-                        <option value="VN">Vietnam</option>
                       </select>
 
                       {errors.country && (
@@ -1333,6 +1673,7 @@ const ActivityBook = () => {
                   <div className="activity-book-section-header">
                     <div>
                       <h2>Card Details</h2>
+
                       <p>Enter your card details to complete payment</p>
                     </div>
                   </div>
@@ -1426,6 +1767,7 @@ const ActivityBook = () => {
                             }
 
                             const month = Number(numbers.slice(0, 2));
+
                             const year = Number(numbers.slice(2));
 
                             if (month < 1 || month > 12) {
@@ -1433,7 +1775,9 @@ const ActivityBook = () => {
                             }
 
                             const currentDate = new Date();
+
                             const currentYear = currentDate.getFullYear() % 100;
+
                             const currentMonth = currentDate.getMonth() + 1;
 
                             if (
@@ -1520,9 +1864,9 @@ const ActivityBook = () => {
                     </div>
 
                     <div className="activity-book-summary-activity-info">
-                      <strong>{storedBookingData.name || "Activity"}</strong>
+                      <strong>{storedBookingData.name}</strong>
 
-                      <span>{storedBookingData.startDate || ""}</span>
+                      <span>{storedBookingData.startDate}</span>
 
                       <span>
                         {travelers.length}{" "}
@@ -1537,15 +1881,20 @@ const ActivityBook = () => {
 
                   <div className="activity-book-price-row">
                     <span>Public Price</span>
+
                     <strong>
                       {storedBookingData.publicPrice
-                        ? `$${String(storedBookingData.publicPrice).replace(/^₹\s*/, "")}`
+                        ? `$${String(storedBookingData.publicPrice).replace(
+                            /^₹\s*/,
+                            "",
+                          )}`
                         : "$0"}
                     </strong>
                   </div>
 
                   <div className="activity-book-price-row activity-book-savings">
                     <span>You Save</span>
+
                     <strong>
                       $
                       {(
@@ -1570,12 +1919,16 @@ const ActivityBook = () => {
                   <div className="activity-book-total-row">
                     <div>
                       <span>Total Payable</span>
+
                       <small>Inclusive of applicable charges</small>
                     </div>
 
                     <strong>
                       {storedBookingData.payable
-                        ? `$${String(storedBookingData.payable).replace(/^₹\s*/, "")}`
+                        ? `$${String(storedBookingData.payable).replace(
+                            /^₹\s*/,
+                            "",
+                          )}`
                         : "$0"}
                     </strong>
                   </div>
