@@ -52,6 +52,7 @@ import FlightBookingDetails from "./components/FlightResultPage/FlightBookingDet
 import VacationPaymentStatus from "./components/main-form/Vacations/VacationPaymentStatus/VacationPaymentStatus";
 import ActivityBookingDetails from "./components/main-form/Activity/ActivityBookingDetails/ActivityBookingDetails";
 import VacationBookingDetails from "./components/main-form/Vacations/VacationBookingDetails/VacationBookingDetails";
+import Canonical from "./reuseable-components/Canonical";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -79,7 +80,7 @@ function App() {
         setMemberIdForVacation(res?.data?.get?.result?.id);
         localStorage.setItem(
           "personDetails",
-          JSON.stringify(res?.data?.get?.result),
+          JSON.stringify(res?.data?.get?.result)
         );
         localStorage.setItem("tierId", res?.data?.get?.result?.tierid);
         localStorage.setItem("bookingId", res?.data?.get?.result?.id);
@@ -93,6 +94,8 @@ function App() {
 
   return (
     <>
+      <Canonical />
+
       <ToastContainer
         position="top-right"
         autoClose={3000}
