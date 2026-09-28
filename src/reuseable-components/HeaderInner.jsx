@@ -46,18 +46,37 @@ const HeaderInner = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
+    const loginTimestamp = localStorage.getItem("loginTimestamp");
 
-    if (!token) return;
+    if (!token || !loginTimestamp) {
+      return;
+    }
+
+    const elapsedTime = Date.now() - Number(loginTimestamp);
+    const remainingTime = TWO_HOURS - elapsedTime;
+
+    if (remainingTime <= 0) {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("Email");
+      localStorage.removeItem("personDetails");
+      localStorage.removeItem("loginTimestamp");
+
+      sessionStorage.clear();
+
+      window.location.replace("/");
+      return;
+    }
 
     const timer = setTimeout(() => {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("Email");
       localStorage.removeItem("personDetails");
+      localStorage.removeItem("loginTimestamp");
 
       sessionStorage.clear();
 
       window.location.replace("/");
-    }, TWO_HOURS);
+    }, remainingTime);
 
     return () => clearTimeout(timer);
   }, []);
@@ -166,6 +185,7 @@ const HeaderInner = () => {
               type: "room",
             },
           }),
+          
           memberTripCoins({
             body: {
               email,
@@ -173,9 +193,6 @@ const HeaderInner = () => {
             },
           }),
         ]);
-
-        console.log("Room Coins Response:", roomRes);
-        console.log("Trip Coins Response:", tripRes);
 
         const roomBalance = roomRes?.data?.balance?.result?.balance ?? 0;
         const tripBalance = tripRes?.data?.balance?.result?.balance ?? 0;

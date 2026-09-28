@@ -210,11 +210,7 @@ const ActivityDetails = () => {
     const nextParticipants = {};
 
     activityAgeBands.forEach((ageBand) => {
-      if (ageBand.type === "adult") {
-        nextParticipants.adult = 1;
-      } else {
-        nextParticipants[ageBand.type] = 0;
-      }
+      nextParticipants[ageBand.type] = Number(ageBand.minTravelers) || 0;
     });
 
     setParticipants((previous) => ({
@@ -223,6 +219,11 @@ const ActivityDetails = () => {
     }));
 
     setAppliedParticipants((previous) => ({
+      ...previous,
+      ...nextParticipants,
+    }));
+
+    setAvailabilityParticipants((previous) => ({
       ...previous,
       ...nextParticipants,
     }));
@@ -256,7 +257,7 @@ const ActivityDetails = () => {
         } else if (band === "CHILD") {
           participantType = "child";
         } else if (band === "INFANT") {
-          participantType = "infant";
+          participantType = "child";
         } else if (band === "SENIOR") {
           participantType = "senior";
         }
@@ -501,14 +502,28 @@ const ActivityDetails = () => {
           setSelectedDate(initialDate);
 
           if (initialDate && initialActivityData) {
+            const initialParticipants = {};
+
+            (initialActivityData?.pricingInfo?.ageBands || []).forEach(
+              (ageBand) => {
+                const band = String(ageBand?.ageBand || "").toUpperCase();
+
+                const typeMap = {
+                  ADULT: "adult",
+                  YOUTH: "youth",
+                  CHILD: "child",
+                  INFANT: "infant",
+                  SENIOR: "senior",
+                };
+
+                const type = typeMap[band] || band.toLowerCase();
+
+                initialParticipants[type] = Number(ageBand?.minTravelers) || 0;
+              },
+            );
             await loadAvailability(
               initialDate,
-              {
-                adult: 1,
-                youth: 0,
-                child: 0,
-                infant: 0,
-              },
+              initialParticipants,
               initialActivityData?.pricingInfo?.ageBands || [],
             );
           }
@@ -626,15 +641,15 @@ const ActivityDetails = () => {
     [normalizedCalendarData],
   );
 
-  const updateParticipant = (type, change) => {
-    const ageBand = activityAgeBands.find((item) => item.type === type);
-
+  const updateParticipant = (ageBand, change) => {
     if (!ageBand) {
       return;
     }
 
+    const participantType = ageBand.type;
+
     setParticipants((previous) => {
-      const currentValue = Number(previous[type]) || 0;
+      const currentValue = Number(previous[participantType]) || 0;
 
       const nextValue = Math.max(
         ageBand.minTravelers,
@@ -643,7 +658,7 @@ const ActivityDetails = () => {
 
       const nextParticipants = {
         ...previous,
-        [type]: nextValue,
+        [participantType]: nextValue,
       };
 
       const total = Object.values(nextParticipants).reduce(
@@ -661,7 +676,6 @@ const ActivityDetails = () => {
       return nextParticipants;
     });
   };
-
   const applyParticipants = () => {
     setAppliedParticipants({
       ...participants,
@@ -1074,6 +1088,7 @@ const ActivityDetails = () => {
       adults: Number(appliedParticipants?.adult) || 0,
       children:
         (Number(appliedParticipants?.child) || 0) +
+        (Number(appliedParticipants?.infant) || 0) +
         (Number(appliedParticipants?.youth) || 0),
       ourPrice: Number(price?.showOurPrice) || 0,
       payable: Number(price?.showOurPrice) || 0,
@@ -1099,7 +1114,10 @@ const ActivityDetails = () => {
     const guests = [];
 
     activityAgeBands.forEach((ageBand) => {
-      const count = Number(appliedParticipants?.[ageBand.type]) || 0;
+      const participantType =
+        ageBand.ageBand === "INFANT" ? "child" : ageBand.type;
+
+      const count = Number(appliedParticipants?.[participantType]) || 0;
 
       for (let index = 0; index < count; index += 1) {
         guests.push({
@@ -1985,7 +2003,14 @@ const ActivityDetails = () => {
                                 type="button"
                                 className="activityDetailsUi__participantMinus"
                                 disabled={currentCount <= min}
-                                onClick={() => updateParticipant(type, -1)}
+                                onClick={() =>
+                                  updateParticipant(
+                                    activityAgeBands.find(
+                                      (item) => item.ageBand === band,
+                                    ),
+                                    -1,
+                                  )
+                                }
                               >
                                 −
                               </button>
@@ -1998,7 +2023,14 @@ const ActivityDetails = () => {
                                 type="button"
                                 className="activityDetailsUi__participantPlus"
                                 disabled={currentCount >= max}
-                                onClick={() => updateParticipant(type, 1)}
+                                onClick={() =>
+                                  updateParticipant(
+                                    activityAgeBands.find(
+                                      (item) => item.ageBand === band,
+                                    ),
+                                    1,
+                                  )
+                                }
                               >
                                 +
                               </button>

@@ -9,9 +9,15 @@ import {
   activityOrder,
   activityOrderPlace,
 } from "../../../store/Services/AllApi";
+import { Link, useNavigate } from "react-router-dom";
 
 const ActivityBook = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [apiErrorPopup, setApiErrorPopup] = useState({
+    show: false,
+    message: "",
+  });
   const [bookingQuestions, setBookingQuestions] = useState([]);
 
   const storedBookingData = JSON.parse(
@@ -25,6 +31,20 @@ const ActivityBook = () => {
   const languageGuides = Array.isArray(activityBookingData?.languageGuides)
     ? activityBookingData.languageGuides
     : [];
+
+  const showApiErrorPopup = (message) => {
+    setApiErrorPopup({
+      show: true,
+      message: message || "Something went wrong. Please try again.",
+    });
+  };
+
+  const closeApiErrorPopup = () => {
+    setApiErrorPopup({
+      show: false,
+      message: "",
+    });
+  };
 
   useEffect(() => {
     try {
@@ -277,7 +297,7 @@ const ActivityBook = () => {
         SENIOR: "ADULT",
         YOUTH: "CHILD",
         CHILD: "CHILD",
-        INFANT: "INFANT",
+        INFANT: "CHILD",
       };
 
       const guests = (formData.travelers || []).map((traveler, index) => {
@@ -312,7 +332,7 @@ const ActivityBook = () => {
         SENIOR: "ADULT",
         YOUTH: "CHILD",
         CHILD: "CHILD",
-        INFANT: "INFANT",
+        INFANT: "CHILD",
       };
 
       (formData.travelers || []).forEach((traveler, index) => {
@@ -379,6 +399,14 @@ const ActivityBook = () => {
         });
       }
 
+      const adultCount = guests.filter(
+        (guest) => guest.type === "ADULT",
+      ).length;
+
+      const childCount = guests.filter(
+        (guest) => guest.type === "CHILD",
+      ).length;
+
       const requestBody = {
         test: true,
         startDate: latestBookingData.startDate || "",
@@ -390,8 +418,8 @@ const ActivityBook = () => {
         image: latestBookingData.image || "",
         category: latestBookingData.category || "",
         description: latestBookingData.description || "",
-        adults: Number(latestBookingData.adults) || 0,
-        children: Number(latestBookingData.children) || 0,
+        adults: adultCount,
+        children: childCount,
         city: formData.city || "",
         state: formData.state || "",
         country: formData.country || "",
@@ -434,6 +462,13 @@ const ActivityBook = () => {
       });
 
       console.log("activityOrder RESPONSE:", res);
+
+      const activityOrderResult = res?.data?.addorder;
+
+      if (activityOrderResult?.success === false) {
+        showApiErrorPopup(activityOrderResult?.message);
+        return;
+      }
 
       const itemId = res?.data?.addorder?.result?.itemid;
 
@@ -509,6 +544,15 @@ const ActivityBook = () => {
       });
 
       console.log("activityOrderPlace RESPONSE:", response);
+
+      const activityOrderPlaceResult = response?.data?.paynow;
+
+      if (activityOrderPlaceResult?.success === false) {
+        showApiErrorPopup(activityOrderPlaceResult?.message);
+        return;
+      }
+
+      console.log("activityOrderPlaceResult", activityOrderPlaceResult);
 
       const paymentUrl = response?.data?.paynow?.result?.url;
 
@@ -600,6 +644,10 @@ const ActivityBook = () => {
       console.log("Payment URL not found:", response);
     } catch (error) {
       console.log("activityOrderPlace ERROR:", error);
+
+      showApiErrorPopup(
+        error?.message || "Unable to process payment. Please try again.",
+      );
     }
   };
 
@@ -1034,6 +1082,14 @@ const ActivityBook = () => {
                                 const fieldError =
                                   errors.travelers?.[index]?.[fieldKey];
 
+                                const isPassportExpiration =
+                                  question.label
+                                    ?.toLowerCase()
+                                    .includes("passport expiration") ||
+                                  question.label
+                                    ?.toLowerCase()
+                                    .includes("passport expiry");
+
                                 const hasAllowedAnswers =
                                   Array.isArray(question?.allowedAnswers) &&
                                   question.allowedAnswers.length > 0;
@@ -1130,7 +1186,16 @@ const ActivityBook = () => {
                                             }}
                                             dateFormat="dd/MM/yyyy"
                                             placeholderText="DD/MM/YYYY"
-                                            maxDate={new Date()}
+                                            minDate={
+                                              isPassportExpiration
+                                                ? new Date()
+                                                : undefined
+                                            }
+                                            maxDate={
+                                              isPassportExpiration
+                                                ? undefined
+                                                : new Date()
+                                            }
                                             showMonthDropdown
                                             showYearDropdown
                                             dropdownMode="select"
@@ -1970,6 +2035,35 @@ const ActivityBook = () => {
 
         <Footer />
       </div>
+
+      {apiErrorPopup.show && (
+        <div className="activity-book-api-error-overlay">
+          <div className="activity-book-api-error-popup">
+            <div className="activity-book-api-error-icon">!</div>
+
+            <h3>Booking Failed</h3>
+
+            <p>
+              Contact to our customer support team{" "}
+              <Link to="mailto:contact@cresttravelclub.com">
+                contact@cresttravelclub.com
+              </Link>{" "}
+              or <Link to="tel:+18556691035">+1 (855) 669-1035</Link>
+            </p>
+
+            <button
+              type="button"
+              className="activity-book-api-error-button"
+              onClick={() => {
+                closeApiErrorPopup();
+                navigate(-1);
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -176,6 +176,7 @@ const Header = ({ personDetails }) => {
 
       localStorage.setItem("accessToken", signin.token);
       localStorage.setItem("Email", data.email);
+      localStorage.setItem("loginTimestamp", Date.now().toString());
 
       setIsLoggedIn(true);
 

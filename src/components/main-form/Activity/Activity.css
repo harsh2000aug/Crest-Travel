@@ -5565,3 +5565,97 @@
     grid-template-columns: 1fr;
   }
 }
+
+.activity-book-api-error-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.activity-book-api-error-popup {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px 28px;
+  border-radius: 18px;
+  background: #ffffff;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: activityBookApiErrorPopupIn 0.25s ease-out;
+}
+
+.activity-book-api-error-icon {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff1f1;
+  color: #dc2626;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.activity-book-api-error-popup h3 {
+  margin: 0 0 10px;
+  color: #1f2937;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.activity-book-api-error-popup p {
+  margin: 0 0 24px;
+  color: #6b7280;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.activity-book-api-error-button {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 20px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.activity-book-api-error-button:hover {
+  opacity: 0.9;
+}
+
+@keyframes activityBookApiErrorPopupIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .activity-book-api-error-popup {
+    padding: 28px 20px;
+  }
+
+  .activity-book-api-error-popup h3 {
+    font-size: 20px;
+  }
+
+  .activity-book-api-error-popup p {
+    font-size: 14px;
+  }
+}

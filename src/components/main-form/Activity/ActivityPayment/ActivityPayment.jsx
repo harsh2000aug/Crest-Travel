@@ -11,6 +11,8 @@ const ActivityPaymentRedirect = () => {
   const [message, setMessage] = useState("Processing your booking...");
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [showBookingErrorPopup, setShowBookingErrorPopup] = useState(false);
+  const [bookingErrorMessage, setBookingErrorMessage] = useState("");
 
   useEffect(() => {
     const completeActivityBooking = async () => {
@@ -48,6 +50,7 @@ const ActivityPaymentRedirect = () => {
           },
 
           ageBandCount: storedData.ageBandCount || {},
+
           bookingQuestionAnswers: Array.from(
             new Map(
               (storedData.bookingQuestionAnswers || []).map((item) => [
@@ -104,6 +107,13 @@ const ActivityPaymentRedirect = () => {
         } else {
           setBookingSuccess(false);
 
+          setBookingErrorMessage(
+            bookResponse?.message ||
+              "Your booking cannot be processed right now.",
+          );
+
+          setShowBookingErrorPopup(true);
+
           if (!isPaymentSuccess) {
             setMessage(
               bookResponse?.message ||
@@ -121,7 +131,11 @@ const ActivityPaymentRedirect = () => {
 
         setBookingSuccess(false);
 
-        if (!isPaymentSuccess) {
+        setBookingErrorMessage("Your booking cannot be processed right now.");
+
+        setShowBookingErrorPopup(true);
+
+        if (!paymentSuccess) {
           setMessage(
             "Payment was not successful and we could not confirm your booking.",
           );
@@ -137,6 +151,10 @@ const ActivityPaymentRedirect = () => {
 
     completeActivityBooking();
   }, [searchParams, navigate]);
+
+  const closeBookingErrorPopup = () => {
+    setShowBookingErrorPopup(false);
+  };
 
   return (
     <div className="activity-payment-redirect-page">
@@ -164,11 +182,47 @@ const ActivityPaymentRedirect = () => {
             <p>Your booking has been confirmed successfully.</p>
           ) : (
             <p>
-              {paymentSuccess
-                ? "Your payment was not successful, so the activity booking could not be confirmed."
-                : "Your payment was not successful, so the activity booking could not be confirmed."}
+              Your payment was processed, but the activity booking could not be
+              confirmed.
             </p>
           )}
+        </div>
+      )}
+
+      {showBookingErrorPopup && (
+        <div className="activity-booking-error-overlay">
+          <div className="activity-booking-error-popup">
+            <div className="activity-booking-error-icon">!</div>
+
+            <h2>Booking Cannot Be Processed</h2>
+
+            <p className="activity-booking-error-support">
+              Your booking cannot be processed right now. Please contact our
+              customer support.
+            </p>
+
+            <div className="activity-booking-support-details">
+              <p>
+                <strong>Email:</strong>{" "}
+                <a href="mailto:contact@cresttravelclub.com">
+                  contact@cresttravelclub.com
+                </a>
+              </p>
+
+              <p>
+                <strong>Phone:</strong>{" "}
+                <a href="tel:+18883779065">+1 (888) 377-9065</a>
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="activity-booking-error-button"
+              onClick={closeBookingErrorPopup}
+            >
+              OK
+            </button>
+          </div>
         </div>
       )}
     </div>
