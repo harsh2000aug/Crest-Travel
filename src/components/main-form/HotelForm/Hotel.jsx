@@ -841,13 +841,20 @@ const Hotel = () => {
 
           setHotelLoader(false);
 
-          setBookingCompleted(true);
+          const bookingId =
+            bookingResponse?.bookingId || bookingResponse?.data?.bookingId;
 
-          searchParams.delete("payment");
+          if (bookingId) {
+            navigate(
+              `/hotel-booking-details?bookingId=${encodeURIComponent(bookingId)}`,
+            );
+            return;
+          }
 
-          navigate(`${window.location.pathname}?${searchParams.toString()}`, {
-            replace: true,
-          });
+          setBookingErrorMessage(
+            "Booking confirmed but booking ID was not received.",
+          );
+          setShowBookingErrorPopup(true);
         } catch (error) {
           console.error("BOOKING AFTER PAYMENT ERROR:", error);
 
@@ -876,16 +883,6 @@ const Hotel = () => {
 
     setValue("expiryDate", value);
   };
-
-  useEffect(() => {
-    if (!bookingCompleted) return;
-
-    const timer = setTimeout(() => {
-      navigate("/my-bookings");
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, [bookingCompleted, navigate]);
 
   useEffect(() => {
     try {

@@ -849,6 +849,16 @@ const ActivityBookingDetails = () => {
         </div>
       )}
 
+      {cancellationLoading && (
+        <div className="activity-cancellation-loader-overlay">
+          <div className="activity-cancellation-loader">
+            <div className="activity-cancellation-spinner"></div>
+            <h3>Cancelling Booking...</h3>
+            <p>Please wait while we cancel your activity booking.</p>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );

@@ -334,7 +334,7 @@ const HotelPaymentStatus = () => {
 
         // Redirect to home after 5 seconds
         setTimeout(() => {
-          navigate("/home");
+          navigate("/my-bookings");
         }, 5000);
       } catch (error) {
         console.error("HOTEL BOOKING AFTER PAYMENT ERROR:", error);

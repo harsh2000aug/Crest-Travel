@@ -97,14 +97,6 @@ const MainForm = () => {
         <HeaderInner />
         <div className="travel-section-modify">
           <div className="container">
-            <div className="travel-content">
-              <h1>
-                Unlock <span>Extraordinary</span> Journeys
-              </h1>
-              <p>
-                Exclusive Travel Benefits. Curated Experiences. For a Better You
-              </p>
-            </div>
             <section className="travel-section">
               <div className="tabs-wrapper">
                 {categories.map((item) => {
