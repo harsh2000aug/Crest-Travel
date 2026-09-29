@@ -578,14 +578,14 @@ const AddPost = () => {
             <label htmlFor="schemaCode">Schema Code (JSON-LD)</label>
 
             <textarea
-              id="schemaCode"
-              name="schemaCode"
-              value={formData.schemaCode}
-              onChange={handleChange}
-              rows={3}
-              className="addPost__codeTextarea"
-              placeholder={`<script type="application/ld+json">...</script>`}
-            />
+                id="schemaCode"
+                name="schemaCode"
+                value={formData.schemaCode}
+                onChange={handleChange}
+                rows={3}
+                className="addPost__codeTextarea"
+                placeholder={`{\n  "@context": "https://schema.org",\n  "@type": "NewsArticle",\n  ...\n}`}
+              />
           </div>
         </div>
 

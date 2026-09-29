@@ -15,46 +15,49 @@ const BlogPage = () => {
   const API_BASE_URL = hostname();
 
   useEffect(() => {
-    fetchBlog();
-  }, [slug]);
+    const controller = new AbortController();
+    const fetchBlog = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-  const fetchBlog = async () => {
-    try {
-      setLoading(true);
-      setError("");
+        const response = await fetch(`${API_BASE_URL}/blog`, { signal: controller.signal });
 
-      const response = await fetch(`${API_BASE_URL}/blog`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch blog");
+        }
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch blog");
-      }
+        const result = await response.json();
 
-      const result = await response.json();
-
-      if (result.success) {
-        const blogs = Array.isArray(result.data) ? result.data : [];
-        const selectedBlog = blogs.find((item) => item.slug === slug);
-        if (selectedBlog) {
-          setBlog(selectedBlog);
+        if (result.success) {
+          const blogs = Array.isArray(result.data) ? result.data : [];
+          const selectedBlog = blogs.find((item) => item.slug === slug);
+          if (selectedBlog) {
+            setBlog(selectedBlog);
+          } else {
+            setBlog(null);
+            setError("Blog not found");
+          }
+          const latest = blogs
+            .filter((item) => item.slug !== slug)
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 5);
+          setLatestBlogs(latest);
         } else {
-          setBlog(null);
           setError("Blog not found");
         }
-        const latest = blogs
-          .filter((item) => item.slug !== slug)
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 5);
-        setLatestBlogs(latest);
-      } else {
-        setError("Blog not found");
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        console.error("Error fetching blog:", error);
+        setError("Unable to load blog.");
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching blog:", error);
-      setError("Unable to load blog.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchBlog();
+    return () => controller.abort();
+  }, [slug, API_BASE_URL]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -85,18 +88,37 @@ const BlogPage = () => {
       metaDescription.setAttribute("content", blog.metaDescription);
     }
 
-    if (blog.schemaCode) {
-      let schemaScript = document.getElementById("blog-schema");
+   if (blog.schemaCode) {
 
-      if (!schemaScript) {
-        schemaScript = document.createElement("script");
-        schemaScript.id = "blog-schema";
-        schemaScript.type = "application/ld+json";
-        document.head.appendChild(schemaScript);
-      }
+  const rawSchema = blog.schemaCode
+    .replace(/<script[^>]*>/gi, "")
+    .replace(/<\/script>/gi, "")
+    .trim();
 
-      schemaScript.textContent = blog.schemaCode;
+  let isValidJson = false;
+  try {
+    JSON.parse(rawSchema);
+    isValidJson = true;
+  } catch (e) {
+    console.error("Invalid schemaCode JSON for blog:", blog.slug, e);
+  }
+
+  if (isValidJson) {
+    let schemaScript = document.getElementById("blog-schema");
+
+    if (!schemaScript) {
+      schemaScript = document.createElement("script");
+      schemaScript.id = "blog-schema";
+      schemaScript.type = "application/ld+json";
+      document.head.appendChild(schemaScript);
     }
+
+    schemaScript.textContent = rawSchema;
+  } else {
+    // Don't inject broken JSON-LD; remove any stale tag instead
+    document.getElementById("blog-schema")?.remove();
+  }
+}
 
     return () => {
       const schemaScript = document.getElementById("blog-schema");
@@ -162,6 +184,9 @@ const BlogPage = () => {
                   <img
                     src={blog.image}
                     alt={blog.imageAlt || blog.title}
+                    width={660}
+                    height={320}
+                    loading="eager"
                     fetchPriority="high"
                     decoding="async"
                     className="tripoFullBlogHeroImage"
@@ -216,6 +241,10 @@ const BlogPage = () => {
                   <img
                     src={blog.authorImage}
                     alt={blog.authorName || "Author"}
+                    width={80}
+                    height={80}
+                    loading="lazy"
+                    decoding="async"
                     className="tripoFullBlogAuthorBoxImage"
                   />
                 )}
@@ -263,6 +292,8 @@ const BlogPage = () => {
                             <img
                               src={latestBlog.image}
                               alt={latestBlog.imageAlt || latestBlog.title}
+                              width={100}
+                              height={75}
                               className="tripoLatestBlogImage"
                               loading="lazy"
                               decoding="async"

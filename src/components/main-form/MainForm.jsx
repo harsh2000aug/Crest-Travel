@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import "./mainform.css";
 import {
   LuHotel,
@@ -14,11 +14,11 @@ import { FaCar } from "react-icons/fa";
 import { MdKayaking } from "react-icons/md";
 
 import FlightForm from "./forms/FlightForm";
-import HotelForm from "./HotelForm/HotelForm";
+const HotelForm = lazy(() => import("./HotelForm/HotelForm"));
 import HeaderInner from "../../reuseable-components/HeaderInner";
-import CarForm from "./CarRental/CarForm";
-import ActivityForm from "./Activity/ActivityForm";
-import VacationForm from "./Vacations/VacationForm";
+const CarForm = lazy(() => import("./CarRental/CarForm"));
+const ActivityForm = lazy(() => import("./Activity/ActivityForm"));
+const VacationForm = lazy(() => import("./Vacations/VacationForm"));
 const MainForm = () => {
   const categories = [
     {
@@ -123,7 +123,11 @@ const MainForm = () => {
                   );
                 })}
               </div>
-              <div className="tab-content">{renderForm()}</div>
+              <div className="tab-content">
+                <Suspense fallback={<p role="status">Loading...</p>}>
+                  {renderForm()}
+                </Suspense>
+              </div>
             </section>
           </div>
         </div>

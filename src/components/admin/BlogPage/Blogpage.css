@@ -1208,3 +1208,9 @@
     height: 70px;
   }
 }
+
+/* Skip rendering the author panel until it approaches the viewport. */
+.tripoFullBlogAuthorBox {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
+}

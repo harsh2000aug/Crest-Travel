@@ -13,9 +13,10 @@ const BlogdetailPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchPosts = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/blog`);
+        const response = await fetch(`${API_BASE_URL}/blog`, { signal: controller.signal });
 
         if (!response.ok) {
           throw new Error(`Failed to load data (Status: ${response.status})`);
@@ -27,11 +28,13 @@ const BlogdetailPage = () => {
 
         setPosts(postsList);
       } catch (err) {
+        if (controller.signal.aborted) return;
         console.error("Fetch Error:", err);
       }
     };
 
     fetchPosts();
+    return () => controller.abort();
   }, [API_BASE_URL]);
 
   const formatDate = (dateString) => {
@@ -66,7 +69,7 @@ const BlogdetailPage = () => {
       top: 0,
       left: 0,
     });
-  });
+  }, []);
 
   return (
     <main className="blogDetailPage">
@@ -89,14 +92,19 @@ const BlogdetailPage = () => {
       <section className="blogDetailPage__section">
         <section className="blogDetailPage__related">
           <div className="blogDetailPage__cards">
-            {posts.map((item) => (
+            {posts.map((item, index) => (
               <article
                 className="blogDetailPage__relatedCard"
                 key={item?._id}
                 onClick={() => handleReadMore(item?.slug)}
               >
                 <div className="blogDetailPage__relatedImage">
-                  <img src={item?.image} alt={item?.imageAlt || item?.title} />
+                  <img
+                    src={item?.image}
+                    alt={item?.imageAlt || item?.title}
+                    loading={index < 3 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
                 </div>
 
                 <div className="blogDetailPage__relatedInfo">

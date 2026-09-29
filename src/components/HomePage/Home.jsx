@@ -136,7 +136,7 @@ const Home = () => {
           >
             <SwiperSlide>
               <div className="rental-card">
-                <img src={vac1} alt="" />
+                <img loading="lazy" decoding="async" src={vac1} alt="" />
                 <div className="card-content">
                   <h3>Sedona Sunrise Villa</h3>
                   <p>Arizona, United States</p>
@@ -146,7 +146,7 @@ const Home = () => {
 
             <SwiperSlide>
               <div className="rental-card">
-                <img src={vac2} alt="" />
+                <img loading="lazy" decoding="async" src={vac2} alt="" />
                 <div className="card-content">
                   <h3>Quail Corner</h3>
                   <p>Luxury Mountain Retreat</p>
@@ -156,7 +156,7 @@ const Home = () => {
 
             <SwiperSlide>
               <div className="rental-card">
-                <img src={vac3} alt="" />
+                <img loading="lazy" decoding="async" src={vac3} alt="" />
                 <div className="card-content">
                   <h3>Key West Escape</h3>
                   <p>Private Pool & BBQ</p>
@@ -166,7 +166,7 @@ const Home = () => {
 
             <SwiperSlide>
               <div className="rental-card">
-                <img src={vac4} alt="" />
+                <img loading="lazy" decoding="async" src={vac4} alt="" />
                 <div className="card-content">
                   <h3>Avalon Chic Condo</h3>
                   <p>Modern Interior Design</p>
@@ -209,7 +209,7 @@ const Home = () => {
           >
             <SwiperSlide>
               <div className="rental-card">
-                <img src={hotel1} alt="" />
+                <img loading="lazy" decoding="async" src={hotel1} alt="" />
                 <div className="card-content">
                   <h3>Sedona Sunrise Villa</h3>
                   <p>Arizona, United States</p>
@@ -219,7 +219,7 @@ const Home = () => {
 
             <SwiperSlide>
               <div className="rental-card">
-                <img src={hotel2} alt="" />
+                <img loading="lazy" decoding="async" src={hotel2} alt="" />
                 <div className="card-content">
                   <h3>Quail Corner</h3>
                   <p>Luxury Mountain Retreat</p>
@@ -229,7 +229,7 @@ const Home = () => {
 
             <SwiperSlide>
               <div className="rental-card">
-                <img src={hotel3} alt="" />
+                <img loading="lazy" decoding="async" src={hotel3} alt="" />
                 <div className="card-content">
                   <h3>Key West Escape</h3>
                   <p>Private Pool & BBQ</p>
@@ -239,7 +239,7 @@ const Home = () => {
 
             <SwiperSlide>
               <div className="rental-card">
-                <img src={hotel4} alt="" />
+                <img loading="lazy" decoding="async" src={hotel4} alt="" />
                 <div className="card-content">
                   <h3>Avalon Chic Condo</h3>
                   <p>Modern Interior Design</p>
