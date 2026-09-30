@@ -105,7 +105,7 @@ const callAxios = async (
     : {};
   const activityHeader = uriEndPoint?.activitiesCalendar
     ? {
-        type: "MEMBER",
+        correlationid: "2ec411a3-52cb-478c-9f1e-72f9806e1dce",
       }
     : {};
   const carHeaders = uriEndPoint?.useCarHeaders

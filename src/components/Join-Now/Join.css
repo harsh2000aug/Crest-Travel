@@ -1,7 +1,3 @@
-.pricing-section {
-  background: linear-gradient(135deg, #eef7ff, #dff2ff, #f4f9ff);
-}
-
 .pricing-header {
   text-align: center;
   max-width: 700px;
@@ -217,30 +213,8 @@
   }
 }
 
-
 /* =========================================
    TRAVEL CLUB GUIDE
-========================================= */
-
-.travelClubGuide {
-  width: 100%;
-  padding: 90px 20px;
-  /* background:
-    radial-gradient(circle at top left, rgba(0, 157, 255, 0.08), transparent 35%),
-    linear-gradient(135deg, #f7fbff 0%, #eef7ff 50%, #f9fcff 100%); */
-    background-color: #fff;
-  overflow: hidden;
-}
-
-.travelClubGuide__container {
-  width: 100%;
-  max-width: 1180px;
-  margin: 0 auto;
-}
-
-
-/* =========================================
-   INTRODUCTION
 ========================================= */
 
 /* .travelClubGuide__intro {
@@ -282,6 +256,9 @@
   line-height: 1.8;
 }
 
+.travelClubGuide__intro p:last-child {
+  margin: 0;
+}
 
 /* =========================================
    CONTENT BLOCK
@@ -308,7 +285,6 @@
   width: 100%;
 }
 
-
 /* =========================================
    HEADINGS
 ========================================= */
@@ -332,21 +308,18 @@
   margin-bottom: 0;
 }
 
-
 /* =========================================
    ACCENT SECTION
 ========================================= */
 
 .travelClubGuide__contentBlock--accent {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(0, 157, 255, 0.06),
-      rgba(255, 255, 255, 0.96)
-    );
+  background: linear-gradient(
+    135deg,
+    rgba(0, 157, 255, 0.06),
+    rgba(255, 255, 255, 0.96)
+  );
   border-left: 5px solid #dca648;
 }
-
 
 /* =========================================
    MEMBERSHIP PLAN GRID
@@ -426,7 +399,6 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
-
 /* =========================================
    HIGHLIGHT
 ========================================= */
@@ -450,7 +422,6 @@
   color: #dca648;
   font-size: 23px;
 }
-
 
 /* =========================================
    BENEFIT LIST
@@ -490,7 +461,6 @@
   margin-top: 4px;
   color: #dca648;
 }
-
 
 /* =========================================
    TRUST GRID
@@ -537,7 +507,6 @@
   line-height: 1.6;
 }
 
-
 /* =========================================
    TABLET
 ========================================= */
@@ -568,7 +537,6 @@
     transform: translateY(-7px);
   }
 }
-
 
 /* =========================================
    MOBILE
@@ -623,7 +591,6 @@
   }
 }
 
-
 /* =========================================
    SMALL MOBILE
 ========================================= */
@@ -676,12 +643,6 @@
 .membership-info-section {
   width: 100%;
   padding: 60px 20px 80px;
-  background: #f7fbff;
-}
-
-.membership-info-section .container {
-  max-width: 1180px;
-  margin: 0 auto;
 }
 
 .membership-info-text {

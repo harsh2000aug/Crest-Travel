@@ -619,8 +619,11 @@ const BeforeHome = ({ personDetails }) => {
                 </li>
               </ul>
 
-              <button className="mp-btn" onClick={() => navigate("/join-now")}>
-                Choose Signature
+              <button
+                className="mp-btn"
+                onClick={() => navigate("/signature-membership")}
+              >
+                Explore Signature
               </button>
             </div>
             <div className="mp-card mp-featured">
@@ -751,8 +754,11 @@ const BeforeHome = ({ personDetails }) => {
                 </li>
               </ul>
 
-              <button className="mp-btn" onClick={() => navigate("/join-now")}>
-                Choose Elite
+              <button
+                className="mp-btn"
+                onClick={() => navigate("/elite-membership")}
+              >
+                Explore Elite
               </button>
             </div>
             <div className="mp-card mp-signature">
@@ -874,8 +880,11 @@ const BeforeHome = ({ personDetails }) => {
                   </span>
                 </li>
               </ul>
-              <button className="mp-btn" onClick={() => navigate("/join-now")}>
-                Choose Prestige
+              <button
+                className="mp-btn"
+                onClick={() => navigate("/prestige-membership")}
+              >
+                Explore Prestige
               </button>
             </div>
           </div>

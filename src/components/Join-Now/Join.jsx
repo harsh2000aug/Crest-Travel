@@ -340,17 +340,14 @@ const Join = () => {
           </div>
         </section> */}
 
-        <section className="travelClubGuide">
-          <div className="travelClubGuide__container">
-            {/* Introduction */}
+        {/* <section className="travelClubGuide tb-gap">
+          <div className="container">
             <div className="travelClubGuide__intro">
-              {/* <span className="travelClubGuide__eyebrow">
-                TRAVEL CLUB GUIDE
-              </span> */}
-
               <h1 className="travelClubGuide__title">
                 Unlock Travel Potential :{" "}
-                <span>Join the Crest Travel Club Today!</span>
+                <span>
+                  Join the <br /> Crest Travel Club Today!
+                </span>
               </h1>
 
               <p>
@@ -368,8 +365,7 @@ const Join = () => {
               </p>
             </div>
 
-            {/* Why Sign Up */}
-            {/* <div className="travelClubGuide__contentBlock">
+            <div className="travelClubGuide__contentBlock">
               <div className="travelClubGuide__content">
                 <h3>Why Sign Up Is Required?</h3>
 
@@ -391,7 +387,7 @@ const Join = () => {
                   check the details for free, but to get them, you must sign up.
                 </p>
               </div>
-            </div> */}
+            </div>
 
             <div className="travelClubGuide__contentBlock">
               <div className="travelClubGuide__content">
@@ -439,7 +435,6 @@ const Join = () => {
               </div>
             </div>
 
-            {/* Membership Plans */}
             <div className="travelClubGuide__contentBlock">
               <div className="travelClubGuide__content">
                 <h3>What Are The Membership Plans Of Crest Travel Club?</h3>
@@ -496,7 +491,6 @@ const Join = () => {
               </div>
             </div>
 
-            {/* Choosing a Plan */}
             <div className="travelClubGuide__contentBlock">
               <div className="travelClubGuide__content">
                 <h3>Which Subscription Plan Is Good To Choose?</h3>
@@ -520,7 +514,6 @@ const Join = () => {
               </div>
             </div>
 
-            {/* Signature Plan */}
             <div className="travelClubGuide__contentBlock travelClubGuide__contentBlock--accent">
               <div className="travelClubGuide__content">
                 <h3>Why Is the Signature Plan Good for a Solo Traveler?</h3>
@@ -579,10 +572,8 @@ const Join = () => {
                 </ul>
               </div>
             </div>
-
-            {/* Trust */}
           </div>
-        </section>
+        </section> */}
 
         <section className="mp-section tb-gap">
           <div className="container">

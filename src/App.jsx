@@ -53,6 +53,9 @@ import VacationPaymentStatus from "./components/main-form/Vacations/VacationPaym
 import ActivityBookingDetails from "./components/main-form/Activity/ActivityBookingDetails/ActivityBookingDetails";
 import VacationBookingDetails from "./components/main-form/Vacations/VacationBookingDetails/VacationBookingDetails";
 import Canonical from "./reuseable-components/Canonical";
+import Signature from "./components/Join-Now/AllMembershipPlans/Signature";
+import Prestige from "./components/Join-Now/AllMembershipPlans/Prestige";
+import Elite from "./components/Join-Now/AllMembershipPlans/Elite";
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -80,7 +83,7 @@ function App() {
         setMemberIdForVacation(res?.data?.get?.result?.id);
         localStorage.setItem(
           "personDetails",
-          JSON.stringify(res?.data?.get?.result)
+          JSON.stringify(res?.data?.get?.result),
         );
         localStorage.setItem("tierId", res?.data?.get?.result?.tierid);
         localStorage.setItem("bookingId", res?.data?.get?.result?.id);
@@ -139,6 +142,9 @@ function App() {
         <Route path="/customer-service" element={<CustomerServices />} />
         <Route path="/blogs" element={<BlogdetailPage />} />
         <Route path="/blogs/:slug" element={<BlogPage />} />
+        <Route path="/signature-membership" element={<Signature />} />
+        <Route path="/elite-membership" element={<Elite />} />
+        <Route path="/prestige-membership" element={<Prestige />} />
 
         <Route element={<ProtectedRoutes />}>
           <Route path="/home" element={<Home />} />

@@ -511,7 +511,7 @@ const ActivityBook = () => {
       const expiryMonth = expiry.slice(0, 2);
       const expiryYear = expiry.slice(2, 4);
 
-      const paymentRemaining = Number(latestBookingData.ourPrice);
+      const paymentRemaining = Number(latestBookingData.payable) || 0;
 
       const response = await activityOrderPlace({
         body: {
@@ -1990,11 +1990,13 @@ const ActivityBook = () => {
 
                     <strong>
                       {storedBookingData.payable
-                        ? `$${String(storedBookingData.payable).replace(
-                            /^₹\s*/,
-                            "",
-                          )}`
-                        : "$0"}
+                        ? `$${Number(
+                            String(storedBookingData.payable).replace(
+                              /[$₹\s,]/g,
+                              "",
+                            ),
+                          ).toFixed(2)}`
+                        : "$0.00"}
                     </strong>
                   </div>
 

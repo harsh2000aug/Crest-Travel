@@ -185,7 +185,7 @@ const HeaderInner = () => {
               type: "room",
             },
           }),
-          
+
           memberTripCoins({
             body: {
               email,

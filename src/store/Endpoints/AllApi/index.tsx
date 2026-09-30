@@ -449,6 +449,7 @@ export const allApi = {
       ...defaults.methods.POST,
       ...defaults.versions.v1,
       uri: "/alphaactivity/add-order",
+      activitiesCalendar: true,
     },
   },
   activityOrderPlace: {
@@ -456,6 +457,7 @@ export const allApi = {
       ...defaults.methods.POST,
       ...defaults.versions.v1,
       uri: "/alphaactivity/pay-now",
+      activitiesCalendar: true,
     },
   },
   activityBook: {

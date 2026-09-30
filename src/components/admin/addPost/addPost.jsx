@@ -33,10 +33,7 @@ const AddPost = () => {
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  // =========================
-  // Form State
-  // =========================
+  const [faqs, setFaqs] = useState([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -55,29 +52,17 @@ const AddPost = () => {
     status: "published",
   });
 
-  // =========================
-  // Files & Previews
-  // =========================
-
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
 
   const [authorImageFile, setAuthorImageFile] = useState(null);
   const [authorImagePreview, setAuthorImagePreview] = useState("");
 
-  // =========================
-  // Fetch Existing Post
-  // =========================
-
   useEffect(() => {
     if (editId) {
       fetchPostDetails(editId);
     }
   }, [editId]);
-
-  // =========================
-  // Cleanup Blob URLs
-  // =========================
 
   useEffect(() => {
     return () => {
@@ -91,10 +76,6 @@ const AddPost = () => {
     };
   }, [imagePreview, authorImagePreview]);
 
-  // =========================
-  // Fetch Post Details
-  // =========================
-
   const fetchPostDetails = async (id) => {
     try {
       setLoading(true);
@@ -106,6 +87,16 @@ const AddPost = () => {
       }
 
       const result = await response.json();
+      setFaqs(
+        Array.isArray(data.faqs)
+          ? data.faqs.map((faq) => ({
+              question: faq.question || "",
+              answer: faq.answer || "",
+              status: faq.status || "active",
+              sortOrder: faq.sortOrder || 0,
+            }))
+          : [],
+      );
 
       const data = result.data || result;
 
@@ -156,10 +147,6 @@ const AddPost = () => {
     }
   };
 
-  // =========================
-  // Normal Input Change
-  // =========================
-
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -169,10 +156,6 @@ const AddPost = () => {
     }));
   };
 
-  // =========================
-  // CKEditor Change
-  // =========================
-
   const handleEditorChange = (event, editor) => {
     const data = editor.getData();
 
@@ -181,10 +164,6 @@ const AddPost = () => {
       content: data,
     }));
   };
-
-  // =========================
-  // Cover Image Change
-  // =========================
 
   const handleCoverImageChange = (e) => {
     const file = e.target.files[0];
@@ -198,10 +177,6 @@ const AddPost = () => {
     }
   };
 
-  // =========================
-  // Author Image Change
-  // =========================
-
   const handleAuthorImageChange = (e) => {
     const file = e.target.files[0];
 
@@ -213,10 +188,6 @@ const AddPost = () => {
       setAuthorImagePreview(previewUrl);
     }
   };
-
-  // =========================
-  // Create Payload
-  // =========================
 
   const buildPayload = () => {
     const payload = new FormData();
@@ -239,10 +210,6 @@ const AddPost = () => {
     return payload;
   };
 
-  // =========================
-  // POST - Create New Post
-  // =========================
-
   const createPost = async (payload) => {
     const response = await fetch(`${API_BASE_URL}/blog`, {
       method: "POST",
@@ -255,10 +222,6 @@ const AddPost = () => {
 
     return response.json();
   };
-
-  // =========================
-  // PUT - Update Existing Post
-  // =========================
 
   const updatePost = async (payload) => {
     const response = await fetch(`${API_BASE_URL}/blog/${editId}`, {
@@ -273,9 +236,31 @@ const AddPost = () => {
     return response.json();
   };
 
-  // =========================
-  // Submit
-  // =========================
+  const createFaq = async (faqList) => {
+    const faqPayload = {
+      blogId: editId,
+      faqs: faqList.map((faq, index) => ({
+        question: faq.question,
+        answer: faq.answer,
+        status: faq.status || "active",
+        sortOrder: index + 1,
+      })),
+    };
+
+    const response = await fetch(`${API_BASE_URL}/blog/faq`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(faqPayload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create FAQs.");
+    }
+
+    return response.json();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -308,18 +293,22 @@ const AddPost = () => {
       console.log("Author Image:", authorImageFile);
 
       if (editId) {
-        // PUT API
         await updatePost(payload);
 
-        alert("Post updated successfully!");
+        const validFaqs = faqs.filter(
+          (faq) => faq.question.trim() !== "" && faq.answer.trim() !== "",
+        );
+
+        if (validFaqs.length > 0) {
+          await createFaq(validFaqs);
+        }
+
+        alert("Post and FAQs updated successfully!");
       } else {
-        // POST API
         await createPost(payload);
 
         alert("Post created successfully!");
       }
-
-      navigate("/admin-dashboard");
     } catch (err) {
       console.error(err);
 
@@ -329,9 +318,32 @@ const AddPost = () => {
     }
   };
 
-  // =========================
-  // Loading
-  // =========================
+  const handleFaqData = () => {
+    setFaqs((prev) => [
+      ...prev,
+      {
+        question: "",
+        answer: "",
+      },
+    ]);
+  };
+
+  const handleFaqChange = (index, field, value) => {
+    setFaqs((prev) =>
+      prev.map((faq, faqIndex) =>
+        faqIndex === index
+          ? {
+              ...faq,
+              [field]: value,
+            }
+          : faq,
+      ),
+    );
+  };
+
+  const handleRemoveFaq = (index) => {
+    setFaqs((prev) => prev.filter((_, faqIndex) => faqIndex !== index));
+  };
 
   if (loading) {
     return (
@@ -340,10 +352,6 @@ const AddPost = () => {
       </div>
     );
   }
-
-  // =========================
-  // UI
-  // =========================
 
   return (
     <div className="addPost">
@@ -692,21 +700,88 @@ const AddPost = () => {
           </div>
         </div>
 
+        {editId && faqs.length > 0 && (
+          <>
+            <h2 className="addPost__sectionTitle">
+              Frequently Asked Questions
+            </h2>
+
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="addPost__sectionBox addPost__faqSection"
+              >
+                <div className="addPost__faqHeader">
+                  <h3>FAQ {index + 1}</h3>
+
+                  <button
+                    type="button"
+                    className="addPost__removeFaqBtn"
+                    onClick={() => handleRemoveFaq(index)}
+                  >
+                    Remove FAQ
+                  </button>
+                </div>
+
+                <div className="addPost__field">
+                  <label htmlFor={`faq-question-${index}`}>Question</label>
+
+                  <input
+                    id={`faq-question-${index}`}
+                    type="text"
+                    value={faq.question}
+                    onChange={(e) =>
+                      handleFaqChange(index, "question", e.target.value)
+                    }
+                    placeholder="Enter FAQ question"
+                  />
+                </div>
+
+                <div className="addPost__field">
+                  <label htmlFor={`faq-answer-${index}`}>Answer</label>
+
+                  <textarea
+                    id={`faq-answer-${index}`}
+                    value={faq.answer}
+                    onChange={(e) =>
+                      handleFaqChange(index, "answer", e.target.value)
+                    }
+                    rows={5}
+                    placeholder="Enter FAQ answer"
+                  />
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
         {/* =========================
             Submit
         ========================= */}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="addPost__submitBtn"
-        >
-          {submitting
-            ? "Saving Post..."
-            : editId
-              ? "Update Article"
-              : "Publish Article"}
-        </button>
+        <div className="addPost__submitActions">
+          {editId && (
+            <button
+              type="button"
+              className="addPost__faqBtn"
+              onClick={handleFaqData}
+            >
+              Add FAQ
+            </button>
+          )}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="addPost__submitBtn"
+          >
+            {submitting
+              ? "Saving Post..."
+              : editId
+                ? "Update Article"
+                : "Publish Article"}
+          </button>
+        </div>
       </form>
     </div>
   );
