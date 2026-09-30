@@ -1,5 +1,4 @@
 import "./App.css";
-// Preserve the existing global CSS cascade while page JavaScript loads on demand.
 import "./components/main-form/mainform.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "./reuseable-components/Loader/Loader.css";
@@ -48,7 +47,7 @@ import { ToastContainer } from "react-toastify";
 
 const Home = lazy(() => import("./components/HomePage/Home"));
 const FlightResultPage = lazy(() => import("./components/FlightResultPage/FlightResultPage"));
-const BeforeHome = lazy(() => import("./components/BeforeHomePage/BeforeHome"));
+import BeforeHome from "./components/BeforeHomePage/BeforeHome";
 const Join = lazy(() => import("./components/Join-Now/Join"));
 const IncludingPage = lazy(() => import("./components/RestPages/IncludingPage"));
 const AboutUs = lazy(() => import("./components/RestPages/AboutUs"));
@@ -97,6 +96,8 @@ const VacationPaymentStatus = lazy(() => import("./components/main-form/Vacation
 const ActivityBookingDetails = lazy(() => import("./components/main-form/Activity/ActivityBookingDetails/ActivityBookingDetails"));
 const VacationBookingDetails = lazy(() => import("./components/main-form/Vacations/VacationBookingDetails/VacationBookingDetails"));
 import Canonical from "./reuseable-components/Canonical";
+
+
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -151,7 +152,7 @@ function App() {
         theme="light"
       />
 
-      <Suspense fallback={<div className="app-route-loading" role="status">Loading...</div>}>
+      <Suspense fallback={null}>
       <Routes>
         <Route path="/login-page" element={<Login />} />
         <Route path="/payment/status" element={<PaymentStatus />} />

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from "react";
+import React, { lazy, startTransition, Suspense, useState } from "react";
 import "./mainform.css";
 import {
   LuHotel,
@@ -108,7 +108,7 @@ const MainForm = () => {
                       className={`tab-item ${
                         activeTab === item.id ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(item.id)}
+                      onClick={() => startTransition(() => setActiveTab(item.id))}
                     >
                       <div className="icon-box">
                         <Icon size={24} />
@@ -124,7 +124,7 @@ const MainForm = () => {
                 })}
               </div>
               <div className="tab-content">
-                <Suspense fallback={<p role="status">Loading...</p>}>
+                <Suspense fallback={null}>
                   {renderForm()}
                 </Suspense>
               </div>

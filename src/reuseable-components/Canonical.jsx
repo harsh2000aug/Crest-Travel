@@ -7,7 +7,7 @@ const Canonical = () => {
   const location = useLocation();
 
   let pathname = location.pathname;
-  console.log("abhishek", pathname);
+
   // Remove trailing slash except homepage
   if (pathname !== "/") {
     pathname = pathname.replace(/\/+$/, "");

@@ -3,14 +3,14 @@ import "./Blogpage.css";
 import Header from "../../../reuseable-components/Header";
 import Footer from "../../../reuseable-components/Footer";
 import { hostname } from "../../../Utils/api/apiUtils";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const BlogdetailPage = () => {
   const API_BASE_URL = hostname();
 
   const [posts, setPosts] = useState([]);
 
-  const navigate = useNavigate();
+
 
   useEffect(() => {
     const controller = new AbortController();
@@ -47,11 +47,6 @@ const BlogdetailPage = () => {
     });
   };
 
-  const handleReadMore = (slug) => {
-    if (!slug) return;
-
-    navigate(`/blogs/${slug}`);
-  };
 
   const truncateWords = (text, wordLimit = 10) => {
     if (!text) return "";
@@ -93,10 +88,10 @@ const BlogdetailPage = () => {
         <section className="blogDetailPage__related">
           <div className="blogDetailPage__cards">
             {posts.map((item, index) => (
-              <article
+              <Link
                 className="blogDetailPage__relatedCard"
                 key={item?._id}
-                onClick={() => handleReadMore(item?.slug)}
+                to={item?.slug ? `/blogs/${item.slug}` : "/blogs"}
               >
                 <div className="blogDetailPage__relatedImage">
                   <img
@@ -114,9 +109,9 @@ const BlogdetailPage = () => {
 
                   <p>{truncateWords(item?.shortDescription, 15)}</p>
 
-                  <button type="button">Read More →</button>
+                  <span className="blogDetailPage__readMore">Read More →</span>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </section>
