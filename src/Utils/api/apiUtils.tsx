@@ -7,6 +7,37 @@ export const hostname = () => {
   return hostUrl;
 };
 
+// Reuse only the public blog request started by this document's bootstrap.
+type PublicBlogPrefetch = {
+  url: string;
+  startedAt: number;
+  promise: Promise<unknown>;
+};
+
+export const fetchPublicBlogs = async (signal?: AbortSignal) => {
+  const ensureActive = () => {
+    if (signal?.aborted) throw new DOMException("Request aborted", "AbortError");
+  };
+  ensureActive();
+  const url = `${hostname()}/blog`;
+  const request = (window as Window & {
+    __crestBlogPrefetch?: PublicBlogPrefetch;
+  }).__crestBlogPrefetch;
+  const age = request ? Date.now() - request.startedAt : -1;
+
+  if (request?.url === url && age >= 0 && age < 30000) {
+    const result = await request.promise.catch(() => null);
+    ensureActive();
+    if (result != null) return result;
+  }
+
+  const response = await fetch(url, { signal });
+  if (!response.ok) {
+    throw new Error(`Failed to load data (Status: ${response.status})`);
+  }
+  return response.json();
+};
+
 const hostUrl = hostname();
 export const makeUrl = (
   { uri = "", pathParams, query, version }: any,
