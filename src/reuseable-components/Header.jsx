@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import logo from "../assets/images/logo.webp";
 import "./header.css";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -10,34 +10,9 @@ import {
   forgotPasswordReset,
   login,
   memberSignup,
-  newMemberDetails,
 } from "../store/Services/AllApi";
 import { useSetAtom } from "jotai";
 import { tokenAtom } from "../atoms/userAtom";
-import { hostname } from "../Utils/api/apiUtils";
-
-const API_BASE_URL = hostname();
-
-const getFullImageUrl = (path) => {
-  if (!path) return "";
-
-  // Convert HTTP API image URL to HTTPS
-  if (path.startsWith("http://")) {
-    return path.replace("http://", "https://");
-  }
-
-  if (path.startsWith("https://") || path.startsWith("blob:")) {
-    return path;
-  }
-
-  const cleanPath = path.startsWith("/") ? path.slice(1) : path;
-
-  const cleanBase = API_BASE_URL.endsWith("/")
-    ? API_BASE_URL.slice(0, -1)
-    : API_BASE_URL;
-
-  return `${cleanBase}/${cleanPath}`;
-};
 const Header = ({ personDetails }) => {
   const navigate = useNavigate();
 
@@ -143,20 +118,6 @@ const Header = ({ personDetails }) => {
     setShowResetConfirmPassword(false);
   };
 
-  const handleNewMemberDetails = async (email) => {
-    try {
-      const res = await newMemberDetails({
-        body: {
-          email: email,
-        },
-      });
-
-      return res;
-    } catch (error) {
-      console.error("Error fetching new member details:", error);
-    }
-  };
-
   const onSubmit = async (data) => {
     try {
       const res = await login({
@@ -175,7 +136,6 @@ const Header = ({ personDetails }) => {
         return;
       }
       setToken(data.email);
-      handleNewMemberDetails(data.email);
       localStorage.setItem("accessToken", signin.token);
       localStorage.setItem("Email", data.email);
       localStorage.setItem("loginTimestamp", Date.now().toString());

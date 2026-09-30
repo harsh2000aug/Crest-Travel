@@ -1,31 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
 import { FaEnvelope, FaPhoneAlt, FaComments } from "react-icons/fa";
 const CustomerServices = () => {
-  useEffect(() => {
-    // Canonical URL
-    const canonicalUrl = "https://www.cresttravelclub.com/customer-service";
-
-    let canonical = document.querySelector('link[rel="canonical"]');
-
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-
-    canonical.setAttribute("href", canonicalUrl);
-
-    // Remove canonical when leaving the page
-    return () => {
-      const canonical = document.querySelector('link[rel="canonical"]');
-
-      if (canonical) {
-        canonical.remove();
-      }
-    };
-  }, []);
 
   return (
     <>

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import "./Blogpage.css";
 import { hostname } from "../../../Utils/api/apiUtils";
 import Footer from "../../../reuseable-components/Footer";
@@ -15,46 +16,49 @@ const BlogPage = () => {
   const API_BASE_URL = hostname();
 
   useEffect(() => {
-    fetchBlog();
-  }, [slug]);
+    const controller = new AbortController();
+    const fetchBlog = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-  const fetchBlog = async () => {
-    try {
-      setLoading(true);
-      setError("");
+        const response = await fetch(`${API_BASE_URL}/blog`, { signal: controller.signal });
 
-      const response = await fetch(`${API_BASE_URL}/blog`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch blog");
+        }
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch blog");
-      }
+        const result = await response.json();
 
-      const result = await response.json();
-
-      if (result.success) {
-        const blogs = Array.isArray(result.data) ? result.data : [];
-        const selectedBlog = blogs.find((item) => item.slug === slug);
-        if (selectedBlog) {
-          setBlog(selectedBlog);
+        if (result.success) {
+          const blogs = Array.isArray(result.data) ? result.data : [];
+          const selectedBlog = blogs.find((item) => item.slug === slug);
+          if (selectedBlog) {
+            setBlog(selectedBlog);
+          } else {
+            setBlog(null);
+            setError("Blog not found");
+          }
+          const latest = blogs
+            .filter((item) => item.slug !== slug)
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 5);
+          setLatestBlogs(latest);
         } else {
-          setBlog(null);
           setError("Blog not found");
         }
-        const latest = blogs
-          .filter((item) => item.slug !== slug)
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 5);
-        setLatestBlogs(latest);
-      } else {
-        setError("Blog not found");
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        console.error("Error fetching blog:", error);
+        setError("Unable to load blog.");
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching blog:", error);
-      setError("Unable to load blog.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchBlog();
+    return () => controller.abort();
+  }, [slug, API_BASE_URL]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -66,46 +70,22 @@ const BlogPage = () => {
     });
   };
 
-  useEffect(() => {
-    if (!blog) return;
+  const blogSchema = useMemo(() => {
+    if (!blog?.schemaCode) return "";
 
-    if (blog.metaTitle) {
-      document.title = blog.metaTitle;
+    const rawSchema = blog.schemaCode
+      .replace(/<script[^>]*>/gi, "")
+      .replace(/<\/script>/gi, "")
+      .trim();
+
+    try {
+      JSON.parse(rawSchema);
+      return rawSchema;
+    } catch (error) {
+      console.error("Invalid schemaCode JSON for blog:", blog.slug, error);
+      return "";
     }
-
-    if (blog.metaDescription) {
-      let metaDescription = document.querySelector('meta[name="description"]');
-
-      if (!metaDescription) {
-        metaDescription = document.createElement("meta");
-        metaDescription.setAttribute("name", "description");
-        document.head.appendChild(metaDescription);
-      }
-
-      metaDescription.setAttribute("content", blog.metaDescription);
-    }
-
-    if (blog.schemaCode) {
-      let schemaScript = document.getElementById("blog-schema");
-
-      if (!schemaScript) {
-        schemaScript = document.createElement("script");
-        schemaScript.id = "blog-schema";
-        schemaScript.type = "application/ld+json";
-        document.head.appendChild(schemaScript);
-      }
-
-      schemaScript.textContent = blog.schemaCode;
-    }
-
-    return () => {
-      const schemaScript = document.getElementById("blog-schema");
-
-      if (schemaScript) {
-        schemaScript.remove();
-      }
-    };
-  }, [blog]);
+  }, [blog?.schemaCode, blog?.slug]);
 
   useEffect(() => {
     window.scrollTo({
@@ -144,8 +124,48 @@ const BlogPage = () => {
     );
   }
 
+  const metaTitle = blog.metaTitle || blog.title || "Crest Travel Club";
+  const metaDescription =
+    blog.metaDescription ||
+    blog.shortDescription ||
+    "Discover exclusive travel benefits with Crest Travel Club.";
+  const blogUrl = `https://www.cresttravelclub.com/blogs/${blog.slug}`;
+  let ogImage = (blog.image || "").replace(/^http:\/\//, "https://");
+  if (ogImage && !ogImage.startsWith("https://") && !ogImage.startsWith("blob:")) {
+    const cleanPath = ogImage.startsWith("/") ? ogImage.slice(1) : ogImage;
+    const cleanBase = API_BASE_URL.endsWith("/")
+      ? API_BASE_URL.slice(0, -1)
+      : API_BASE_URL;
+    ogImage = `${cleanBase}/${cleanPath}`;
+  }
+
   return (
     <>
+      <Helmet>
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDescription} />
+        <link rel="canonical" href={blogUrl} />
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDescription} />
+        {ogImage && <meta property="og:image" content={ogImage} />}
+        <meta property="og:url" content={blogUrl} />
+        <meta property="og:type" content="article" />
+        <meta property="og:site_name" content="Crest Travel Club" />
+        <meta
+          property="og:image:alt"
+          content={blog.imageAlt || blog.title || "Crest Travel Club"}
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={metaTitle} />
+        <meta name="twitter:description" content={metaDescription} />
+        {ogImage && <meta name="twitter:image" content={ogImage} />}
+        {blogSchema && (
+          <script id="blog-schema" type="application/ld+json">
+            {blogSchema}
+          </script>
+        )}
+      </Helmet>
+
       <div className="blog-header">
         <Header />
       </div>
@@ -162,6 +182,9 @@ const BlogPage = () => {
                   <img
                     src={blog.image}
                     alt={blog.imageAlt || blog.title}
+                    width={660}
+                    height={320}
+                    loading="eager"
                     fetchPriority="high"
                     decoding="async"
                     className="tripoFullBlogHeroImage"
@@ -216,6 +239,10 @@ const BlogPage = () => {
                   <img
                     src={blog.authorImage}
                     alt={blog.authorName || "Author"}
+                    width={80}
+                    height={80}
+                    loading="lazy"
+                    decoding="async"
                     className="tripoFullBlogAuthorBoxImage"
                   />
                 )}
@@ -263,6 +290,8 @@ const BlogPage = () => {
                             <img
                               src={latestBlog.image}
                               alt={latestBlog.imageAlt || latestBlog.title}
+                              width={100}
+                              height={75}
                               className="tripoLatestBlogImage"
                               loading="lazy"
                               decoding="async"

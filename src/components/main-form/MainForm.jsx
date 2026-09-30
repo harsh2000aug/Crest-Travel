@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { lazy, startTransition, Suspense, useState } from "react";
 import "./mainform.css";
 import {
   LuHotel,
@@ -14,11 +14,11 @@ import { FaCar } from "react-icons/fa";
 import { MdKayaking } from "react-icons/md";
 
 import FlightForm from "./forms/FlightForm";
-import HotelForm from "./HotelForm/HotelForm";
+const HotelForm = lazy(() => import("./HotelForm/HotelForm"));
 import HeaderInner from "../../reuseable-components/HeaderInner";
-import CarForm from "./CarRental/CarForm";
-import ActivityForm from "./Activity/ActivityForm";
-import VacationForm from "./Vacations/VacationForm";
+const CarForm = lazy(() => import("./CarRental/CarForm"));
+const ActivityForm = lazy(() => import("./Activity/ActivityForm"));
+const VacationForm = lazy(() => import("./Vacations/VacationForm"));
 const MainForm = () => {
   const categories = [
     {
@@ -108,7 +108,7 @@ const MainForm = () => {
                       className={`tab-item ${
                         activeTab === item.id ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(item.id)}
+                      onClick={() => startTransition(() => setActiveTab(item.id))}
                     >
                       <div className="icon-box">
                         <Icon size={24} />
@@ -123,7 +123,11 @@ const MainForm = () => {
                   );
                 })}
               </div>
-              <div className="tab-content">{renderForm()}</div>
+              <div className="tab-content">
+                <Suspense fallback={null}>
+                  {renderForm()}
+                </Suspense>
+              </div>
             </section>
           </div>
         </div>

@@ -3,19 +3,20 @@ import "./Blogpage.css";
 import Header from "../../../reuseable-components/Header";
 import Footer from "../../../reuseable-components/Footer";
 import { hostname } from "../../../Utils/api/apiUtils";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const BlogdetailPage = () => {
   const API_BASE_URL = hostname();
 
   const [posts, setPosts] = useState([]);
 
-  const navigate = useNavigate();
+
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchPosts = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/blog`);
+        const response = await fetch(`${API_BASE_URL}/blog`, { signal: controller.signal });
 
         if (!response.ok) {
           throw new Error(`Failed to load data (Status: ${response.status})`);
@@ -27,11 +28,13 @@ const BlogdetailPage = () => {
 
         setPosts(postsList);
       } catch (err) {
+        if (controller.signal.aborted) return;
         console.error("Fetch Error:", err);
       }
     };
 
     fetchPosts();
+    return () => controller.abort();
   }, [API_BASE_URL]);
 
   const formatDate = (dateString) => {
@@ -44,11 +47,6 @@ const BlogdetailPage = () => {
     });
   };
 
-  const handleReadMore = (slug) => {
-    if (!slug) return;
-
-    navigate(`/blogs/${slug}`);
-  };
 
   const truncateWords = (text, wordLimit = 10) => {
     if (!text) return "";
@@ -66,7 +64,7 @@ const BlogdetailPage = () => {
       top: 0,
       left: 0,
     });
-  });
+  }, []);
 
   return (
     <main className="blogDetailPage">
@@ -89,14 +87,19 @@ const BlogdetailPage = () => {
       <section className="blogDetailPage__section">
         <section className="blogDetailPage__related">
           <div className="blogDetailPage__cards">
-            {posts.map((item) => (
-              <article
+            {posts.map((item, index) => (
+              <Link
                 className="blogDetailPage__relatedCard"
                 key={item?._id}
-                onClick={() => handleReadMore(item?.slug)}
+                to={item?.slug ? `/blogs/${item.slug}` : "/blogs"}
               >
                 <div className="blogDetailPage__relatedImage">
-                  <img src={item?.image} alt={item?.imageAlt || item?.title} />
+                  <img
+                    src={item?.image}
+                    alt={item?.imageAlt || item?.title}
+                    loading={index < 3 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
                 </div>
 
                 <div className="blogDetailPage__relatedInfo">
@@ -106,9 +109,9 @@ const BlogdetailPage = () => {
 
                   <p>{truncateWords(item?.shortDescription, 15)}</p>
 
-                  <button type="button">Read More →</button>
+                  <span className="blogDetailPage__readMore">Read More →</span>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </section>

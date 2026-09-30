@@ -2,13 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.png" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="google-site-verification"
       content="RGJKGo13QrZXR0shwOYKwdtEoV0v6on-OPCLx7ikCrM"
     />
     <title>Crest Travel Club</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&amp;display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&amp;display=swap" />
+    </noscript>
     <script>
       (function (w, d, s, l, i) {
         w[l] = w[l] || [];
@@ -38,16 +49,23 @@
       var Tawk_API = Tawk_API || {},
         Tawk_LoadStart = new Date();
       (function () {
-        var s1 = document.createElement("script"),
-          s0 = document.getElementsByTagName("script")[0];
-        s1.async = true;
-        s1.src = "https://embed.tawk.to/6a5f42d11034cd1d456c2227/1ju21q11l";
-        s1.charset = "UTF-8";
-        s1.setAttribute("crossorigin", "*");
-        s0.parentNode.insertBefore(s1, s0);
+        function loadChat() {
+          var s1 = document.createElement("script"),
+            s0 = document.getElementsByTagName("script")[0];
+          s1.async = true;
+          s1.src = "https://embed.tawk.to/6a5f42d11034cd1d456c2227/1ju21q11l";
+          s1.charset = "UTF-8";
+          s1.setAttribute("crossorigin", "*");
+          s0.parentNode.insertBefore(s1, s0);
+        }
+        if (document.readyState === "complete") {
+          loadChat();
+        } else {
+          window.addEventListener("load", loadChat, { once: true });
+        }
       })();
     </script>
     <!--End of Tawk.to Script-->
-    <script src="https://jstest.authorize.net/v1/Accept.js"></script>
+
   </body>
 </html>

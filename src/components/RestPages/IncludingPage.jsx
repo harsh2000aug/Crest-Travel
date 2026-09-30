@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import React, { useEffect } from "react";
 import {
   FaHotel,
@@ -36,47 +37,13 @@ const IncludingPage = () => {
       behavior: "smooth",
     });
 
-    // SEO Meta Title
-    document.title = "What's Included | Crest Travel Club Membership Perks";
-
-    // SEO Meta Description
-    const metaDescription =
-      "See everything included with Crest Travel Club membership — hotel & flight discounts, airport lounge access, flight insurance, BagAssure & more.";
-
-    let description = document.querySelector('meta[name="description"]');
-
-    if (!description) {
-      description = document.createElement("meta");
-      description.setAttribute("name", "description");
-      document.head.appendChild(description);
-    }
-
-    description.setAttribute("content", metaDescription);
-
-    // Canonical URL
-    const canonicalUrl = "https://www.cresttravelclub.com/whats-included";
-
-    let canonical = document.querySelector('link[rel="canonical"]');
-
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-
-    canonical.setAttribute("href", canonicalUrl);
-
-    // Cleanup when leaving the page
-    return () => {
-      const canonical = document.querySelector('link[rel="canonical"]');
-
-      if (canonical) {
-        canonical.remove();
-      }
-    };
   }, []);
   return (
     <>
+      <Helmet>
+        <title>{"What's Included | Crest Travel Club Membership Perks"}</title>
+        <meta name="description" content={"See everything included with Crest Travel Club membership — hotel & flight discounts, airport lounge access, flight insurance, BagAssure & more."} />
+      </Helmet>
       <div className="tm-membership-page">
         <Header />
         <section className="tm-hero-section">

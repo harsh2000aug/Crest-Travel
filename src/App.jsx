@@ -1,61 +1,106 @@
 import "./App.css";
+import "./components/main-form/mainform.css";
+import "react-datepicker/dist/react-datepicker.css";
+import "./reuseable-components/Loader/Loader.css";
+import "./components/main-form/HotelForm/forms.css";
+import "./components/main-form/CarRental/CarRental.css";
+import "./components/main-form/Activity/Activity.css";
+import "./components/main-form/Vacations/VacationForm.css";
+import "swiper/css";
+import "swiper/css/navigation";
+import "./reuseable-components/header.css";
+import "./components/HomePage/Home.css";
+import "./components/FlightResultPage/FlightResultPage.css";
+import "swiper/css/pagination";
+import "./components/BeforeHomePage/BeforeHome.css";
+import "./components/Join-Now/Join.css";
+import "./components/RestPages/RestPages.css";
+import "./components/PaymentPage/Checkout.css";
+import "./reuseable-components/HotelLoader/HotelLoader.css";
+import "./components/FlightResultPage/FlightBookingPage.css";
+import "./reuseable-components/CarLoader/CarLoader.css";
+import "./components/main-form/Vacations/VacationModifySearch.css";
+import "leaflet/dist/leaflet.css";
+import "./components/main-form/Vacations/VacationList.css";
+import "./reuseable-components/VacationLoader/VacationLoader.css";
+import "./components/main-form/Vacations/VacationDetail.css";
+import "./reuseable-components/VacationFinalLoader/VacationFinalLoader.css";
+import "./components/main-form/Vacations/VacationBilling.css";
+import "./components/admin/adminDashboard/adminDash.css";
+import "./components/admin/addPost/addPost.css";
+import "./components/admin/loginPage/login.css";
+import "./components/admin/blogDetail/blogDetail.css";
+import "./components/admin/BlogPage/Blogpage.css";
+import "./components/PaymentStatus/PaymentStatus.css";
+import "./components/main-form/HotelForm/HotelBookingsDetails/HotelBookingsDetails.css";
+import "./reuseable-components/SimpleLoader/SimpleLoader.css";
+import "./components/FlightResultPage/FlightPaymentStatus/FlightPaymentStatus.css";
+import "./components/main-form/CarRental/CarPayment/CarPayment.css";
+import "./components/main-form/CarRental/CarBookingDetails/CarBookingDetails.css";
+import "./components/main-form/Activity/ActivityPayment/ActivityPayment.css";
+import "./components/FlightResultPage/FlightBookingDetails/FlightBookingDetails.css";
+import "./components/main-form/Vacations/VacationPaymentStatus/VacationPaymentStatus.css";
+import "./components/main-form/Activity/ActivityBookingDetails/ActivityBookingDetails.css";
+import "./components/main-form/Vacations/VacationBookingDetails/VacationBookingDetails.css";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
-import Home from "./components/HomePage/Home";
-import FlightResultPage from "./components/FlightResultPage/FlightResultPage";
+const Home = lazy(() => import("./components/HomePage/Home"));
+const FlightResultPage = lazy(() => import("./components/FlightResultPage/FlightResultPage"));
 import BeforeHome from "./components/BeforeHomePage/BeforeHome";
-import Join from "./components/Join-Now/Join";
-import IncludingPage from "./components/RestPages/IncludingPage";
-import AboutUs from "./components/RestPages/AboutUs";
-import Terms from "./components/RestPages/Terms";
-import Privacy from "./components/RestPages/Privacy";
-import Benefits from "./components/RestPages/Benefits";
-import ProfileDetails from "./components/RestPages/ProfileDetails";
-import CustomerServices from "./components/RestPages/CustomerServices";
-import TravelTales from "./components/RestPages/TravelTales";
-import Checkout from "./components/PaymentPage/Checkout";
-import HotelResults from "./components/main-form/HotelForm/HotelResults";
-import HotelDetailPage from "./components/main-form/HotelForm/HotelDetailPage";
-import RefundPolicy from "./components/RestPages/RefundPolicy";
-import Hotel from "./components/main-form/HotelForm/Hotel";
-import MyBookings from "./components/RestPages/MyBookings";
+const Join = lazy(() => import("./components/Join-Now/Join"));
+const IncludingPage = lazy(() => import("./components/RestPages/IncludingPage"));
+const AboutUs = lazy(() => import("./components/RestPages/AboutUs"));
+const Terms = lazy(() => import("./components/RestPages/Terms"));
+const Privacy = lazy(() => import("./components/RestPages/Privacy"));
+const Benefits = lazy(() => import("./components/RestPages/Benefits"));
+const ProfileDetails = lazy(() => import("./components/RestPages/ProfileDetails"));
+const CustomerServices = lazy(() => import("./components/RestPages/CustomerServices"));
+const TravelTales = lazy(() => import("./components/RestPages/TravelTales"));
+const Checkout = lazy(() => import("./components/PaymentPage/Checkout"));
+const HotelResults = lazy(() => import("./components/main-form/HotelForm/HotelResults"));
+const HotelDetailPage = lazy(() => import("./components/main-form/HotelForm/HotelDetailPage"));
+const RefundPolicy = lazy(() => import("./components/RestPages/RefundPolicy"));
+const Hotel = lazy(() => import("./components/main-form/HotelForm/Hotel"));
+const MyBookings = lazy(() => import("./components/RestPages/MyBookings"));
 import ProtectedRoutes from "./ProtectedRoutes";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { newMemberDetails } from "./store/Services/AllApi";
 import { useAtomValue } from "jotai";
 import { tokenAtom } from "./atoms/userAtom";
-import FlightBookingPage from "./components/FlightResultPage/FlightBookingPage";
-import CarResults from "./components/main-form/CarRental/CarResults";
-import CarBook from "./components/main-form/CarRental/CarBook";
-import ActivityArea from "./components/main-form/Activity/ActivityArea";
-import ActivityDetails from "./components/main-form/Activity/ActivityDetails";
-import VacationList from "./components/main-form/Vacations/VacationList";
-import ActivityBook from "./components/main-form/Activity/ActivityBook";
-import VacationDetail from "./components/main-form/Vacations/VacationDetail";
-import VacationBilling from "./components/main-form/Vacations/VacationBilling";
-import AdminDash from "./components/admin/adminDashboard/adminDash";
-import AddPost from "./components/admin/addPost/addPost";
-import Login from "./components/admin/loginPage/login";
-import BlogDetail from "./components/admin/blogDetail/blogDetail";
-import BlogdetailPage from "./components/admin/BlogPage/BlogdetailPage";
+const FlightBookingPage = lazy(() => import("./components/FlightResultPage/FlightBookingPage"));
+const CarResults = lazy(() => import("./components/main-form/CarRental/CarResults"));
+const CarBook = lazy(() => import("./components/main-form/CarRental/CarBook"));
+const ActivityArea = lazy(() => import("./components/main-form/Activity/ActivityArea"));
+const ActivityDetails = lazy(() => import("./components/main-form/Activity/ActivityDetails"));
+const VacationList = lazy(() => import("./components/main-form/Vacations/VacationList"));
+const ActivityBook = lazy(() => import("./components/main-form/Activity/ActivityBook"));
+const VacationDetail = lazy(() => import("./components/main-form/Vacations/VacationDetail"));
+const VacationBilling = lazy(() => import("./components/main-form/Vacations/VacationBilling"));
+const AdminDash = lazy(() => import("./components/admin/adminDashboard/adminDash"));
+const AddPost = lazy(() => import("./components/admin/addPost/addPost"));
+const Login = lazy(() => import("./components/admin/loginPage/login"));
+const BlogDetail = lazy(() => import("./components/admin/blogDetail/blogDetail"));
+const BlogdetailPage = lazy(() => import("./components/admin/BlogPage/BlogdetailPage"));
 import BlogProtectedRoutes from "./BlogProtectedRoutes";
-import BlogPage from "./components/admin/BlogPage/BlogPage";
-import PaymentStatus from "./components/PaymentStatus/PaymentStatus";
-import HotelPaymentStatus from "./components/main-form/HotelForm/HotelPaymentStatus/HotelPaymentStatus";
-import HotelBookingsDetails from "./components/main-form/HotelForm/HotelBookingsDetails/HotelBookingsDetails";
-import FlightPaymentStatus from "./components/FlightResultPage/FlightPaymentStatus/FlightPaymentStatus";
-import CarPayment from "./components/main-form/CarRental/CarPayment/CarPayment";
-import CarBookingDetails from "./components/main-form/CarRental/CarBookingDetails/CarBookingDetails";
-import ActivityPayment from "./components/main-form/Activity/ActivityPayment/ActivityPayment";
-import FlightBookingDetails from "./components/FlightResultPage/FlightBookingDetails/FlightBookingDetails";
-import VacationPaymentStatus from "./components/main-form/Vacations/VacationPaymentStatus/VacationPaymentStatus";
-import ActivityBookingDetails from "./components/main-form/Activity/ActivityBookingDetails/ActivityBookingDetails";
-import VacationBookingDetails from "./components/main-form/Vacations/VacationBookingDetails/VacationBookingDetails";
+const BlogPage = lazy(() => import("./components/admin/BlogPage/BlogPage"));
+const PaymentStatus = lazy(() => import("./components/PaymentStatus/PaymentStatus"));
+const HotelPaymentStatus = lazy(() => import("./components/main-form/HotelForm/HotelPaymentStatus/HotelPaymentStatus"));
+const HotelBookingsDetails = lazy(() => import("./components/main-form/HotelForm/HotelBookingsDetails/HotelBookingsDetails"));
+const FlightPaymentStatus = lazy(() => import("./components/FlightResultPage/FlightPaymentStatus/FlightPaymentStatus"));
+const CarPayment = lazy(() => import("./components/main-form/CarRental/CarPayment/CarPayment"));
+const CarBookingDetails = lazy(() => import("./components/main-form/CarRental/CarBookingDetails/CarBookingDetails"));
+const ActivityPayment = lazy(() => import("./components/main-form/Activity/ActivityPayment/ActivityPayment"));
+const FlightBookingDetails = lazy(() => import("./components/FlightResultPage/FlightBookingDetails/FlightBookingDetails"));
+const VacationPaymentStatus = lazy(() => import("./components/main-form/Vacations/VacationPaymentStatus/VacationPaymentStatus"));
+const ActivityBookingDetails = lazy(() => import("./components/main-form/Activity/ActivityBookingDetails/ActivityBookingDetails"));
+const VacationBookingDetails = lazy(() => import("./components/main-form/Vacations/VacationBookingDetails/VacationBookingDetails"));
 import Canonical from "./reuseable-components/Canonical";
 import Signature from "./components/Join-Now/AllMembershipPlans/Signature";
 import Prestige from "./components/Join-Now/AllMembershipPlans/Prestige";
 import Elite from "./components/Join-Now/AllMembershipPlans/Elite";
+
+
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -110,6 +155,7 @@ function App() {
         theme="light"
       />
 
+      <Suspense fallback={null}>
       <Routes>
         <Route path="/login-page" element={<Login />} />
         <Route path="/payment/status" element={<PaymentStatus />} />
@@ -196,6 +242,7 @@ function App() {
           }
         />
       </Routes>
+      </Suspense>
     </>
   );
 }

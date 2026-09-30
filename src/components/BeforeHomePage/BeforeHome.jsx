@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { FaMapMarkedAlt, FaMoneyBillWave, FaWallet } from "react-icons/fa";
 import logo from "../../assets/images/logo.webp";
-import heroImage from "../../assets/images/heroImage.jpg";
+import { preload } from "react-dom";
+import tripHeroImage from "../../assets/images/triphero.webp";
 import road from "../../assets/images/road.jpg";
 import hotelshow from "../../assets/images/hotelshow.jpg";
 import user1 from "../../assets/images/user1.jpg";
@@ -96,6 +97,7 @@ import { RiDiscountPercentFill } from "react-icons/ri";
 import { Helmet } from "react-helmet-async";
 
 const BeforeHome = ({ personDetails }) => {
+  preload(tripHeroImage, { as: "image", fetchPriority: "high" });
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
@@ -199,7 +201,7 @@ const BeforeHome = ({ personDetails }) => {
       <section className="crest-member-section tb-gap">
         <div className="crest-member-container container">
           <div className="crest-member-image">
-            <img src={crestLogo} alt="Crest Travel Club" />
+            <img loading="lazy" decoding="async" src={crestLogo} alt="Crest Travel Club" />
           </div>
 
           <div className="crest-member-content">
@@ -317,10 +319,10 @@ const BeforeHome = ({ personDetails }) => {
         <div className="journeySteps__container container">
           <div className="journeySteps__left">
             <div className="journeySteps__imageLarge">
-              <img src={desertImg} alt="Desert" />
+              <img loading="lazy" decoding="async" src={desertImg} alt="Desert" />
             </div>
             {/* <div className="journeySteps__imageSmall">
-              <img src={resortImg} alt="Resort" />
+              <img loading="lazy" decoding="async" src={resortImg} alt="Resort" />
             </div> */}
           </div>
           <div className="journeySteps__right">
@@ -464,7 +466,7 @@ const BeforeHome = ({ personDetails }) => {
               {partnerLogos.map((logo, index) => (
                 <SwiperSlide key={index}>
                   <div className="partner-logo-card">
-                    <img src={logo} alt={`Partner ${index + 1}`} />
+                    <img loading="lazy" decoding="async" src={logo} alt={`Partner ${index + 1}`} />
                   </div>
                 </SwiperSlide>
               ))}
@@ -941,7 +943,7 @@ const BeforeHome = ({ personDetails }) => {
                 </p>
 
                 <div className="eliteTestimonials__user">
-                  <img src={user1} alt="" />
+                  <img loading="lazy" decoding="async" src={user1} alt="" />
 
                   <div>
                     <h4>Chris</h4>
@@ -970,7 +972,7 @@ const BeforeHome = ({ personDetails }) => {
                 </p>
 
                 <div className="eliteTestimonials__user">
-                  <img src={user4} alt="" />
+                  <img loading="lazy" decoding="async" src={user4} alt="" />
 
                   <div>
                     <h4>Megan</h4>
@@ -996,7 +998,7 @@ const BeforeHome = ({ personDetails }) => {
                 </p>
 
                 <div className="eliteTestimonials__user">
-                  <img src={user2} alt="" />
+                  <img loading="lazy" decoding="async" src={user2} alt="" />
 
                   <div>
                     <h4>Selina Gomez</h4>
@@ -1021,7 +1023,7 @@ const BeforeHome = ({ personDetails }) => {
                 </p>
 
                 <div className="eliteTestimonials__user">
-                  <img src={user3} alt="" />
+                  <img loading="lazy" decoding="async" src={user3} alt="" />
 
                   <div>
                     <h4>Jasper Collins</h4>

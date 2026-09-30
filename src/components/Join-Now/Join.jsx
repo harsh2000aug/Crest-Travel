@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import React, { useEffect, useState } from "react";
 import "./Join.css";
 import { priceShow } from "../../store/Services/AllApi";
@@ -65,49 +66,16 @@ const Join = () => {
       behavior: "smooth",
     });
 
-    // SEO Meta Data
-    document.title = "Join Crest Travel Club | Membership Plans & Pricing";
-
-    const metaDescription =
-      "Compare Crest Travel Club membership packages — Signature, Elite, and Prestige. Choose your plan and start saving on hotels, flights, cruises & more.";
-
-    let description = document.querySelector('meta[name="description"]');
-
-    if (!description) {
-      description = document.createElement("meta");
-      description.setAttribute("name", "description");
-      document.head.appendChild(description);
-    }
-
-    description.setAttribute("content", metaDescription);
-
-    // Canonical URL
-    const canonicalUrl = "https://www.cresttravelclub.com/join-now";
-
-    let canonical = document.querySelector('link[rel="canonical"]');
-
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-
-    canonical.setAttribute("href", canonicalUrl);
-
-    // Cleanup when leaving the page
-    return () => {
-      const canonical = document.querySelector('link[rel="canonical"]');
-
-      if (canonical) {
-        canonical.remove();
-      }
-    };
   }, []);
 
   const isLoggedIn = !!localStorage.getItem("accessToken");
 
   return (
     <>
+      <Helmet>
+        <title>{"Join Crest Travel Club | Membership Plans & Pricing"}</title>
+        <meta name="description" content={"Compare Crest Travel Club membership packages — Signature, Elite, and Prestige. Choose your plan and start saving on hotels, flights, cruises & more."} />
+      </Helmet>
       {loading && <Loader />}
       <section className="pricing-section">
         {isLoggedIn ? <HeaderInner /> : <Header />}
