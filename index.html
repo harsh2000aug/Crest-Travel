@@ -9,6 +9,28 @@
       content="RGJKGo13QrZXR0shwOYKwdtEoV0v6on-OPCLx7ikCrM"
     />
     <title>Crest Travel Club</title>
+    <link rel="preconnect" href="https://backend.tripoairllc.com" crossorigin />
+    <script>
+      (function () {
+        if (!/^\/blogs(?:\/|$)/.test(window.location.pathname)) return;
+        var url = "https://backend.tripoairllc.com/blog";
+        var request = {
+          url: url,
+          startedAt: Date.now(),
+          promise: fetch(url)
+            .then(function (response) {
+              return response.ok ? response.json() : null;
+            })
+            .catch(function () { return null; }),
+        };
+        window.__crestBlogPrefetch = request;
+        window.setTimeout(function () {
+          if (window.__crestBlogPrefetch === request) {
+            delete window.__crestBlogPrefetch;
+          }
+        }, 30000);
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

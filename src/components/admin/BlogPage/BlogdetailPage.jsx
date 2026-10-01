@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./Blogpage.css";
 import Header from "../../../reuseable-components/Header";
 import Footer from "../../../reuseable-components/Footer";
-import { hostname } from "../../../Utils/api/apiUtils";
+import { fetchPublicBlogs, hostname } from "../../../Utils/api/apiUtils";
 import { Link } from "react-router-dom";
 
 const BlogdetailPage = () => {
@@ -14,15 +14,7 @@ const BlogdetailPage = () => {
     const controller = new AbortController();
     const fetchPosts = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/blog`, {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load data (Status: ${response.status})`);
-        }
-
-        const data = await response.json();
+        const data = await fetchPublicBlogs(controller.signal);
 
         const postsList = Array.isArray(data) ? data : data?.data || [];
 

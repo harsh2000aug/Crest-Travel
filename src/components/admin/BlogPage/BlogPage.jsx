@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import "./Blogpage.css";
-import { hostname } from "../../../Utils/api/apiUtils";
+import { fetchPublicBlogs, hostname } from "../../../Utils/api/apiUtils";
 import Footer from "../../../reuseable-components/Footer";
 import Header from "../../../reuseable-components/Header";
 
@@ -32,7 +32,7 @@ const BlogPage = () => {
           throw new Error("Failed to fetch blogs");
         }
 
-        const result = await response.json();
+        const result = await fetchPublicBlogs(controller.signal);
 
         if (!result.success) {
           throw new Error("Failed to fetch blogs");
