@@ -260,7 +260,7 @@ const ActivityDetails = () => {
         } else if (band === "CHILD") {
           participantType = "child";
         } else if (band === "INFANT") {
-          participantType = "child";
+          participantType = "infant";
         } else if (band === "SENIOR") {
           participantType = "senior";
         }
@@ -805,15 +805,7 @@ const ActivityDetails = () => {
   };
 
   const getItemPrice = (item, detail) => {
-    const lineItems = Array.isArray(detail?.lineItems) ? detail.lineItems : [];
-
-    const totalOurPrice = lineItems.reduce((sum, lineItem) => {
-      const ourPrice = Number(lineItem?.subtotalPrice?.price?.ourPrice) || 0;
-
-      return sum + ourPrice;
-    }, 0);
-
-    return totalOurPrice;
+    return Number(detail?.totalPrice?.price?.ourPrice) || 0;
   };
 
   const getItemPublicPrice = (item, detail) => {
@@ -1070,11 +1062,8 @@ const ActivityDetails = () => {
   const handleBookNow = (item, detail, gradeKey) => {
     const price = detail?.totalPrice?.price || {};
 
-    const ageBandOurPrice = Array.isArray(detail?.lineItems)
-      ? detail.lineItems.reduce((sum, lineItem) => {
-          return sum + (Number(lineItem?.subtotalPrice?.price?.ourPrice) || 0);
-        }, 0)
-      : 0;
+    const ageBandOurPrice = Number(detail?.totalPrice?.price?.ourPrice) || 0;
+
     const selectedLanguageGuides = Array.isArray(item?.languageGuides)
       ? item.languageGuides.map((guide) => ({
           type: guide?.type || "",
@@ -1094,6 +1083,17 @@ const ActivityDetails = () => {
       activityCode: activityCode || "",
       name: displayTitle || "",
       image: galleryImages?.[0]?.photoURL || "",
+      ageBands: activityAgeBands
+        .map((ageBand) => ({
+          ageBand: ageBand.ageBand,
+          numberOfTravelers:
+            Number(
+              appliedParticipants?.[
+                ageBand.ageBand === "INFANT" ? "infant" : ageBand.type
+              ],
+            ) || 0,
+        }))
+        .filter((item) => item.numberOfTravelers > 0),
       category:
         categories
           ?.map((category) => category?.name)
@@ -1129,8 +1129,7 @@ const ActivityDetails = () => {
     const guests = [];
 
     activityAgeBands.forEach((ageBand) => {
-      const participantType =
-        ageBand.ageBand === "INFANT" ? "child" : ageBand.type;
+      const participantType = ageBand.type;
 
       const count = Number(appliedParticipants?.[participantType]) || 0;
 

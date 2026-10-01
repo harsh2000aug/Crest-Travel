@@ -10,13 +10,13 @@ const BlogdetailPage = () => {
 
   const [posts, setPosts] = useState([]);
 
-
-
   useEffect(() => {
     const controller = new AbortController();
     const fetchPosts = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/blog`, { signal: controller.signal });
+        const response = await fetch(`${API_BASE_URL}/blog`, {
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           throw new Error(`Failed to load data (Status: ${response.status})`);
@@ -47,7 +47,6 @@ const BlogdetailPage = () => {
     });
   };
 
-
   const truncateWords = (text, wordLimit = 10) => {
     if (!text) return "";
 
@@ -59,6 +58,7 @@ const BlogdetailPage = () => {
 
     return words.slice(0, wordLimit).join(" ") + " [...]";
   };
+
   useEffect(() => {
     window.scrollTo({
       top: 0,

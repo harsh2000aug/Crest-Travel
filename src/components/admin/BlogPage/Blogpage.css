@@ -1217,3 +1217,61 @@
   content-visibility: auto;
   contain-intrinsic-size: auto 120px;
 }
+
+.tripoFullBlogFaqSection {
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+
+.tripoFullBlogFaqHeading {
+  margin: 0 0 20px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #222;
+}
+
+.tripoFullBlogFaqList {
+  width: 100%;
+}
+
+.tripoFullBlogFaqItem {
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.tripoFullBlogFaqQuestion {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 17px;
+  font-weight: 600;
+  color: #222;
+}
+
+.tripoFullBlogFaqIcon {
+  min-width: 24px;
+  font-size: 24px;
+  line-height: 24px;
+  transition: transform 0.2s ease;
+}
+
+.tripoFullBlogFaqIconOpen {
+  transform: rotate(45deg);
+}
+
+.tripoFullBlogFaqAnswer {
+  padding: 0 20px 18px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #555;
+}

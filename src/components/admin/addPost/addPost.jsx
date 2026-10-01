@@ -34,7 +34,6 @@ const AddPost = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [faqs, setFaqs] = useState([]);
-
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -87,9 +86,15 @@ const AddPost = () => {
       }
 
       const result = await response.json();
+
+      const data = result.data || result;
+
+      const faqResult = await fetchFaqs(id);
+
       setFaqs(
-        Array.isArray(data.faqs)
-          ? data.faqs.map((faq) => ({
+        Array.isArray(faqResult)
+          ? faqResult.map((faq) => ({
+              id: faq._id || faq.id,
               question: faq.question || "",
               answer: faq.answer || "",
               status: faq.status || "active",
@@ -97,8 +102,6 @@ const AddPost = () => {
             }))
           : [],
       );
-
-      const data = result.data || result;
 
       setFormData({
         title: data.title || data.name || "",
@@ -236,6 +239,18 @@ const AddPost = () => {
     return response.json();
   };
 
+  const fetchFaqs = async (blogId) => {
+    const response = await fetch(`${API_BASE_URL}/blog/faq/${blogId}`);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch FAQs.");
+    }
+
+    const result = await response.json();
+
+    return result.data || result;
+  };
+
   const createFaq = async (faqList) => {
     const faqPayload = {
       blogId: editId,
@@ -257,6 +272,18 @@ const AddPost = () => {
 
     if (!response.ok) {
       throw new Error("Failed to create FAQs.");
+    }
+
+    return response.json();
+  };
+
+  const deleteFaq = async (faqId) => {
+    const response = await fetch(`${API_BASE_URL}/blog/faq/${faqId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete FAQ.");
     }
 
     return response.json();
@@ -295,12 +322,22 @@ const AddPost = () => {
       if (editId) {
         await updatePost(payload);
 
-        const validFaqs = faqs.filter(
-          (faq) => faq.question.trim() !== "" && faq.answer.trim() !== "",
+        const newFaqs = faqs.filter(
+          (faq) =>
+            !faq.id && faq.question.trim() !== "" && faq.answer.trim() !== "",
         );
 
-        if (validFaqs.length > 0) {
-          await createFaq(validFaqs);
+        const existingFaqs = faqs.filter(
+          (faq) =>
+            faq.id && faq.question.trim() !== "" && faq.answer.trim() !== "",
+        );
+
+        if (newFaqs.length > 0) {
+          await createFaq(newFaqs);
+        }
+
+        if (existingFaqs.length > 0) {
+          await Promise.all(existingFaqs.map((faq) => updateFaq(faq)));
         }
 
         alert("Post and FAQs updated successfully!");
@@ -322,8 +359,11 @@ const AddPost = () => {
     setFaqs((prev) => [
       ...prev,
       {
+        id: null,
         question: "",
         answer: "",
+        status: "active",
+        sortOrder: prev.length + 1,
       },
     ]);
   };
@@ -341,8 +381,40 @@ const AddPost = () => {
     );
   };
 
-  const handleRemoveFaq = (index) => {
-    setFaqs((prev) => prev.filter((_, faqIndex) => faqIndex !== index));
+  const handleRemoveFaq = async (index) => {
+    const faq = faqs[index];
+
+    try {
+      if (faq.id) {
+        await deleteFaq(faq.id);
+      }
+
+      setFaqs((prev) => prev.filter((_, faqIndex) => faqIndex !== index));
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
+  };
+
+  const updateFaq = async (faq) => {
+    const response = await fetch(`${API_BASE_URL}/blog/faq/${faq.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        question: faq.question,
+        answer: faq.answer,
+        status: faq.status || "active",
+        sortOrder: faq.sortOrder,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update FAQ.");
+    }
+
+    return response.json();
   };
 
   if (loading) {
@@ -586,14 +658,14 @@ const AddPost = () => {
             <label htmlFor="schemaCode">Schema Code (JSON-LD)</label>
 
             <textarea
-                id="schemaCode"
-                name="schemaCode"
-                value={formData.schemaCode}
-                onChange={handleChange}
-                rows={3}
-                className="addPost__codeTextarea"
-                placeholder={`{\n  "@context": "https://schema.org",\n  "@type": "NewsArticle",\n  ...\n}`}
-              />
+              id="schemaCode"
+              name="schemaCode"
+              value={formData.schemaCode}
+              onChange={handleChange}
+              rows={3}
+              className="addPost__codeTextarea"
+              placeholder={`{\n  "@context": "https://schema.org",\n  "@type": "NewsArticle",\n  ...\n}`}
+            />
           </div>
         </div>
 
@@ -708,7 +780,7 @@ const AddPost = () => {
 
             {faqs.map((faq, index) => (
               <div
-                key={index}
+                key={faq.id || `new-${index}`}
                 className="addPost__sectionBox addPost__faqSection"
               >
                 <div className="addPost__faqHeader">

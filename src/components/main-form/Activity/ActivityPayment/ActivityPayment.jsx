@@ -42,7 +42,10 @@ const ActivityPaymentRedirect = () => {
 
           primaryTraveller: {
             firstName: storedData.primaryTraveller?.firstName || "",
-            type: storedData.primaryTraveller?.type || "Adult",
+            type: storedData.primaryTraveller?.type
+              ? storedData.primaryTraveller.type.charAt(0).toUpperCase() +
+                storedData.primaryTraveller.type.slice(1).toLowerCase()
+              : "Adult",
             title: storedData.primaryTraveller?.title || "",
             lastName: storedData.primaryTraveller?.lastName || "",
             email: storedData.primaryTraveller?.email || "",
@@ -64,9 +67,6 @@ const ActivityPaymentRedirect = () => {
             ? { languageGuide: storedData.languageGuide }
             : {}),
         };
-
-        console.log("Payment Status:", paymentStatus);
-        console.log("Activity Final Booking REQUEST:", requestBody);
 
         const response = await activityBook({
           body: requestBody,
