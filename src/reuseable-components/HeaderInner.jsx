@@ -104,6 +104,9 @@ const HeaderInner = () => {
     "/flight-bookingdet",
     "/activity-booking-details",
     "/vacation-booking-details",
+    "/signature-membership",
+    "/elite-membership",
+    "/prestige-membership",
   ];
 
   const showDarkHeader = darkHeaderRoutes.includes(location.pathname);
