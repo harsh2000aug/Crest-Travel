@@ -96,6 +96,22 @@ import { BiSolidPurchaseTag } from "react-icons/bi";
 import { RiDiscountPercentFill } from "react-icons/ri";
 import { Helmet } from "react-helmet-async";
 
+// Offscreen slides stay mounted; pause their animation work until visible.
+const pauseOffscreenAutoplay = (swiper) => {
+  if (!("IntersectionObserver" in window) || !swiper.autoplay) return;
+  swiper.autoplay.stop();
+  const observer = new IntersectionObserver(([entry]) => {
+    if (swiper.destroyed) return;
+    if (entry.isIntersecting) {
+      if (!swiper.autoplay.running) swiper.autoplay.start();
+    } else if (swiper.autoplay.running) {
+      swiper.autoplay.stop();
+    }
+  }, { rootMargin: "100px" });
+  observer.observe(swiper.el);
+  swiper.once("beforeDestroy", () => observer.disconnect());
+};
+
 const BeforeHome = ({ personDetails }) => {
   preload(tripHeroImage, { as: "image", fetchPriority: "high" });
   const navigate = useNavigate();
@@ -201,7 +217,7 @@ const BeforeHome = ({ personDetails }) => {
       <section className="crest-member-section tb-gap">
         <div className="crest-member-container container">
           <div className="crest-member-image">
-            <img loading="lazy" decoding="async" src={crestLogo} alt="Crest Travel Club" />
+            <img loading="lazy" decoding="async" width="1600" height="1280" src={crestLogo} alt="Crest Travel Club" />
           </div>
 
           <div className="crest-member-content">
@@ -319,7 +335,7 @@ const BeforeHome = ({ personDetails }) => {
         <div className="journeySteps__container container">
           <div className="journeySteps__left">
             <div className="journeySteps__imageLarge">
-              <img loading="lazy" decoding="async" src={desertImg} alt="Desert" />
+              <img loading="lazy" decoding="async" width="1024" height="1536" src={desertImg} alt="Desert" />
             </div>
             {/* <div className="journeySteps__imageSmall">
               <img loading="lazy" decoding="async" src={resortImg} alt="Resort" />
@@ -429,6 +445,7 @@ const BeforeHome = ({ personDetails }) => {
 
           <div className="partners-slider-wrapper">
             <Swiper
+              onSwiper={pauseOffscreenAutoplay}
               modules={[Autoplay]}
               loop={true}
               speed={2000}
@@ -466,7 +483,7 @@ const BeforeHome = ({ personDetails }) => {
               {partnerLogos.map((logo, index) => (
                 <SwiperSlide key={index}>
                   <div className="partner-logo-card">
-                    <img loading="lazy" decoding="async" src={logo} alt={`Partner ${index + 1}`} />
+                    <img loading="lazy" decoding="async" width="400" height="226" src={logo} alt={`Partner ${index + 1}`} />
                   </div>
                 </SwiperSlide>
               ))}
@@ -897,6 +914,7 @@ const BeforeHome = ({ personDetails }) => {
           </div>
 
           <Swiper
+            onSwiper={pauseOffscreenAutoplay}
             modules={[Autoplay]}
             spaceBetween={30}
             loop={true}
@@ -934,7 +952,7 @@ const BeforeHome = ({ personDetails }) => {
                 </p>
 
                 <div className="eliteTestimonials__user">
-                  <img loading="lazy" decoding="async" src={user1} alt="" />
+                  <img loading="lazy" decoding="async" width="55" height="55" src={user1} alt="" />
 
                   <div>
                     <h4>Chris</h4>
@@ -963,7 +981,7 @@ const BeforeHome = ({ personDetails }) => {
                 </p>
 
                 <div className="eliteTestimonials__user">
-                  <img loading="lazy" decoding="async" src={user4} alt="" />
+                  <img loading="lazy" decoding="async" width="55" height="55" src={user4} alt="" />
 
                   <div>
                     <h4>Megan</h4>
@@ -989,7 +1007,7 @@ const BeforeHome = ({ personDetails }) => {
                 </p>
 
                 <div className="eliteTestimonials__user">
-                  <img loading="lazy" decoding="async" src={user2} alt="" />
+                  <img loading="lazy" decoding="async" width="55" height="55" src={user2} alt="" />
 
                   <div>
                     <h4>Selina Gomez</h4>
@@ -1014,7 +1032,7 @@ const BeforeHome = ({ personDetails }) => {
                 </p>
 
                 <div className="eliteTestimonials__user">
-                  <img loading="lazy" decoding="async" src={user3} alt="" />
+                  <img loading="lazy" decoding="async" width="55" height="55" src={user3} alt="" />
 
                   <div>
                     <h4>Jasper Collins</h4>

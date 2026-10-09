@@ -102,7 +102,7 @@ const MapController = ({
   return null;
 };
 
-const ResortCard = ({ resort, currency, selected, onSelect }) => {
+const ResortCard = ({ resort, currency, selected, onSelect, priority }) => {
   const [imageError, setImageError] = useState(false);
 
   const price = Number(resort?.price?.ourPrice || 0);
@@ -124,6 +124,8 @@ const ResortCard = ({ resort, currency, selected, onSelect }) => {
       <div className="vacationList__imageWrapper">
         {resort.image && !imageError ? (
           <img
+            loading={priority ? "eager" : "lazy"}
+            decoding="async"
             src={resort.image}
             alt={resort.name}
             onError={() => setImageError(true)}
@@ -1226,8 +1228,9 @@ const VacationList = ({ vacationid }) => {
           )}
 
           <div className="vacationList__cards">
-            {filteredHotels.map((hotel) => (
+            {filteredHotels.map((hotel, index) => (
               <ResortCard
+                priority={index < 3}
                 key={hotel.resortId}
                 resort={hotel}
                 currency={currency}

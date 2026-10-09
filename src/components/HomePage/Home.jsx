@@ -23,6 +23,22 @@ import { sessionCreate } from "../../store/Services/AllApi";
 import { Helmet } from "react-helmet-async";
 import OGImg from "../../assets/images/og-home-img.webp";
 
+// Offscreen slides stay mounted; pause their animation work until visible.
+const pauseOffscreenAutoplay = (swiper) => {
+  if (!("IntersectionObserver" in window) || !swiper.autoplay) return;
+  swiper.autoplay.stop();
+  const observer = new IntersectionObserver(([entry]) => {
+    if (swiper.destroyed) return;
+    if (entry.isIntersecting) {
+      if (!swiper.autoplay.running) swiper.autoplay.start();
+    } else if (swiper.autoplay.running) {
+      swiper.autoplay.stop();
+    }
+  }, { rootMargin: "100px" });
+  observer.observe(swiper.el);
+  swiper.once("beforeDestroy", () => observer.disconnect());
+};
+
 const Home = () => {
   useEffect(() => {
     const handleSession = async () => {
@@ -111,6 +127,7 @@ const Home = () => {
           <h2 className="section-title">Vacation Rentals Worth the Trip</h2>
 
           <Swiper
+            onSwiper={pauseOffscreenAutoplay}
             modules={[Navigation, Autoplay]}
             navigation
             autoplay={{
@@ -184,6 +201,7 @@ const Home = () => {
           </h2>
 
           <Swiper
+            onSwiper={pauseOffscreenAutoplay}
             modules={[Navigation, Autoplay]}
             navigation
             autoplay={{

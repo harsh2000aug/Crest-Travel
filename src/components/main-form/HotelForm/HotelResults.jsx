@@ -27,6 +27,7 @@ import agoda from "../../../assets/images/agoda.png";
 
 function HotelCard({
   image,
+  imageLoading = "lazy",
   name,
   location,
   newPrice,
@@ -57,7 +58,7 @@ function HotelCard({
   return (
     <div className="lux-hotel-card">
       <div className="lux-hotel-img-wrap">
-        <img src={image || dummy} alt={name || "Hotel"} />
+        <img loading={imageLoading} decoding="async" src={image || dummy} alt={name || "Hotel"} />
         {calculatedDiscount > 0 && (
           <div className="hotel-discount-badge">{calculatedDiscount}% OFF</div>
         )}
@@ -2169,10 +2170,11 @@ export default function HotelResults() {
                     </div>
                   )}
 
-                  {filteredHotels.map((hotel) => (
+                  {filteredHotels.map((hotel, index) => (
                     <HotelCard
                       key={hotel.id}
                       image={hotel.heroImage}
+                      imageLoading={index < 2 ? "eager" : "lazy"}
                       name={hotel.name}
                       location={`${hotel.contact?.address?.city?.name || ""}, ${
                         hotel.contact?.address?.country?.name || ""

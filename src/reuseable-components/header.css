@@ -8,6 +8,7 @@ header {
 }
 
 .logo img {
+  height: auto;
   width: 100%;
   display: block;
 }
@@ -769,6 +770,7 @@ header {
 }
 
 .travel-login-logo-area img {
+  height: auto;
   width: 80px;
   margin-bottom: 15px;
 }

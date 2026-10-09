@@ -5,7 +5,8 @@ import HeaderInner from "../../../reuseable-components/HeaderInner";
 import Footer from "../../../reuseable-components/Footer";
 import HotelLoader from "../../../reuseable-components/HotelLoader/HotelLoader";
 
-import { Country, State } from "country-state-city";
+import { Country } from "country-state-city";
+import stateDataUrl from "country-state-city/lib/assets/state.json?url";
 import { countryCodes } from "../../../../countryCodes";
 
 import {
@@ -31,6 +32,30 @@ import {
   ChildCountToStore,
   TotalRooms,
 } from "../../../atoms/userAtom";
+
+let stateDataRequest;
+const loadStateData = () => {
+  if (!stateDataRequest) {
+    stateDataRequest = fetch(stateDataUrl)
+      .then((response) => {
+        if (!response.ok) throw new Error("Unable to load states");
+        return response.json();
+      })
+      .then((states) => {
+        if (!Array.isArray(states)) throw new Error("Invalid state data");
+        return {
+          getStatesOfCountry: (code) => code ? states
+            .filter((state) => state.countryCode === code)
+            .sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0) : [],
+        };
+      })
+      .catch((error) => {
+        stateDataRequest = null;
+        throw error;
+      });
+  }
+  return stateDataRequest;
+};
 
 const Hotel = () => {
   const navigate = useNavigate();
@@ -181,6 +206,21 @@ const Hotel = () => {
   });
 
   const selectedCountry = watch("country");
+  const [stateLibrary, setStateLibrary] = useState(null);
+  const [stateLoadError, setStateLoadError] = useState(false);
+  const [stateLoadAttempt, setStateLoadAttempt] = useState(0);
+
+  useEffect(() => {
+    if (!selectedCountry || stateLibrary) return;
+    let cancelled = false;
+    setStateLoadError(false);
+    loadStateData().then((library) => {
+      if (!cancelled) setStateLibrary(() => library);
+    }).catch(() => {
+      if (!cancelled) setStateLoadError(true);
+    });
+    return () => { cancelled = true; };
+  }, [selectedCountry, stateLibrary, stateLoadAttempt]);
 
   const encodeBase64 = (value) => {
     return btoa(String(value || ""));
@@ -1548,6 +1588,7 @@ const Hotel = () => {
 
                       <select
                         className="booking-input"
+                        onFocus={() => { void loadStateData().catch(() => {}); }}
                         {...register("country", {
                           required: "Country is required",
                         })}
@@ -1580,12 +1621,12 @@ const Hotel = () => {
                         {...register("state", {
                           required: "State is required",
                         })}
-                        disabled={!selectedCountry}
+                        disabled={!selectedCountry || !stateLibrary}
                       >
-                        <option value="">Select State</option>
+                        <option value="">{selectedCountry && !stateLibrary && !stateLoadError ? "Loading states..." : "Select State"}</option>
 
                         {selectedCountry &&
-                          State.getStatesOfCountry(selectedCountry).map(
+                          (stateLibrary?.getStatesOfCountry(selectedCountry) || []).map(
                             (state) => (
                               <option key={state.isoCode} value={state.name}>
                                 {state.name}
@@ -1594,6 +1635,12 @@ const Hotel = () => {
                           )}
                       </select>
 
+                      {stateLoadError && selectedCountry && (
+                        <p role="alert" className="booking-error">
+                          Unable to load states.{" "}
+                          <button type="button" onClick={() => setStateLoadAttempt((attempt) => attempt + 1)}>Retry</button>
+                        </p>
+                      )}
                       {errors.state && (
                         <p className="booking-error">{errors.state.message}</p>
                       )}

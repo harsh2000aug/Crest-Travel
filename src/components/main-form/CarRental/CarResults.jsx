@@ -1166,6 +1166,8 @@ const CarResults = () => {
                       >
                         <div className="car-results-card-image-area">
                           <img
+                            loading={index < 2 ? "eager" : "lazy"}
+                            decoding="async"
                             src={car.heroImage}
                             alt={car.name}
                             className="car-results-vehicle-image"
@@ -1187,6 +1189,8 @@ const CarResults = () => {
                             </div>
 
                             <img
+                              loading={index < 2 ? "eager" : "lazy"}
+                              decoding="async"
                               src={car.partner?.logo}
                               alt={car.partner?.name}
                               className="car-results-agency-logo"

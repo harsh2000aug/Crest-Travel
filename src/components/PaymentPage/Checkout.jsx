@@ -6,10 +6,35 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Country, State } from "country-state-city";
+import { Country } from "country-state-city";
+import stateDataUrl from "country-state-city/lib/assets/state.json?url";
 import { toast } from "react-toastify";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+let stateDataRequest;
+const loadStateData = () => {
+  if (!stateDataRequest) {
+    stateDataRequest = fetch(stateDataUrl)
+      .then((response) => {
+        if (!response.ok) throw new Error("Unable to load states");
+        return response.json();
+      })
+      .then((states) => {
+        if (!Array.isArray(states)) throw new Error("Invalid state data");
+        return {
+          getStatesOfCountry: (code) => code ? states
+            .filter((state) => state.countryCode === code)
+            .sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0) : [],
+        };
+      })
+      .catch((error) => {
+        stateDataRequest = null;
+        throw error;
+      });
+  }
+  return stateDataRequest;
+};
 
 const Checkout = () => {
   const location = useLocation();
@@ -34,6 +59,21 @@ const Checkout = () => {
   });
 
   const selectedCountry = watch("country");
+  const [stateLibrary, setStateLibrary] = useState(null);
+  const [stateLoadError, setStateLoadError] = useState(false);
+  const [stateLoadAttempt, setStateLoadAttempt] = useState(0);
+
+  useEffect(() => {
+    if (!selectedCountry || stateLibrary) return;
+    let cancelled = false;
+    setStateLoadError(false);
+    loadStateData().then((library) => {
+      if (!cancelled) setStateLibrary(() => library);
+    }).catch(() => {
+      if (!cancelled) setStateLoadError(true);
+    });
+    return () => { cancelled = true; };
+  }, [selectedCountry, stateLibrary, stateLoadAttempt]);
 
   const handleCheckout = async (formData) => {
     try {
@@ -447,6 +487,7 @@ const Checkout = () => {
                       <label>Country</label>
 
                       <select
+                        onFocus={() => { void loadStateData().catch(() => {}); }}
                         {...register("country", {
                           required: "Country is required",
                         })}
@@ -470,12 +511,12 @@ const Checkout = () => {
                         {...register("state", {
                           required: "State is required",
                         })}
-                        disabled={!selectedCountry}
+                        disabled={!selectedCountry || !stateLibrary}
                       >
-                        <option value="">Select State</option>
+                        <option value="">{selectedCountry && !stateLibrary && !stateLoadError ? "Loading states..." : "Select State"}</option>
 
                         {selectedCountry &&
-                          State.getStatesOfCountry(selectedCountry).map(
+                          (stateLibrary?.getStatesOfCountry(selectedCountry) || []).map(
                             (state) => (
                               <option key={state.isoCode} value={state.name}>
                                 {state.name}
@@ -484,6 +525,12 @@ const Checkout = () => {
                           )}
                       </select>
 
+                      {stateLoadError && selectedCountry && (
+                        <p role="alert">
+                          Unable to load states.{" "}
+                          <button type="button" onClick={() => setStateLoadAttempt((attempt) => attempt + 1)}>Retry</button>
+                        </p>
+                      )}
                       {errors.state && <p>{errors.state.message}</p>}
                     </div>
                   </div>
