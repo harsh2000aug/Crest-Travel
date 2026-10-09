@@ -42,7 +42,7 @@ import {
   RiRefreshLine,
   RiWifiLine,
 } from "react-icons/ri";
-import prestigeimg1 from "../../../assets/images/prestige_img1.png";
+import prestigeimg1 from "../../../assets/images/prestige-img1.png";
 import prestigeimg2 from "../../../assets/images/prestige_img2.png";
 import prestigeimg3 from "../../../assets/images/prestige_img3.png";
 
@@ -309,7 +309,7 @@ const Prestige = () => {
       <main>
         {/* ================= HERO ================= */}
         <section className="pt-section pt-bg-sand pt-hero">
-          <div className="pt-wrap pt-hero-grid">
+          <div className="pt-hero-grid container">
             <div className="pt-hero-left">
               <div className="pt-pill">
                 <span className="pt-pill-dot" />
@@ -403,7 +403,7 @@ const Prestige = () => {
 
         {/* ================= WHY PRESTIGE ================= */}
         <section className="pt-section pt-bg-ivory">
-          <div className="pt-wrap">
+          <div className="container">
             <div className="pt-head">
               <span className="pt-eyebrow">EXCLUSIVE MEMBERSHIP CORE</span>
               <h2 className="pt-h2">Why Prestige Plan?</h2>
@@ -448,7 +448,7 @@ const Prestige = () => {
 
         {/* ================= PORTFOLIO ================= */}
         <section className="pt-section pt-bg-sand">
-          <div className="pt-wrap">
+          <div className="container">
             <div className="pt-head pt-head-left">
               <span className="pt-eyebrow">COMPREHENSIVE PORTFOLIO</span>
               <h2 className="pt-h2">
@@ -565,7 +565,7 @@ const Prestige = () => {
 
         {/* ================= DIRECTORY ================= */}
         <section className="pt-section pt-bg-ivory">
-          <div className="pt-wrap">
+          <div className="container">
             <div className="pt-head pt-head-left">
               <span className="pt-eyebrow">HIGH-TOUCH TRAVEL DIRECTORY</span>
               <h2 className="pt-h2">
@@ -614,7 +614,7 @@ const Prestige = () => {
 
         {/* ================= TESTIMONIALS ================= */}
         <section className="pt-section pt-bg-sand">
-          <div className="pt-wrap">
+          <div className="container">
             <div className="pt-head">
               <span className="pt-eyebrow">MEMBER ACCOUNTS</span>
               <h2 className="pt-h2">Testimonials</h2>
@@ -647,7 +647,7 @@ const Prestige = () => {
 
         {/* ================= FAQ ================= */}
         <section className="pt-section pt-bg-ivory">
-          <div className="pt-wrap">
+          <div className="container">
             <div className="pt-head">
               <span className="pt-eyebrow">CLARITY & DISCRETION</span>
               <h2 className="pt-h2">Frequently Asked Questions</h2>
@@ -684,7 +684,7 @@ const Prestige = () => {
 
         {/* ================= FINAL CTA ================= */}
         <section className="pt-section pt-bg-stone pt-cta-section">
-          <div className="pt-wrap">
+          <div className="container">
             <div className="pt-cta">
               <div className="pt-cta-pill">
                 <BsStarFill />

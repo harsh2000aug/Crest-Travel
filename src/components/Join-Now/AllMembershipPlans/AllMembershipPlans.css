@@ -50,9 +50,15 @@
   padding: 80px 0;
 }
 
-.pt-bg-sand { background: var(--pt-sand); }
-.pt-bg-ivory { background: var(--pt-ivory); }
-.pt-bg-stone { background: var(--pt-stone); }
+.pt-bg-sand {
+  background: var(--pt-sand);
+}
+.pt-bg-ivory {
+  background: var(--pt-ivory);
+}
+.pt-bg-stone {
+  background: var(--pt-stone);
+}
 
 /* ---------- shared heading block ---------- */
 
@@ -116,7 +122,9 @@
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.8px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .pt-btn:hover {
@@ -302,7 +310,11 @@
   border-radius: 8px;
   color: #fff;
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0) 55%, rgba(255, 255, 255, 0.04) 100%),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 55%,
+      rgba(255, 255, 255, 0.04) 100%
+    ),
     var(--pt-navy);
   box-shadow: 0 24px 60px rgba(19, 28, 47, 0.28);
 }
@@ -842,11 +854,6 @@
    FAQ
 ===================================================== */
 
-.pt-faq {
-  max-width: 840px;
-  margin: 0 auto;
-}
-
 .pt-faq-item {
   margin-bottom: 12px;
   background: var(--pt-sand);
@@ -918,7 +925,11 @@
   color: #fff;
   background:
     radial-gradient(circle at 0% 8%, rgba(60, 50, 36, 0.55), transparent 28%),
-    radial-gradient(circle at 100% 100%, rgba(75, 62, 46, 0.7), transparent 30%),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(75, 62, 46, 0.7),
+      transparent 30%
+    ),
     #000;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.18);
 }
