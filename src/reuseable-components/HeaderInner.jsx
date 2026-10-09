@@ -219,7 +219,7 @@ const HeaderInner = () => {
         <div className="container">
           <div className="flex al-center space-bw">
             <div className="logo" onClick={() => navigate("/home")}>
-              <img src={logo} alt="Crest Travel Club" />
+              <img src={logo} width="240" height="319" decoding="async" alt="Crest Travel Club" />
             </div>
 
             <div className="member-login">

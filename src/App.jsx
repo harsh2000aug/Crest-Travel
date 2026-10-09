@@ -47,7 +47,7 @@ import { ToastContainer } from "react-toastify";
 
 const Home = lazy(() => import("./components/HomePage/Home"));
 const FlightResultPage = lazy(() => import("./components/FlightResultPage/FlightResultPage"));
-import BeforeHome from "./components/BeforeHomePage/BeforeHome";
+const BeforeHome = lazy(() => import("./components/BeforeHomePage/BeforeHome"));
 const Join = lazy(() => import("./components/Join-Now/Join"));
 const IncludingPage = lazy(() => import("./components/RestPages/IncludingPage"));
 const AboutUs = lazy(() => import("./components/RestPages/AboutUs"));
@@ -101,6 +101,14 @@ import Prestige from "./components/Join-Now/AllMembershipPlans/Prestige";
 import Elite from "./components/Join-Now/AllMembershipPlans/Elite";
 
 
+
+// Keep the current page until the destination stylesheet is ready.
+function FullStylesGate({ children }) {
+  const location = useLocation();
+  const pending = window.__crestLoadFullStyles?.(location.pathname);
+  if (pending) throw pending;
+  return children;
+}
 
 function App() {
   const [personDetails, setPersonDetails] = useState("");
@@ -156,6 +164,7 @@ function App() {
       />
 
       <Suspense fallback={null}>
+      <FullStylesGate>
       <Routes>
         <Route path="/login-page" element={<Login />} />
         <Route path="/payment/status" element={<PaymentStatus />} />
@@ -242,6 +251,7 @@ function App() {
           }
         />
       </Routes>
+      </FullStylesGate>
       </Suspense>
     </>
   );

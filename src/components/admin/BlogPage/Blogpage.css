@@ -64,6 +64,10 @@
   padding: 60px 0 80px;
 }
 
+.blogDetailPage__section[aria-busy="true"] {
+  min-height: max(500px, calc(100vh - 500px));
+}
+
 .blogDetailPage__layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;

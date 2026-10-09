@@ -37,13 +37,14 @@ const ActivityArea = () => {
   const locationDebounceTimer = useRef(null);
   const locationRequestId = useRef(0);
   const priceDebounceTimer = useRef(null);
+  const activityRequestId = useRef(0);
 
   const [activities, setActivities] = useState([]);
   const [currency, setCurrency] = useState("USD");
   const [totalCount, setTotalCount] = useState(0);
 
   const [loading, setLoading] = useState(true);
-  const [filterLoading, setFilterLoading] = useState(false);
+  const [filterLoading, setFilterLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [filterData, setFilterData] = useState({
@@ -219,6 +220,7 @@ const ActivityArea = () => {
     duration = selectedDuration,
     categories = selectedCategories,
   } = {}) => {
+    const requestId = ++activityRequestId.current;
     try {
       setLoading(true);
       setError("");
@@ -244,22 +246,25 @@ const ActivityArea = () => {
           order: "DESCENDING",
         },
       });
+      if (requestId !== activityRequestId.current) return;
       const result = response?.data?.searchV2?.result;
       console.log(result);
       setActivities(Array.isArray(result?.activities) ? result.activities : []);
       setCurrency(result?.currency || "USD");
       setTotalCount(result?.totalCount || 0);
     } catch (error) {
+      if (requestId !== activityRequestId.current) return;
       console.log("Activity API Error:", error);
       setError("Unable to load activities. Please try again.");
       setActivities([]);
       setTotalCount(0);
     } finally {
-      setLoading(false);
+      if (requestId === activityRequestId.current) setLoading(false);
     }
   };
 
   useEffect(() => {
+    let cancelled = false;
     const initializePage = async () => {
       try {
         setFilterLoading(true);
@@ -268,6 +273,7 @@ const ActivityArea = () => {
           body: {},
         });
 
+        if (cancelled) return;
         const result = response?.data?.getActivityFilters?.result;
 
         const minPrice = Number(result?.price?.min || 0);
@@ -292,30 +298,8 @@ const ActivityArea = () => {
           max: maxPrice,
         });
 
-        if (
-          !initialDestination ||
-          !initialDestinationId ||
-          !initialFromDate ||
-          !initialToDate
-        ) {
-          setLoading(false);
-          return;
-        }
-
-        await fetchActivities({
-          destination: initialDestination,
-          destinationId: initialDestinationId,
-          fromDate: initialFromDate,
-          toDate: initialToDate,
-          rating: null,
-          price: {
-            min: minPrice,
-            max: maxPrice,
-          },
-          duration: null,
-          categories: [],
-        });
       } catch (error) {
+        if (cancelled) return;
         console.log("Activity Filter API Error:", error);
 
         setFilterData({
@@ -333,37 +317,18 @@ const ActivityArea = () => {
           max: 500,
         });
 
-        if (
-          initialDestination &&
-          initialDestinationId &&
-          initialFromDate &&
-          initialToDate
-        ) {
-          await fetchActivities({
-            destination: initialDestination,
-            destinationId: initialDestinationId,
-            fromDate: initialFromDate,
-            toDate: initialToDate,
-            rating: null,
-            price: {
-              min: 0,
-              max: 500,
-            },
-            duration: null,
-            categories: [],
-          });
-        } else {
-          setLoading(false);
-        }
       } finally {
-        setFilterLoading(false);
+        if (!cancelled) setFilterLoading(false);
       }
     };
 
     initializePage();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
+    clearTimeout(priceDebounceTimer.current);
+    activityRequestId.current += 1;
     if (
       !initialDestination ||
       !initialDestinationId ||
@@ -391,6 +356,7 @@ const ActivityArea = () => {
       duration: null,
       categories: [],
     });
+    return () => { activityRequestId.current += 1; };
   }, [
     initialDestination,
     initialDestinationId,
@@ -403,6 +369,7 @@ const ActivityArea = () => {
     return () => {
       clearTimeout(locationDebounceTimer.current);
       clearTimeout(priceDebounceTimer.current);
+      activityRequestId.current += 1;
     };
   }, []);
 
@@ -428,6 +395,10 @@ const ActivityArea = () => {
     setSearchFromDate(newFromDate);
     setSearchToDate(newToDate);
 
+    clearTimeout(priceDebounceTimer.current);
+    const sameQuery = newDestination === initialDestination &&
+      String(newDestinationId) === initialDestinationId &&
+      newFromDate === initialFromDate && newToDate === initialToDate;
     setSearchParams({
       destination: newDestination,
       destinationId: newDestinationId,
@@ -443,6 +414,8 @@ const ActivityArea = () => {
     setMobileFilterOpen(false);
     setShowModifySearch(false);
 
+    // A changed URL is fetched by the effect; the same search still supports refresh.
+    if (!sameQuery || filterLoading) return;
     await fetchActivities({
       destination: newDestination,
       destinationId: newDestinationId,
@@ -1125,6 +1098,8 @@ const ActivityArea = () => {
                         <div className="activityArea__imageWrapper">
                           {activityImage ? (
                             <img
+                              loading={index < 3 ? "eager" : "lazy"}
+                              decoding="async"
                               src={activityImage}
                               alt={activity?.title || "Activity"}
                               className="activityArea__image"

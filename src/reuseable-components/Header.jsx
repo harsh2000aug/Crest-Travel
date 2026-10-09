@@ -450,7 +450,7 @@ const Header = ({ personDetails }) => {
             </button>
 
             <div className="travel-login-logo-area">
-              <img src={logo} alt="Travel Club" />
+              <img src={logo} width="240" height="319" decoding="async" alt="Travel Club" />
 
               <h2>Welcome Back</h2>
 
@@ -578,7 +578,7 @@ const Header = ({ personDetails }) => {
             </button>
 
             <div className="travel-login-logo-area">
-              <img src={logo} alt="Travel Club" />
+              <img src={logo} width="240" height="319" decoding="async" alt="Travel Club" />
 
               <h2>Forgot Password</h2>
 
@@ -660,7 +660,7 @@ const Header = ({ personDetails }) => {
             </button>
 
             <div className="travel-login-logo-area">
-              <img src={logo} alt="Travel Club" />
+              <img src={logo} width="240" height="319" decoding="async" alt="Travel Club" />
 
               <h2>Reset Password</h2>
 
@@ -976,7 +976,7 @@ const Header = ({ personDetails }) => {
                 setMenuOpen(false);
               }}
             >
-              <img src={logo} alt="logo" />
+              <img src={logo} width="240" height="319" decoding="async" alt="logo" />
             </div>
 
             <div className="member-login">

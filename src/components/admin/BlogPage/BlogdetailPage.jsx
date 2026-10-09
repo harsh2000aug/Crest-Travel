@@ -9,6 +9,7 @@ const BlogdetailPage = () => {
   const API_BASE_URL = hostname();
 
   const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -22,6 +23,8 @@ const BlogdetailPage = () => {
       } catch (err) {
         if (controller.signal.aborted) return;
         console.error("Fetch Error:", err);
+      } finally {
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     };
 
@@ -76,7 +79,7 @@ const BlogdetailPage = () => {
       </section>
 
       {/* Blog Cards */}
-      <section className="blogDetailPage__section">
+      <section className="blogDetailPage__section" aria-busy={isLoading}>
         <section className="blogDetailPage__related">
           <div className="blogDetailPage__cards">
             {posts.map((item, index) => (
@@ -88,6 +91,8 @@ const BlogdetailPage = () => {
                 <div className="blogDetailPage__relatedImage">
                   <img
                     src={item?.image}
+                    width="660"
+                    height="360"
                     alt={item?.imageAlt || item?.title}
                     loading={index < 3 ? "eager" : "lazy"}
                     decoding="async"

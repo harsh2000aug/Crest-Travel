@@ -36,7 +36,13 @@ const TravelTales = () => {
             <div className="voyage-card">
               <div className="voyage-image">
                 <img
-                  src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963"
+                  src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=max&w=960&q=80"
+                  srcSet="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=max&w=480&q=80 480w, https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=max&w=960&q=80 960w, https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=max&w=1440&q=80 1440w"
+                  sizes="(max-width: 767px) 90vw, (max-width: 1024px) 45vw, 30vw"
+                  loading="lazy"
+                  decoding="async"
+                  width="960"
+                  height="640"
                   alt=""
                 />
               </div>
@@ -55,7 +61,13 @@ const TravelTales = () => {
             <div className="voyage-card">
               <div className="voyage-image">
                 <img
-                  src="https://images.unsplash.com/photo-1548013146-72479768bada"
+                  src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=max&w=960&q=80"
+                  srcSet="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=max&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=max&w=960&q=80 960w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=max&w=1440&q=80 1440w"
+                  sizes="(max-width: 767px) 90vw, (max-width: 1024px) 45vw, 30vw"
+                  loading="lazy"
+                  decoding="async"
+                  width="960"
+                  height="640"
                   alt=""
                 />
               </div>
@@ -72,7 +84,13 @@ const TravelTales = () => {
             <div className="voyage-card">
               <div className="voyage-image">
                 <img
-                  src="https://images.unsplash.com/photo-1529655683826-aba9b3e77383"
+                  src="https://images.unsplash.com/photo-1529655683826-aba9b3e77383?auto=format&fit=max&w=960&q=80"
+                  srcSet="https://images.unsplash.com/photo-1529655683826-aba9b3e77383?auto=format&fit=max&w=480&q=80 480w, https://images.unsplash.com/photo-1529655683826-aba9b3e77383?auto=format&fit=max&w=960&q=80 960w, https://images.unsplash.com/photo-1529655683826-aba9b3e77383?auto=format&fit=max&w=1440&q=80 1440w"
+                  sizes="(max-width: 767px) 90vw, (max-width: 1024px) 45vw, 30vw"
+                  loading="lazy"
+                  decoding="async"
+                  width="960"
+                  height="640"
                   alt=""
                 />
               </div>
@@ -89,7 +107,13 @@ const TravelTales = () => {
             <div className="voyage-card">
               <div className="voyage-image">
                 <img
-                  src="https://images.unsplash.com/photo-1506744038136-46273834b3fb"
+                  src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=max&w=960&q=80"
+                  srcSet="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=max&w=480&q=80 480w, https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=max&w=960&q=80 960w, https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=max&w=1440&q=80 1440w"
+                  sizes="(max-width: 767px) 90vw, (max-width: 1024px) 45vw, 30vw"
+                  loading="lazy"
+                  decoding="async"
+                  width="960"
+                  height="640"
                   alt=""
                 />
               </div>
