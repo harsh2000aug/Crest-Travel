@@ -266,8 +266,8 @@ const AdminDash = () => {
                       const imageUrl = post.image?.startsWith("http")
                         ? post.image
                         : post.image
-                        ? `${API_BASE_URL}/${post.image}`
-                        : null;
+                          ? `${API_BASE_URL}/${post.image}`
+                          : null;
 
                       return (
                         <tr

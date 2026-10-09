@@ -11,8 +11,6 @@ const BlogdetailPage = () => {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-
-
   useEffect(() => {
     const controller = new AbortController();
     const fetchPosts = async () => {
@@ -44,7 +42,6 @@ const BlogdetailPage = () => {
     });
   };
 
-
   const truncateWords = (text, wordLimit = 10) => {
     if (!text) return "";
 
@@ -56,6 +53,7 @@ const BlogdetailPage = () => {
 
     return words.slice(0, wordLimit).join(" ") + " [...]";
   };
+
   useEffect(() => {
     window.scrollTo({
       top: 0,

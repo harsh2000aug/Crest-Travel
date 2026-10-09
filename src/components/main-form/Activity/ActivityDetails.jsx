@@ -135,12 +135,7 @@ const ActivityDetails = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedTimes, setSelectedTimes] = useState({});
 
-  const [participants, setParticipants] = useState({
-    adult: 1,
-    youth: 0,
-    child: 0,
-    infant: 0,
-  });
+  const [participants, setParticipants] = useState({});
 
   const [appliedParticipants, setAppliedParticipants] = useState({
     adult: 1,
@@ -213,6 +208,14 @@ const ActivityDetails = () => {
       nextParticipants[ageBand.type] = Number(ageBand.minTravelers) || 0;
     });
 
+    const hasAdult = activityAgeBands.some(
+      (ageBand) => ageBand.type === "adult",
+    );
+
+    if (hasAdult && Number(nextParticipants.adult) === 0) {
+      nextParticipants.adult = 1;
+    }
+
     setParticipants((previous) => ({
       ...previous,
       ...nextParticipants,
@@ -257,7 +260,7 @@ const ActivityDetails = () => {
         } else if (band === "CHILD") {
           participantType = "child";
         } else if (band === "INFANT") {
-          participantType = "child";
+          participantType = "infant";
         } else if (band === "SENIOR") {
           participantType = "senior";
         }
@@ -518,9 +521,11 @@ const ActivityDetails = () => {
 
                 const type = typeMap[band] || band.toLowerCase();
 
-                initialParticipants[type] = Number(ageBand?.minTravelers) || 0;
+                initialParticipants[type] =
+                  Number(ageBand?.minTravelers) || (type === "adult" ? 1 : 0);
               },
             );
+
             await loadAvailability(
               initialDate,
               initialParticipants,
@@ -737,7 +742,8 @@ const ActivityDetails = () => {
 
     activityAgeBands.forEach((ageBand) => {
       nextAppliedParticipants[ageBand.type] =
-        Number(participants[ageBand.type]) || ageBand.minTravelers;
+        Number(participants[ageBand.type]) ||
+        (ageBand.type === "adult" ? 1 : Number(ageBand.minTravelers) || 0);
     });
 
     setSearchParams(
@@ -799,12 +805,7 @@ const ActivityDetails = () => {
   };
 
   const getItemPrice = (item, detail) => {
-    const price =
-      detail?.totalPrice?.price ||
-      item?.availabilityDetails?.[0]?.totalPrice?.price ||
-      {};
-
-    return Number(price?.showOurPrice) || 0;
+    return Number(detail?.totalPrice?.price?.ourPrice) || 0;
   };
 
   const getItemPublicPrice = (item, detail) => {
@@ -1060,6 +1061,9 @@ const ActivityDetails = () => {
 
   const handleBookNow = (item, detail, gradeKey) => {
     const price = detail?.totalPrice?.price || {};
+
+    const ageBandOurPrice = Number(detail?.totalPrice?.price?.ourPrice) || 0;
+
     const selectedLanguageGuides = Array.isArray(item?.languageGuides)
       ? item.languageGuides.map((guide) => ({
           type: guide?.type || "",
@@ -1079,6 +1083,17 @@ const ActivityDetails = () => {
       activityCode: activityCode || "",
       name: displayTitle || "",
       image: galleryImages?.[0]?.photoURL || "",
+      ageBands: activityAgeBands
+        .map((ageBand) => ({
+          ageBand: ageBand.ageBand,
+          numberOfTravelers:
+            Number(
+              appliedParticipants?.[
+                ageBand.ageBand === "INFANT" ? "infant" : ageBand.type
+              ],
+            ) || 0,
+        }))
+        .filter((item) => item.numberOfTravelers > 0),
       category:
         categories
           ?.map((category) => category?.name)
@@ -1090,8 +1105,8 @@ const ActivityDetails = () => {
         (Number(appliedParticipants?.child) || 0) +
         (Number(appliedParticipants?.infant) || 0) +
         (Number(appliedParticipants?.youth) || 0),
-      ourPrice: Number(price?.showOurPrice) || 0,
-      payable: Number(price?.showOurPrice) || 0,
+      ourPrice: ageBandOurPrice,
+      payable: ageBandOurPrice,
       publicPrice: price?.publicPrice || "",
       cancellationPolicy: cancellationPolicy?.description || "",
       startTime: detail?.startTime || "",
@@ -1114,8 +1129,7 @@ const ActivityDetails = () => {
     const guests = [];
 
     activityAgeBands.forEach((ageBand) => {
-      const participantType =
-        ageBand.ageBand === "INFANT" ? "child" : ageBand.type;
+      const participantType = ageBand.type;
 
       const count = Number(appliedParticipants?.[participantType]) || 0;
 
@@ -1927,13 +1941,17 @@ const ActivityDetails = () => {
 
                   <strong>
                     {activityAgeBands
-                      .filter(
-                        (ageBand) =>
-                          Number(appliedParticipants[ageBand.type]) > 0,
-                      )
+                      .filter((ageBand) => {
+                        const count =
+                          Number(appliedParticipants[ageBand.type]) ||
+                          (ageBand.type === "adult" ? 1 : 0);
+
+                        return count > 0;
+                      })
                       .map((ageBand, index) => {
                         const count =
-                          Number(appliedParticipants[ageBand.type]) || 0;
+                          Number(appliedParticipants[ageBand.type]) ||
+                          (ageBand.type === "adult" ? 1 : 0);
 
                         return (
                           <React.Fragment key={ageBand.type}>
@@ -1981,7 +1999,7 @@ const ActivityDetails = () => {
                         const endAge = Number(ageBand?.endAge);
                         const min = Number(ageBand?.minTravelers);
                         const max = Number(ageBand?.maxTravelers);
-                        const currentCount = Number(participants[type]);
+                        const currentCount = Number(participants[type]) || min;
 
                         return (
                           <div

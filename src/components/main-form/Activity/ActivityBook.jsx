@@ -292,22 +292,13 @@ const ActivityBook = () => {
         formData.travelers?.[0] ||
         {};
 
-      const guestTypeMap = {
-        ADULT: "ADULT",
-        SENIOR: "ADULT",
-        YOUTH: "CHILD",
-        CHILD: "CHILD",
-        INFANT: "CHILD",
-      };
-
       const guests = (formData.travelers || []).map((traveler, index) => {
         const originalType =
           traveler.ageBand ||
           latestBookingData.guests?.[index]?.type ||
           "ADULT";
 
-        const normalizedType =
-          guestTypeMap[String(originalType).toUpperCase()] || "ADULT";
+        const normalizedType = String(originalType).toUpperCase();
 
         return {
           primary:
@@ -329,10 +320,10 @@ const ActivityBook = () => {
 
       const bookingAgeBandMap = {
         ADULT: "ADULT",
-        SENIOR: "ADULT",
-        YOUTH: "CHILD",
+        SENIOR: "SENIOR",
+        YOUTH: "YOUTH",
         CHILD: "CHILD",
-        INFANT: "CHILD",
+        INFANT: "INFANT",
       };
 
       (formData.travelers || []).forEach((traveler, index) => {
@@ -347,8 +338,7 @@ const ActivityBook = () => {
 
             const answer =
               question.id === "AGEBAND"
-                ? bookingAgeBandMap[String(originalAnswer).toUpperCase()] ||
-                  "ADULT"
+                ? String(originalAnswer).toUpperCase() || "ADULT"
                 : originalAnswer;
 
             bookingQuestionAnswers.push(
@@ -400,11 +390,14 @@ const ActivityBook = () => {
       }
 
       const adultCount = guests.filter(
-        (guest) => guest.type === "ADULT",
+        (guest) => guest.type === "ADULT" || guest.type === "SENIOR",
       ).length;
 
       const childCount = guests.filter(
-        (guest) => guest.type === "CHILD",
+        (guest) =>
+          guest.type === "CHILD" ||
+          guest.type === "INFANT" ||
+          guest.type === "YOUTH",
       ).length;
 
       const requestBody = {
@@ -420,6 +413,7 @@ const ActivityBook = () => {
         description: latestBookingData.description || "",
         adults: adultCount,
         children: childCount,
+        // ageBands: latestBookingData.ageBands || [],
         city: formData.city || "",
         state: formData.state || "",
         country: formData.country || "",
@@ -511,7 +505,7 @@ const ActivityBook = () => {
       const expiryMonth = expiry.slice(0, 2);
       const expiryYear = expiry.slice(2, 4);
 
-      const paymentRemaining = Number(latestBookingData.ourPrice);
+      const paymentRemaining = Number(latestBookingData.payable) || 0;
 
       const response = await activityOrderPlace({
         body: {
@@ -579,18 +573,10 @@ const ActivityBook = () => {
             firstName: primaryTraveler.firstName || "",
 
             type: (() => {
-              const ageBandMap = {
-                ADULT: "Adult",
-                SENIOR: "Adult",
-                YOUTH: "Child",
-                CHILD: "Child",
-                INFANT: "Infant",
-              };
-
               const ageBand =
                 primaryTraveler.ageBand || primaryTraveler.type || "ADULT";
 
-              return ageBandMap[ageBand] || "Adult";
+              return String(ageBand).toUpperCase();
             })(),
 
             title: primaryTraveler.title || "",
@@ -602,23 +588,19 @@ const ActivityBook = () => {
             contactNo: primaryTraveler.phone || "",
           },
 
-          ageBandCount: (formData.travelers || []).reduce((acc, traveler) => {
-            const ageBand = traveler.ageBand || traveler.type;
+          ageBandCount: (latestBookingData?.ageBands || []).reduce(
+            (acc, item) => {
+              const ageBand = String(item?.ageBand || "").toUpperCase();
+              const count = Number(item?.numberOfTravelers) || 0;
 
-            const ageBandMap = {
-              ADULT: "ADULT",
-              SENIOR: "ADULT",
-              YOUTH: "CHILD",
-              CHILD: "CHILD",
-              INFANT: "INFANT",
-            };
+              if (ageBand && count > 0) {
+                acc[ageBand] = count;
+              }
 
-            const mappedAgeBand = ageBandMap[ageBand] || "ADULT";
-
-            acc[mappedAgeBand] = (acc[mappedAgeBand] || 0) + 1;
-
-            return acc;
-          }, {}),
+              return acc;
+            },
+            {},
+          ),
 
           bookingQuestionAnswers,
 
@@ -1990,11 +1972,13 @@ const ActivityBook = () => {
 
                     <strong>
                       {storedBookingData.payable
-                        ? `$${String(storedBookingData.payable).replace(
-                            /^₹\s*/,
-                            "",
-                          )}`
-                        : "$0"}
+                        ? `$${Number(
+                            String(storedBookingData.payable).replace(
+                              /[$₹\s,]/g,
+                              "",
+                            ),
+                          ).toFixed(2)}`
+                        : "$0.00"}
                     </strong>
                   </div>
 

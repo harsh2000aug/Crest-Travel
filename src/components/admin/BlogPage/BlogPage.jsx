@@ -11,46 +11,82 @@ const BlogPage = () => {
 
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [openFaq, setOpenFaq] = useState(null);
   const [error, setError] = useState("");
   const [latestBlogs, setLatestBlogs] = useState([]);
   const API_BASE_URL = hostname();
 
   useEffect(() => {
     const controller = new AbortController();
+
     const fetchBlog = async () => {
       try {
         setLoading(true);
         setError("");
 
+        const response = await fetch(`${API_BASE_URL}/blog`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch blogs");
+        }
+
         const result = await fetchPublicBlogs(controller.signal);
 
-        if (result.success) {
-          const blogs = Array.isArray(result.data) ? result.data : [];
-          const selectedBlog = blogs.find((item) => item.slug === slug);
-          if (selectedBlog) {
-            setBlog(selectedBlog);
-          } else {
-            setBlog(null);
-            setError("Blog not found");
-          }
-          const latest = blogs
-            .filter((item) => item.slug !== slug)
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            .slice(0, 5);
-          setLatestBlogs(latest);
+        if (!result.success) {
+          throw new Error("Failed to fetch blogs");
+        }
+
+        const blogs = Array.isArray(result.data) ? result.data : [];
+
+        const selectedBlog = blogs.find((item) => item.slug === slug);
+
+        if (!selectedBlog) {
+          setBlog(null);
+          setError("Blog not found");
+          return;
+        }
+
+        const blogId = selectedBlog._id;
+
+        const blogResponse = await fetch(`${API_BASE_URL}/blog/${blogId}`, {
+          signal: controller.signal,
+        });
+
+        if (!blogResponse.ok) {
+          throw new Error("Failed to fetch blog");
+        }
+
+        const blogResult = await blogResponse.json();
+
+        if (blogResult.success) {
+          setBlog(blogResult.data);
         } else {
+          setBlog(null);
           setError("Blog not found");
         }
+
+        const latest = blogs
+          .filter((item) => item.slug !== slug)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 5);
+
+        setLatestBlogs(latest);
       } catch (error) {
         if (controller.signal.aborted) return;
+
         console.error("Error fetching blog:", error);
         setError("Unable to load blog.");
       } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchBlog();
+
     return () => controller.abort();
   }, [slug, API_BASE_URL]);
 
@@ -89,6 +125,22 @@ const BlogPage = () => {
     });
   }, [slug]);
 
+  const getImageUrl = (image) => {
+    if (!image) return "";
+
+    if (image.startsWith("http://") || image.startsWith("https://")) {
+      return image;
+    }
+
+    const cleanBase = API_BASE_URL.endsWith("/")
+      ? API_BASE_URL.slice(0, -1)
+      : API_BASE_URL;
+
+    const cleanImage = image.startsWith("/") ? image : `/${image}`;
+
+    return `${cleanBase}${cleanImage}`;
+  };
+
   if (loading) {
     return (
       <div className="tripoFullBlogPage">
@@ -125,7 +177,11 @@ const BlogPage = () => {
     "Discover exclusive travel benefits with Crest Travel Club.";
   const blogUrl = `https://www.cresttravelclub.com/blogs/${blog.slug}`;
   let ogImage = (blog.image || "").replace(/^http:\/\//, "https://");
-  if (ogImage && !ogImage.startsWith("https://") && !ogImage.startsWith("blob:")) {
+  if (
+    ogImage &&
+    !ogImage.startsWith("https://") &&
+    !ogImage.startsWith("blob:")
+  ) {
     const cleanPath = ogImage.startsWith("/") ? ogImage.slice(1) : ogImage;
     const cleanBase = API_BASE_URL.endsWith("/")
       ? API_BASE_URL.slice(0, -1)
@@ -174,7 +230,7 @@ const BlogPage = () => {
               {blog.image && (
                 <div className="tripoFullBlogHero">
                   <img
-                    src={blog.image}
+                    src={getImageUrl(blog.image)}
                     alt={blog.imageAlt || blog.title}
                     width={660}
                     height={320}
@@ -211,14 +267,12 @@ const BlogPage = () => {
                 )}
               </div>
 
-              {/* Description */}
               {blog.shortDescription && (
                 <p className="tripoFullBlogDescription">
                   {blog.shortDescription}
                 </p>
               )}
 
-              {/* Blog Content */}
               <article className="tripoFullBlogContent">
                 <div
                   dangerouslySetInnerHTML={{
@@ -227,11 +281,56 @@ const BlogPage = () => {
                 />
               </article>
 
-              {/* Author */}
+              {blog.faqs?.length > 0 && (
+                <section className="tripoFullBlogFaqSection">
+                  <h2 className="tripoFullBlogFaqHeading">
+                    Frequently Asked Questions
+                  </h2>
+
+                  <div className="tripoFullBlogFaqList">
+                    {[...blog.faqs]
+                      .filter((faq) => faq.status === "active")
+                      .sort((a, b) => a.sortOrder - b.sortOrder)
+                      .map((faq, index) => (
+                        <div
+                          key={faq._id || index}
+                          className="tripoFullBlogFaqItem"
+                        >
+                          <button
+                            type="button"
+                            className="tripoFullBlogFaqQuestion"
+                            onClick={() =>
+                              setOpenFaq(openFaq === index ? null : index)
+                            }
+                          >
+                            <span>{faq.question}</span>
+
+                            <span
+                              className={`tripoFullBlogFaqIcon ${
+                                openFaq === index
+                                  ? "tripoFullBlogFaqIconOpen"
+                                  : ""
+                              }`}
+                            >
+                              +
+                            </span>
+                          </button>
+
+                          {openFaq === index && (
+                            <div className="tripoFullBlogFaqAnswer">
+                              {faq.answer}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                </section>
+              )}
+
               <section className="tripoFullBlogAuthorBox">
                 {blog.authorImage && (
                   <img
-                    src={blog.authorImage}
+                    src={getImageUrl(blog.authorImage)}
                     alt={blog.authorName || "Author"}
                     width={80}
                     height={80}

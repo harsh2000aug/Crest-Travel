@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
 import { hostname } from "../../../Utils/api/apiUtils";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const [loginId, setLoginId] = useState("");
@@ -88,7 +89,7 @@ const Login = () => {
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? "👁️" : "👁️‍🗨️"}
+                {showPassword ? <FaEye /> : <FaEyeSlash />}
               </button>
             </div>
           </div>

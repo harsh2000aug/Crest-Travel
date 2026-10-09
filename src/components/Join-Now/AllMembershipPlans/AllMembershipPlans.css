@@ -1,0 +1,830 @@
+.crest-signature-container {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+  gap: 45px;
+}
+
+.crest-signature-left {
+  min-width: 0;
+}
+
+.crest-signature-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #f4dfb9;
+  color: #604a2e;
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.crest-signature-badge svg {
+  font-size: 10px;
+}
+
+.crest-signature-title {
+  margin: 0;
+  font-size: 52px;
+  line-height: 0.88;
+  font-weight: 700;
+  letter-spacing: -2.5px;
+}
+
+.crest-signature-title span {
+  color: #745d40;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.crest-signature-description {
+  margin: 17px 0 18px;
+  color: #000;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.crest-signature-features {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.crest-signature-feature {
+  padding: 10px 10px 9px;
+  border-radius: 4px;
+  background: #f5f4f0;
+}
+
+.crest-feature-icon {
+  display: flex;
+  align-items: center;
+  color: #6f5b3f;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.crest-signature-feature h4 {
+  margin: 4px 0 5px;
+  font-size: 14px;
+  line-height: 1.15;
+  font-weight: 600;
+  color: #24231f;
+}
+
+.crest-signature-feature p {
+  margin: 0;
+  color: #000;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.crest-signature-cta {
+  width: 100%;
+  min-height: 48px;
+  border: none;
+  border-radius: 4px;
+  background: #050505;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 17px;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.crest-signature-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.16);
+}
+
+.crest-signature-cta span {
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: 0.15px;
+}
+
+.crest-signature-cta svg {
+  flex-shrink: 0;
+  font-size: 15px;
+}
+
+.crest-signature-points {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 13px;
+  flex-wrap: wrap;
+}
+
+.crest-signature-points div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #000;
+  font-size: 14px;
+}
+
+.crest-signature-points svg {
+  color: #000;
+  font-size: 14px;
+}
+
+.crest-signature-right {
+  width: 100%;
+  justify-self: end;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 28px rgba(56, 47, 35, 0.04);
+  box-sizing: border-box;
+}
+
+/* =========================
+   MEMBER CARD
+========================= */
+
+.crest-member-card {
+  height: 170px;
+  padding: 14px 15px;
+  border-radius: 7px;
+  box-sizing: border-box;
+  color: #fff;
+  background:
+    radial-gradient(
+      circle at 75% 20%,
+      rgba(145, 119, 70, 0.18),
+      transparent 35%
+    ),
+    linear-gradient(135deg, #070707 0%, #17140f 52%, #292219 100%);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  position: relative;
+  overflow: hidden;
+}
+
+.crest-member-card::after {
+  content: "";
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  right: -70px;
+  bottom: -100px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.crest-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.crest-card-small {
+  display: block;
+  margin-bottom: 4px;
+  color: #c9ae7b;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+}
+
+.crest-card-top h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.crest-card-crown {
+  color: #c7a96e;
+  font-size: 18px;
+}
+
+.crest-card-number {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 27px;
+  color: #d5d0c5;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.crest-card-chip {
+  width: 22px;
+  height: 15px;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #c5aa78, #f1d69d);
+  position: relative;
+}
+
+.crest-card-chip::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 3px;
+  width: 10px;
+  height: 8px;
+  border: 1px solid rgba(70, 55, 30, 0.5);
+}
+
+.crest-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 22px;
+}
+
+.crest-card-bottom div:last-child {
+  text-align: right;
+}
+
+.crest-card-bottom span {
+  display: block;
+  color: #8f887b;
+  font-size: 10px;
+  letter-spacing: 0.7px;
+  margin-bottom: 3px;
+}
+
+.crest-card-bottom strong {
+  display: block;
+  color: #e0d6c3;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+}
+
+.crest-insurance-box {
+  min-height: 45px;
+  margin-top: 15px;
+  padding: 20px 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #f3f0e8;
+  border-radius: 5px;
+}
+
+.crest-insurance-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ead9bd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #725a3a;
+  font-size: 16px;
+}
+
+.crest-insurance-content {
+  flex: 1;
+}
+
+.crest-insurance-content strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.crest-insurance-content span {
+  display: block;
+  margin-top: 4px;
+  color: #777269;
+  font-size: 12px;
+}
+
+.crest-insurance-box small {
+  padding: 5px 5px;
+  border-radius: 2px;
+  font-weight: 600;
+  color: #776547;
+  background: #e8ddca;
+  letter-spacing: 0.7px;
+  font-size: 10px;
+}
+
+.crest-price-card {
+  margin-top: 15px;
+  padding: 20px 10px;
+  background: #f3f0e8;
+  border-radius: 5px;
+}
+
+.crest-price-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.crest-price {
+  display: flex;
+  align-items: baseline;
+}
+
+.crest-price span {
+  font-size: 29px;
+  line-height: 1;
+}
+
+.crest-price small {
+  margin-left: 5px;
+  color: #77736b;
+  font-size: 10px;
+}
+
+.crest-minimum-badge {
+  padding: 4px 6px;
+  border-radius: 2px;
+  background: #ead9bb;
+  color: #4d402d;
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.crest-price-description {
+  margin: 7px 0 7px;
+  color: #000;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.crest-price-note {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #000;
+  font-size: 10px;
+}
+
+.crest-price-note svg {
+  font-size: 10px;
+}
+
+@media (max-width: 900px) {
+  .crest-signature-container {
+    grid-template-columns: 1fr;
+    gap: 35px;
+  }
+
+  .crest-signature-right {
+    max-width: 520px;
+    width: 100%;
+    justify-self: center;
+  }
+
+  .crest-signature-title {
+    font-size: 55px;
+  }
+}
+
+@media (max-width: 600px) {
+  .crest-signature-title {
+    font-size: 45px;
+    letter-spacing: -1.5px;
+  }
+
+  .crest-signature-description {
+    font-size: 12px;
+  }
+
+  .crest-signature-features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .crest-signature-points {
+    gap: 10px;
+  }
+
+  .crest-signature-right {
+    padding: 10px;
+  }
+
+  .crest-member-card {
+    height: 165px;
+  }
+}
+
+@media (max-width: 400px) {
+  .crest-signature-title {
+    font-size: 39px;
+  }
+
+  .crest-signature-features {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .crest-signature-feature {
+    min-height: 85px;
+  }
+
+  .crest-signature-cta {
+    padding: 9px 12px;
+  }
+
+  .crest-signature-points {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.center-text {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.membership-benefits span {
+  color: #d4a64a;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 2.4px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.membership-benefits h2 {
+  font-size: 46px;
+  font-weight: 700;
+  color: #061d39;
+  margin-bottom: 20px;
+}
+
+.membership-benefits p {
+  font-size: 16px;
+  color: #061d39;
+}
+
+.detailed-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.miniCard {
+  width: calc(33.33% - 20px);
+  position: relative;
+  border-radius: 4px;
+  padding: 20px;
+  background: #fff;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
+
+.miniCardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.miniCardIcon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f0ec;
+  border-radius: 4px;
+  color: #666;
+  font-size: 20px;
+}
+
+.miniCardLabel {
+  font-size: 6px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.miniCardBody {
+  margin-top: 11px;
+}
+
+.miniCardBody h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.miniCardBody p {
+  margin: 15px 0 0;
+  font-size: 16px;
+  line-height: 1.45;
+  color: #777;
+}
+
+.miniCardLine {
+  width: 28px;
+  height: 2px;
+  margin-top: 10px;
+  background: #d4a64a;
+}
+
+.joining-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.joining-benefits .numberone {
+  width: calc(50% - 20px);
+  background: #efeeea;
+  padding: 20px;
+  border-radius: 4px;
+}
+
+.joining-benefits .numberone h5 {
+  color: #d4a64a;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.joining-benefits .numberone h3 {
+  color: #000;
+  font-size: 26px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.joining-benefits .numberone p {
+  color: #000;
+  font-size: 16px;
+  margin-bottom: 50px;
+}
+
+.joining-benefits .disc_price {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.joining-benefits .disc_price .disc_price_one {
+  background: #fff;
+  padding: 15px;
+  border-radius: 4px;
+  width: calc(50% - 10px);
+}
+
+.joining-benefits .disc_price .disc_price_one h4 {
+  color: #d4a64a;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.joining-benefits .disc_price .disc_price_one p {
+  margin-bottom: 0px !important;
+  font-size: 14px;
+}
+
+.joining-benefits .numbertwo {
+  width: calc(50% - 20px);
+  border-radius: 4px;
+}
+
+.joining-benefits .numbertwo .numbertwo_top {
+  background: #f5f4f0;
+  padding: 20px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.joining-benefits .numbertwo .numbertwo_top:last-child {
+  margin-bottom: 0px;
+}
+
+.joining-benefits .numbertwo .numbertwo_top .its_icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #d4a64a;
+  border-radius: 12px;
+  color: #000;
+  font-size: 26px;
+  margin-bottom: 20px;
+}
+
+.joining-benefits .numbertwo .numbertwo_top h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.miniCardNew {
+  width: calc(25% - 20px) !important;
+}
+
+.miniCardNew .miniCardIcon,
+.miniCardIconNew {
+  color: #725b38;
+}
+
+.miniCardNew:hover {
+  background: #fedeb266;
+  transition: all 0.3s ease-in-out;
+}
+
+.imp_notice {
+  margin-top: 50px;
+  background: #efeeea;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.imp_notice p {
+  font-size: 14px;
+}
+
+.imp_notice svg {
+  color: #d4a64a;
+  vertical-align: middle;
+  font-size: 16px;
+  margin-right: 5px;
+}
+
+.crestFaq {
+  width: 100%;
+  padding: 22px 25px;
+}
+
+.crestFaqBox {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 17px;
+  border-radius: 5px;
+  background: #f5f4f0;
+}
+
+.crestFaqBox:last-child {
+  margin-bottom: 0;
+}
+
+.crestFaqHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.crestFaqHead h3 {
+  margin: 0;
+  color: #111;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.crestFaqHead svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  color: #715e3d;
+  stroke-width: 1.7;
+  cursor: pointer;
+}
+
+.crestFaqAnswer {
+  margin-top: 15px;
+  line-height: 1.45;
+}
+
+.crestFaqAnswer p {
+  margin: 0;
+  font-size: 14px;
+  color: #000 !important;
+}
+
+.crestFaqAnswer ol {
+  margin: 5px 0 0;
+  padding-left: 20px;
+}
+
+.crestFaqAnswer li {
+  margin-bottom: 5px;
+  font-size: 14px;
+  list-style-type: disc;
+}
+
+.crest-signature-memb {
+  text-align: center;
+  background: #f5f4f0;
+  padding: 20px;
+  border-radius: 4px;
+  margin: 50px 0;
+}
+
+@media (max-width: 767px) {
+  .center-text {
+    margin-bottom: 20px;
+  }
+
+  .membership-benefits h2 {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .membership-benefits p {
+    font-size: 14px;
+  }
+
+  .miniCard {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .miniCardIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .miniCardBody h2 {
+    font-size: 18px;
+  }
+
+  .miniCardLine {
+    display: none;
+  }
+
+  .joining-benefits .numberone {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .joining-benefits .numberone h5 {
+    margin-bottom: 15px;
+  }
+
+  .joining-benefits .numberone h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  .joining-benefits .numberone p {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .joining-benefits .disc_price .disc_price_one {
+    padding: 10px;
+  }
+
+  .joining-benefits .disc_price .disc_price_one h4 {
+    margin-bottom: 5px;
+    font-size: 16px;
+  }
+
+  .joining-benefits .disc_price .disc_price_one p {
+    font-size: 12px;
+  }
+
+  .joining-benefits .numbertwo {
+    width: 100%;
+  }
+
+  .joining-benefits .numbertwo .numbertwo_top {
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .joining-benefits .numbertwo .numbertwo_top .its_icon {
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+    margin-bottom: 15px;
+  }
+
+  .joining-benefits .numbertwo .numbertwo_top h3 {
+    font-size: 18px;
+  }
+
+  .miniCardNew {
+    width: calc(50% - 10px) !important;
+  }
+
+  .imp_notice {
+    margin-top: 20px;
+  }
+
+  .crestFaq {
+    padding: 0px;
+  }
+
+  .crestFaqHead h3 {
+    font-size: 14px;
+  }
+
+  .crestFaqAnswer {
+    font-size: 9px;
+  }
+}
