@@ -42,6 +42,9 @@ import {
   RiRefreshLine,
   RiWifiLine,
 } from "react-icons/ri";
+import prestigeimg1 from "../../../assets/images/prestige_img1.png";
+import prestigeimg2 from "../../../assets/images/prestige_img2.png";
+import prestigeimg3 from "../../../assets/images/prestige_img3.png";
 
 /* ---------- DATA ---------- */
 
@@ -174,11 +177,11 @@ const FAQS = [
     a: (
       <p>
         The Crest Travel Club Prestige Membership Plan is a premium travel
-        membership that gives members access to a wide range of travel
-        benefits, services, deals, and exclusive privileges. For $79.99/month,
-        Prestige members can access benefits across hotels, flights, vacation
-        rentals, cruises, activities, airport lounges, travel services, Room
-        Coins, and more.
+        membership that gives members access to a wide range of travel benefits,
+        services, deals, and exclusive privileges. For $79.99/month, Prestige
+        members can access benefits across hotels, flights, vacation rentals,
+        cruises, activities, airport lounges, travel services, Room Coins, and
+        more.
       </p>
     ),
   },
@@ -212,12 +215,12 @@ const FAQS = [
       <p>
         Prestige members receive a wide range of travel services and benefits,
         such as hotels, vacation rentals, flights, events and tickets, cruises,
-        activities, tours, unlimited airport lounge access, Travel Marketplace
-        + Status Max, Flight Insurance up to $200K, BagAssure – Family, Fast
-        Pass Passport and Visa Service, and 80 Room Coins every month. Members
-        also get access to additional travel services, like Private Jet
-        Service, Medi-Jet Service, Luggage Storage, and curated travel deals,
-        subject to applicable terms and conditions.
+        activities, tours, unlimited airport lounge access, Travel Marketplace +
+        Status Max, Flight Insurance up to $200K, BagAssure – Family, Fast Pass
+        Passport and Visa Service, and 80 Room Coins every month. Members also
+        get access to additional travel services, like Private Jet Service,
+        Medi-Jet Service, Luggage Storage, and curated travel deals, subject to
+        applicable terms and conditions.
       </p>
     ),
   },
@@ -320,8 +323,8 @@ const Prestige = () => {
 
               <p className="pt-hero-text">
                 Want to experience luxurious and premium travel services? Buy
-                the Crest Travel Club Prestige plan- travel privileges,
-                savings, and services now at your fingertips.
+                the Crest Travel Club Prestige plan- travel privileges, savings,
+                and services now at your fingertips.
               </p>
 
               <div className="pt-hero-actions">
@@ -463,14 +466,17 @@ const Prestige = () => {
               {/* Sanctuaries */}
               <div className="pt-pf-card pt-pf-photo">
                 <img
-                  src="/src/assets/images/prestige-img1.png"
+                  src={prestigeimg1}
                   alt="Luxury seaside villa with infinity pool"
                 />
                 <div className="pt-pf-text">
                   <span className="pt-pf-label">
                     <FaBuilding /> SANCTUARIES
                   </span>
-                  <p>Hotel options/locations and travel stays designed to fit your trip.</p>
+                  <p>
+                    Hotel options/locations and travel stays designed to fit
+                    your trip.
+                  </p>
                 </div>
               </div>
 
@@ -483,17 +489,16 @@ const Prestige = () => {
                 <div className="pt-pf-big">40%–50%</div>
                 <div className="pt-pf-big-sub">Discount Benchmark</div>
                 <div className="pt-pf-note">
-                  <strong>Saves up to 40%-50% on eligible booking prices.</strong>
+                  <strong>
+                    Saves up to 40%-50% on eligible booking prices.
+                  </strong>
                   <span>Applied automatically across our curated network.</span>
                 </div>
               </div>
 
               {/* Aviation */}
               <div className="pt-pf-card pt-pf-photo">
-                <img
-                  src="/src/assets/images/prestige_img2.png"
-                  alt="Private jet cabin interior"
-                />
+                <img src={prestigeimg2} alt="Private jet cabin interior" />
                 <div className="pt-pf-text">
                   <span className="pt-pf-label">
                     <FaPlane /> AVIATION
@@ -507,10 +512,7 @@ const Prestige = () => {
 
               {/* Voyages */}
               <div className="pt-pf-card pt-pf-photo">
-                <img
-                  src="/src/assets/images/prestige_img3.png"
-                  alt="Luxury yacht at sunset"
-                />
+                <img src={prestigeimg3} alt="Luxury yacht at sunset" />
                 <div className="pt-pf-text">
                   <span className="pt-pf-label">
                     <FaShip /> VOYAGES
@@ -542,13 +544,19 @@ const Prestige = () => {
                   <span className="pt-pf-label">
                     <FaCompass /> ADVENTURES
                   </span>
-                  <p>Explore exciting destinations with fun and thrilling activities and tours.</p>
+                  <p>
+                    Explore exciting destinations with fun and thrilling
+                    activities and tours.
+                  </p>
                 </div>
                 <div className="pt-pf-card pt-pf-mini">
                   <span className="pt-pf-label">
                     <FaCar /> MOBILITY
                   </span>
-                  <p>Enjoy a comfortable journey with convenient transportation options.</p>
+                  <p>
+                    Enjoy a comfortable journey with convenient transportation
+                    options.
+                  </p>
                 </div>
               </div>
             </div>
@@ -564,11 +572,11 @@ const Prestige = () => {
                 Prestige Membership Plan Is More Than Just Bookings
               </h2>
               <p className="pt-lead">
-                Joining Prestige membership on Crest Travel Club not only
-                offers you great discounts on flight and hotel bookings,
-                cruises, car rentals, but also offers members premium travel
-                services and benefits to add more value, flexibility, and
-                convenience to their journeys.
+                Joining Prestige membership on Crest Travel Club not only offers
+                you great discounts on flight and hotel bookings, cruises, car
+                rentals, but also offers members premium travel services and
+                benefits to add more value, flexibility, and convenience to
+                their journeys.
               </p>
             </div>
 
@@ -611,8 +619,7 @@ const Prestige = () => {
               <span className="pt-eyebrow">MEMBER ACCOUNTS</span>
               <h2 className="pt-h2">Testimonials</h2>
               <p className="pt-lead">
-                Real narratives from travelers who made the Prestige
-                transition.
+                Real narratives from travelers who made the Prestige transition.
               </p>
             </div>
 
@@ -654,7 +661,10 @@ const Prestige = () => {
               {FAQS.map((f, i) => {
                 const open = activeFaq === i;
                 return (
-                  <div className={`pt-faq-item ${open ? "is-open" : ""}`} key={f.q}>
+                  <div
+                    className={`pt-faq-item ${open ? "is-open" : ""}`}
+                    key={f.q}
+                  >
                     <button
                       type="button"
                       className="pt-faq-head"
