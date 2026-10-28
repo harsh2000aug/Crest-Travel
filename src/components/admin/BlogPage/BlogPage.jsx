@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { serializeBlogSchema } from "../../../Utils/seo/schema";
 import "./Blogpage.css";
 import { fetchPublicBlogs, hostname } from "../../../Utils/api/apiUtils";
 import Footer from "../../../reuseable-components/Footer";
@@ -8,6 +9,7 @@ import Header from "../../../reuseable-components/Header";
 
 const BlogPage = () => {
   const { slug } = useParams();
+  const location = useLocation();
 
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,14 +25,6 @@ const BlogPage = () => {
       try {
         setLoading(true);
         setError("");
-
-        const response = await fetch(`${API_BASE_URL}/blog`, {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch blogs");
-        }
 
         const result = await fetchPublicBlogs(controller.signal);
 
@@ -101,21 +95,41 @@ const BlogPage = () => {
   };
 
   const blogSchema = useMemo(() => {
-    if (!blog?.schemaCode) return "";
+    if (!blog) return "";
 
-    const rawSchema = blog.schemaCode
-      .replace(/<script[^>]*>/gi, "")
-      .replace(/<\/script>/gi, "")
-      .trim();
-
-    try {
-      JSON.parse(rawSchema);
-      return rawSchema;
-    } catch (error) {
-      console.error("Invalid schemaCode JSON for blog:", blog.slug, error);
-      return "";
+    if (typeof blog.schemaCode === "string" && blog.schemaCode.trim()) {
+      try {
+        return serializeBlogSchema(blog.schemaCode);
+      } catch (error) {
+        console.error("Invalid schemaCode JSON for blog:", blog.slug, error);
+      }
     }
-  }, [blog?.schemaCode, blog?.slug]);
+
+    const url = "https://www.cresttravelclub.com/blogs/" + blog.slug;
+    let image;
+    if (blog.image) {
+      try {
+        image = new URL(blog.image, API_BASE_URL + "/").href;
+      } catch {
+        // A malformed optional image must not prevent the article rendering.
+      }
+    }
+    return JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "@id": url + "#article",
+      url,
+      mainEntityOfPage: url,
+      headline: blog.title || blog.metaTitle || "Travel Blog",
+      description: blog.metaDescription || blog.shortDescription || undefined,
+      image,
+      datePublished: blog.createdAt || undefined,
+      dateModified: blog.updatedAt || blog.createdAt || undefined,
+      ...(blog.authorName && {
+        author: { "@type": "Person", name: blog.authorName },
+      }),
+    }).replace(/</g, "\\u003c");
+  }, [blog, API_BASE_URL]);
 
   useEffect(() => {
     window.scrollTo({
@@ -170,7 +184,7 @@ const BlogPage = () => {
     );
   }
 
-  const metaTitle = blog.metaTitle || blog.title || "Crest Travel Club";
+  const metaTitle = blog.metaTitle || blog.title || "Travel Blog";
   const metaDescription =
     blog.metaDescription ||
     blog.shortDescription ||
@@ -194,7 +208,6 @@ const BlogPage = () => {
       <Helmet>
         <title>{metaTitle}</title>
         <meta name="description" content={metaDescription} />
-        <link rel="canonical" href={blogUrl} />
         <meta property="og:title" content={metaTitle} />
         <meta property="og:description" content={metaDescription} />
         {ogImage && <meta property="og:image" content={ogImage} />}
@@ -220,7 +233,10 @@ const BlogPage = () => {
         <Header />
       </div>
 
-      <main className="tripoFullBlogPage">
+      <main
+        className="tripoFullBlogPage"
+        data-prerender-ready={blog.slug === slug ? location.pathname : undefined}
+      >
         <div className="container">
           <div className="blog-content">
             <div className="blog-left">

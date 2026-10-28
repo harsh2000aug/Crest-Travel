@@ -27,10 +27,6 @@ const Terms = () => {
           content="Read the terms and conditions for Crest Travel Club membership, including usage policies, member responsibilities, and service terms."
         />
 
-        <link
-          rel="canonical"
-          href="https://www.cresttravelclub.com/terms-and-conditions"
-        />
       </Helmet>
 
       <div className="tp-page">

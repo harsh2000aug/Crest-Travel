@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { readFileSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { readFileSync, existsSync } from "node:fs";
+import { resolve, dirname, sep } from "node:path";
 import { createHash } from "node:crypto";
 import postcss from "postcss";
 
@@ -290,8 +290,45 @@ function pagePerformance() {
   };
 }
 
+
+// Serve generated directory indexes first, then the unrendered SPA shell.
+// This keeps private/unlisted URLs from inheriting the homepage's SEO in preview.
+function prerenderPreview() {
+  let outDir;
+  return {
+    name: "prerender-preview",
+    configResolved(config) {
+      outDir = resolve(config.root, config.build.outDir);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        if (req.method !== "GET" && req.method !== "HEAD") return next();
+        const accept = req.headers.accept;
+        if (accept && !accept.includes("text/html") && !accept.includes("*/*")) return next();
+        let pathname;
+        try {
+          pathname = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
+        } catch {
+          return next();
+        }
+        const target = resolve(outDir, "." + pathname);
+        if (target !== outDir && !target.startsWith(outDir + sep)) return next();
+        if (existsSync(resolve(target, "index.html"))) {
+          req.url = encodeURI(pathname.replace(/\/+$/, "") + "/index.html");
+          return next();
+        }
+        if (!existsSync(target) && !existsSync(target + ".html") &&
+            existsSync(resolve(outDir, "spa.html"))) {
+          req.url = "/spa.html";
+        }
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), pagePerformance()],
+  plugins: [react(), pagePerformance(), prerenderPreview()],
   build: { cssCodeSplit: false },
   server: {
     host: "0.0.0.0",

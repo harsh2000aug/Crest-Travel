@@ -29,8 +29,6 @@ const AboutUs = () => {
           content="Learn about Crest Travel Club — a membership-based travel club helping members save on hotels, resorts, cruises, car rentals, and flights."
         />
 
-        {/* Canonical URL */}
-        <link rel="canonical" href="https://www.cresttravelclub.com/about-us" />
       </Helmet>
 
       <section className="about-page">

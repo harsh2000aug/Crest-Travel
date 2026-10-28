@@ -65,7 +65,6 @@ const Home = () => {
           content="Join Crest Travel Club and unlock exclusive savings on hotels, resorts, cruises, car rentals, flights, and more with a flexible travel membership."
         />
 
-        <link rel="canonical" href="https://www.cresttravelclub.com/" />
 
         {/* Open Graph */}
         <meta
