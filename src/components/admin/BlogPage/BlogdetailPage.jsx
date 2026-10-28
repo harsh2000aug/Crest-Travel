@@ -3,10 +3,13 @@ import "./Blogpage.css";
 import Header from "../../../reuseable-components/Header";
 import Footer from "../../../reuseable-components/Footer";
 import { fetchPublicBlogs, hostname } from "../../../Utils/api/apiUtils";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 const BlogdetailPage = () => {
   const API_BASE_URL = hostname();
+  const location = useLocation();
+  const [loaded, setLoaded] = useState(false);
 
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -17,9 +20,13 @@ const BlogdetailPage = () => {
       try {
         const data = await fetchPublicBlogs(controller.signal);
 
-        const postsList = Array.isArray(data) ? data : data?.data || [];
+        const postsList = Array.isArray(data) ? data : data?.data;
+        if (!Array.isArray(postsList) || data?.success === false) {
+          throw new Error("Invalid blog response");
+        }
 
         setPosts(postsList);
+        setLoaded(true);
       } catch (err) {
         if (controller.signal.aborted) return;
         console.error("Fetch Error:", err);
@@ -62,7 +69,17 @@ const BlogdetailPage = () => {
   }, []);
 
   return (
-    <main className="blogDetailPage">
+    <main
+      className="blogDetailPage"
+      data-prerender-ready={loaded ? location.pathname : undefined}
+    >
+      <Helmet>
+        <title>Travel Blog | Tips, Destinations and Stories</title>
+        <meta
+          name="description"
+          content="Explore travel tips, destination guides and stories from Crest Travel Club to help plan your next trip."
+        />
+      </Helmet>
       {/* Page Header */}
       <section className="blogDetailPage__header">
         <Header />

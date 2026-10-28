@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import React, { useEffect, useState } from "react";
 import Header from "../../../reuseable-components/Header";
 import Footer from "../../../reuseable-components/Footer";
@@ -304,6 +305,13 @@ const Prestige = () => {
 
   return (
     <div className="pt-page">
+      <Helmet>
+        <title>Prestige Membership | Travel Benefits and Savings</title>
+        <meta
+          name="description"
+          content="Explore the Prestige membership plan from Crest Travel Club, including travel benefits and savings for your next trip."
+        />
+      </Helmet>
       {isLoggedIn ? <HeaderInner /> : <Header />}
 
       <main>

@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import React, { useEffect } from "react";
 import Header from "../../../reuseable-components/Header";
 import Footer from "../../../reuseable-components/Footer";
@@ -272,6 +273,13 @@ const Signature = () => {
 
   return (
     <div className="pt-page pt-sig">
+      <Helmet>
+        <title>Signature Membership | Travel Benefits and Savings</title>
+        <meta
+          name="description"
+          content="Explore the Signature membership plan from Crest Travel Club, including travel benefits and savings for your next trip."
+        />
+      </Helmet>
       {isLoggedIn ? <HeaderInner /> : <Header />}
 
       <main>

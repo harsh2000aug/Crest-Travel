@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import React, { useEffect, useState } from "react";
 import HeaderInner from "../../../reuseable-components/HeaderInner";
 import Header from "../../../reuseable-components/Header";
@@ -189,6 +190,13 @@ const Elite = () => {
 
   return (
     <div className="pt-page pt-elite">
+      <Helmet>
+        <title>Elite Membership | Travel Benefits and Savings</title>
+        <meta
+          name="description"
+          content="Explore the Elite membership plan from Crest Travel Club, including travel benefits and savings for your next trip."
+        />
+      </Helmet>
       {isLoggedIn ? <HeaderInner /> : <Header />}
 
       <main>

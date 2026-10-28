@@ -1,4 +1,5 @@
 import React from "react";
+import { Helmet } from "react-helmet-async";
 import HeaderInner from "../../reuseable-components/HeaderInner";
 import Footer from "../../reuseable-components/Footer";
 import { FaEnvelope, FaPhoneAlt, FaComments } from "react-icons/fa";
@@ -6,6 +7,13 @@ const CustomerServices = () => {
 
   return (
     <>
+      <Helmet>
+        <title>Customer Service | Travel Membership Support</title>
+        <meta
+          name="description"
+          content="Contact Crest Travel Club customer service for help with your membership and travel bookings by email, phone or live chat."
+        />
+      </Helmet>
       <div className="head-banner1">
         <HeaderInner />
         <div className="banner-text">

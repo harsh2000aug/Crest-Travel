@@ -27,11 +27,6 @@ const RefundPolicy = () => {
           content="Learn how refunds and membership cancellations work at Crest Travel Club, including timelines, eligibility, and how to cancel your plan."
         />
 
-        {/* Canonical URL */}
-        <link
-          rel="canonical"
-          href="https://www.cresttravelclub.com/refund-and-cancellation-policies"
-        />
 
         {/* Open Graph */}
         <meta

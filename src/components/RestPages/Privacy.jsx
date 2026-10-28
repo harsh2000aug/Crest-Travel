@@ -27,11 +27,6 @@ const Privacy = () => {
           content="Learn how Crest Travel Club collects, uses, and protects your personal information as a member or website visitor."
         />
 
-        {/* Canonical URL */}
-        <link
-          rel="canonical"
-          href="https://www.cresttravelclub.com/privacy-policy"
-        />
 
         {/* Open Graph */}
         <meta
